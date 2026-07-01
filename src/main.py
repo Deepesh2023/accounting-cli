@@ -13,3 +13,17 @@ user_commands = {
     },
     "0": {"command": "exit"},
 }
+
+while True:
+    for choice, data in user_commands.items():
+        print(f"{choice}: {data['command']}")
+        print()
+
+    choice = input("Choice: ")
+
+    if choice == "0":
+        break
+
+print("=" * 28)
+print("Goodbye!")
+print("=" * 28)
