@@ -24,6 +24,16 @@ while True:
     if choice == "0":
         break
 
+    if choice in user_commands.keys():
+        while True:
+            for choice, data in user_commands[choice]["options"].items():
+                print(f"{choice}: {data}")
+                print()
+
+            choice = input("Choice: ")
+            if choice == "0":
+                break
+
 print("=" * 28)
 print("Goodbye!")
 print("=" * 28)
