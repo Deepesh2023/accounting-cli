@@ -7,11 +7,6 @@ user_commands = {
     "0": "exit",
 }
 
-options = {
-    "1": "Add product",
-    "2": "Remove product",
-}
-
 while True:
     for choice, data in user_commands.items():
         print(f"{choice}: {data['command']}")
