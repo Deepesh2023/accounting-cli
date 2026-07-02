@@ -22,6 +22,11 @@ while True:
     if choice == "0":
         break
 
+    if choice not in user_commands.keys():
+        print("Invalid command.")
+        continue
+
+
 print("=" * 28)
 print("Goodbye!")
 print("=" * 28)
