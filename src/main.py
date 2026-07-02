@@ -1,3 +1,5 @@
+from inventory.service import start as inventory_start
+
 print("=" * 28)
 print("Welcome to Printos accounting!")
 print("=" * 28)
@@ -9,7 +11,7 @@ user_commands = {
 
 while True:
     for choice, data in user_commands.items():
-        print(f"{choice}: {data['command']}")
+        print(f"{choice}: {data}")
         print()
 
     choice = input("Choice: ")
@@ -21,6 +23,8 @@ while True:
         print("Invalid command.")
         continue
 
+    if choice == "1":
+        inventory_start()
 
 print("=" * 28)
 print("Goodbye!")
