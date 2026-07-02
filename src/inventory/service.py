@@ -13,7 +13,7 @@ def start():
 
         choice = input("Choice: ")
 
-        if choice == 0:
+        if choice == "0":
             return
 
         if choice not in options.keys():
