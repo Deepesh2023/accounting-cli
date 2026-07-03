@@ -1,4 +1,4 @@
-from cli.menu import start_main_menu
+from cli.menu import show_main_menu
 
-start_main_menu()
+show_main_menu()
 
