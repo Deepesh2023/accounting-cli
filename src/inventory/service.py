@@ -9,8 +9,6 @@ def show_menu():
         for option, description in MENU_OPTIONS.items():
             print(f"{option}: {description}")
 
-        print("0: Return")
-
         choice = input("Choice: ")
 
         if choice == "0":
