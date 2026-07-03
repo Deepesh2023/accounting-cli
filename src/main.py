@@ -10,8 +10,8 @@ user_commands = {
 }
 
 while True:
-    for choice, data in user_commands.items():
-        print(f"{choice}: {data}")
+    for command_key, command in user_commands.items():
+        print(f"{command_key}: {command}")
         print()
 
     choice = input("Choice: ")
