@@ -1,8 +1,8 @@
 from inventory.service import show_menu as show_inventory_menu
 
 USER_COMMANDS = {
-    "1": "Inventory",
     "0": "exit",
+    "1": "Inventory",
 }
 
 
@@ -25,6 +25,7 @@ def show_main_menu():
             print("Invalid command.")
             continue
 
+        print("0: Return")
         if choice == "1":
             show_inventory_menu()
 
