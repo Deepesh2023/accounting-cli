@@ -4,7 +4,7 @@ options = {
 }
 
 
-def start():
+def show_menu():
     while True:
         for option, description in options.items():
             print(f"{option}: {description}")
