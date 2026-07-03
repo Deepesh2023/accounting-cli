@@ -1,9 +1,6 @@
-## Tasks
+# Accounting CLI
 
-- greeting the user
-- show command available
-- while loop checking for commands
-- adding and listing stocks
+A cli prototype for a full stack accounting software build using python.
 
 ## ChatGPT transcription
 
