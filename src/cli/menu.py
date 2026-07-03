@@ -1,4 +1,4 @@
-from inventory.service import start as inventory_start
+from inventory.service import show_menu as show_inventory_menu
 
 
 def show_main_menu():
@@ -26,7 +26,7 @@ def show_main_menu():
             continue
 
         if choice == "1":
-            inventory_start()
+            show_inventory_menu()
 
     print("=" * 28)
     print("Goodbye!")
