@@ -39,9 +39,9 @@ def show_menu():
                 print("Error occured")
                 return
 
-            add_product()
+            add_product(name=name, selling_price=selling_price, quantity=qnt)
 
 
-def add_product():
-    product = Product(id="1", name=name, selling_price=selling_price, quantity=qnt)
+def add_product(name: str, selling_price: float, quantity: int):
+    product = Product(id="1", name=name, selling_price=selling_price, quantity=quantity)
     print(product)
