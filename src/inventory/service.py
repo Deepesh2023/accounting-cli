@@ -27,7 +27,7 @@ def show_menu():
 
             selling_price = input("Selling price: ")
             try:
-                selling_price = int(selling_price)
+                selling_price = float(selling_price)
             except ValueError:
                 print("Error occured")
                 return
@@ -43,9 +43,9 @@ def show_menu():
 
 
 def add_product(name: str, selling_price: float, quantity: int):
-    if selling_price < 0 || quantity < 0:
+    if selling_price < 0 or quantity < 0:
         print("Error")
         return
-    
+
     product = Product(id="1", name=name, selling_price=selling_price, quantity=quantity)
     print(product)
