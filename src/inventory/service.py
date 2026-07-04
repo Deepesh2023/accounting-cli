@@ -21,27 +21,27 @@ def show_menu():
             continue
 
         if choice == "1":
+            print("Add product")
+
+            name = input("Name: ")
+
+            selling_price = input("Selling price: ")
+            try:
+                selling_price = int(selling_price)
+            except ValueError:
+                print("Error occured")
+                return
+
+            qnt = input("Quantity: ")
+            try:
+                qnt = int(qnt)
+            except ValueError:
+                print("Error occured")
+                return
+
             add_product()
 
 
 def add_product():
-    print("Add product")
-
-    name = input("Name: ")
-
-    selling_price = input("Selling price: ")
-    try:
-        selling_price = int(selling_price)
-    except ValueError:
-        print("Error occured")
-        return
-
-    qnt = input("Quantity: ")
-    try:
-        qnt = int(qnt)
-    except ValueError:
-        print("Error occured")
-        return
-
     product = Product(id="1", name=name, selling_price=selling_price, quantity=qnt)
     print(product)
