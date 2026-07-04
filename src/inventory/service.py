@@ -1,4 +1,5 @@
 from inventory.models import Product
+import uuid
 
 MENU_OPTIONS = {
     "1": "Add product",
@@ -47,5 +48,7 @@ def add_product(name: str, selling_price: float, quantity: int):
         print("Error")
         return
 
-    product = Product(id="1", name=name, selling_price=selling_price, quantity=quantity)
+    id = str(uuid.uuid4())
+
+    product = Product(id=id, name=name, selling_price=selling_price, quantity=quantity)
     print(product)
