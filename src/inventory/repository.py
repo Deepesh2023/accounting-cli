@@ -1,4 +1,4 @@
-from models import Product
+from inventory.models import Product
 
 
 class _Inventory:
