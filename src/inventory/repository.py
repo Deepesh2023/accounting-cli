@@ -6,3 +6,6 @@ class Inventory:
 
     def __init__(self):
         pass
+
+    def add_product(self, product: Product):
+        self._products.append(product)
