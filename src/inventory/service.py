@@ -64,16 +64,17 @@ def add_product(
     id = str(uuid.uuid4())
 
     product = Product(id=id, name=name, selling_price=selling_price, quantity=quantity)
-    inventory.append(product)
+    inventory.add_product(product)
 
     print("Product added.")
 
 
 def list_products(inventory: []):
-    print("=" * 28 + "\n")
-
-    print("Name    price   quantity")
-    for product in inventory:
-        print(f"{product.name}    {product.selling_price}    {product.quantity}")
-
-    print("=" * 28 + "\n")
+    pass
+    # print("=" * 28 + "\n")
+    #
+    # print("Name    price   quantity")
+    # for product in inventory:
+    #     print(f"{product.name}    {product.selling_price}    {product.quantity}")
+    #
+    # print("=" * 28 + "\n")
