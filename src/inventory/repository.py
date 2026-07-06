@@ -11,10 +11,9 @@ class _Inventory:
         self._products.append(product)
 
     def list_products(self, show_archived=False):
-        if show_archived:
-            return self._products
-
-        return [product for product in self._products if not product.archived]
+        return [
+            product for product in self._products if product.archived == show_archived
+        ]
 
     def change_visibility(self, id: str) -> Product | None:
         for product in self._products:
