@@ -59,3 +59,13 @@ def add_product(name: str, selling_price: float, quantity: int, inventory: []):
     inventory.append(product)
 
     print("Product added.")
+
+
+def list_products(inventory: []):
+    print("=" * 28 + "\n")
+
+    print("Name    price   quantity")
+    for product in inventory:
+        print(f"{product['name']}    {product['price']}    {product['quantity']}")
+
+    print("=" * 28 + "\n")
