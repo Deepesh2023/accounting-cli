@@ -9,3 +9,6 @@ class _Inventory:
 
     def add_product(self, product: Product):
         self._products.append(product)
+
+
+inventory = _Inventory()
