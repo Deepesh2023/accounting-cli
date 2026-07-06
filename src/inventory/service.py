@@ -24,7 +24,7 @@ def show_menu():
             continue
 
         if choice == "1":
-            list_products(inventory=inventory)
+            list_products()
 
         if choice == "2":
             print("Add product")
@@ -69,12 +69,15 @@ def add_product(
     print("Product added.")
 
 
-def list_products(inventory: []):
-    pass
-    # print("=" * 28 + "\n")
-    #
-    # print("Name    price   quantity")
-    # for product in inventory:
-    #     print(f"{product.name}    {product.selling_price}    {product.quantity}")
-    #
-    # print("=" * 28 + "\n")
+def list_products():
+    print("=" * 28 + "\n")
+
+    if len(inventory.list_products()) == 0:
+        print("No products.")
+        return
+
+    print("Name    price   quantity")
+    for product in inventory.list_products():
+        print(f"{product.name}    {product.selling_price}    {product.quantity}")
+
+    print("=" * 28 + "\n")
