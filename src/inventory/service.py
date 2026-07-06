@@ -40,10 +40,15 @@ def show_menu(inventory: []):
                 print("Error occured")
                 return
 
-            add_product(name=name, selling_price=selling_price, quantity=qnt)
+            add_product(
+                name=name,
+                selling_price=selling_price,
+                quantity=qnt,
+                inventory=inventory,
+            )
 
 
-def add_product(name: str, selling_price: float, quantity: int):
+def add_product(name: str, selling_price: float, quantity: int, inventory: []):
     if selling_price < 0 or quantity < 0:
         print("Error")
         return
@@ -51,4 +56,6 @@ def add_product(name: str, selling_price: float, quantity: int):
     id = str(uuid.uuid4())
 
     product = Product(id=id, name=name, selling_price=selling_price, quantity=quantity)
-    print(product)
+    inventory.append(product)
+
+    print("Product added.")
