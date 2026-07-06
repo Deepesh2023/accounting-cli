@@ -58,6 +58,20 @@ def show_menu():
         print()
 
 
+def list_products(show_archived=False):
+    print()
+
+    if len(inventory.list_products(show_archived)) == 0:
+        print("No products")
+        return
+
+    print("id    Name    price    quantity")
+    for product in inventory.list_products(show_archived=show_archived):
+        print(
+            f"{product.id}    {product.name}    {product.selling_price}    {product.quantity}"
+        )
+
+
 def add_product(
     name: str,
     selling_price: float,
@@ -73,15 +87,6 @@ def add_product(
     inventory.add_product(product)
 
     print("Product added.")
-
-
-    print("=" * 28 + "\n")
-
-        print("No products.")
-        return
-
-
-    print("=" * 28 + "\n")
 
 
 def change_visibility(id: str):
