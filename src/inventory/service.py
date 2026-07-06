@@ -5,7 +5,7 @@ import uuid
 MENU_OPTIONS = {
     "1": "List products",
     "2": "Add product",
-    "3": "Remove product",
+    "3": "Archive product",
 }
 
 
