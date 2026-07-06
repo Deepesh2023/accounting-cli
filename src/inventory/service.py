@@ -9,7 +9,7 @@ MENU_OPTIONS = {
 }
 
 
-def show_menu(inventory: []):
+def show_menu():
     while True:
         for option, description in MENU_OPTIONS.items():
             print(f"{option}: {description}")
@@ -49,11 +49,14 @@ def show_menu(inventory: []):
                 name=name,
                 selling_price=selling_price,
                 quantity=qnt,
-                inventory=inventory,
             )
 
 
-def add_product(name: str, selling_price: float, quantity: int, inventory: []):
+def add_product(
+    name: str,
+    selling_price: float,
+    quantity: int,
+):
     if selling_price < 0 or quantity < 0:
         print("Error")
         return
