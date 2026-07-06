@@ -24,6 +24,8 @@ def show_menu(inventory: []):
 
         if choice == "1":
             list_products(inventory=inventory)
+
+        if choice == "2":
             print("Add product")
 
             name = input("Name: ")
