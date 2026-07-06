@@ -70,6 +70,6 @@ def list_products(inventory: []):
 
     print("Name    price   quantity")
     for product in inventory:
-        print(f"{product['name']}    {product['price']}    {product['quantity']}")
+        print(f"{product.name}    {product.selling_price}    {product.quantity}")
 
     print("=" * 28 + "\n")
