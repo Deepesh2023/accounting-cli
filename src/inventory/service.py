@@ -6,6 +6,7 @@ MENU_OPTIONS = {
     "1": "List products",
     "2": "Add product",
     "3": "Archive product",
+    "4": "Show archived",
 }
 
 
@@ -54,6 +55,9 @@ def show_menu():
         if choice == "3":
             id = input("Enter the product id: ")
             change_visibility(id)
+
+        if choice == "4":
+            list_products(show_archived=True)
 
         print()
 
