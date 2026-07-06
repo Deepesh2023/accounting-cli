@@ -27,7 +27,7 @@ def show_main_menu(inventory: []):
 
         print("0: Return")
         if choice == "1":
-            show_inventory_menu(inventory=inventory)
+            show_inventory_menu()
 
     print("=" * 28)
     print("Goodbye!")
