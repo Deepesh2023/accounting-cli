@@ -59,3 +59,18 @@ A product will have
 
 
 Everything else builds on top of this.
+
+## Inventory storage design
+
+The program stores all the products and can be edited and viewed.
+The products can only be edited from the inventory but viewed by
+inventory and sales. When starting out I'll be using an in memory
+storage placed in 'src/main.py' and passed in as dependancy injection.
+
+Inventory - view, add, archive, edit
+Sales - view
+
+Products of same name can exist. They will be identified with their ID.
+
+It's prefered that the IDs never change because when the product is archived
+it still need to be able to be viewed.
