@@ -71,15 +71,19 @@ def add_product(
     print("Product added.")
 
 
-def list_products():
     print("=" * 28 + "\n")
 
-    if len(inventory.list_products()) == 0:
         print("No products.")
         return
 
-    print("Name    price   quantity")
-    for product in inventory.list_products():
-        print(f"{product.name}    {product.selling_price}    {product.quantity}")
 
     print("=" * 28 + "\n")
+
+
+def change_visibility(id: str):
+    result = inventory.change_visibility(id)
+    if not result:
+        print("Product not found.")
+        return
+
+    print(f"{result.name}({result.id}) archived.")
