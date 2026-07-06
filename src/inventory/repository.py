@@ -16,10 +16,10 @@ class _Inventory:
 
         return [product for product in self._products if not product.archived]
 
-    def archive_product(self, id: str) -> Product | None:
+    def change_visibilty(self, id: str) -> Product | None:
         for product in self._products:
             if product.id == id:
-                product.archived = True
+                product.archived = not product.archived
                 return product
 
         return None
