@@ -11,10 +11,14 @@ git log > "$GIT_LOG_FILE"
 # Remove sensitive information
 sed -i "s/$AUTHOR_EMAIL/<EMAIL REMOVED>/g" "$GIT_LOG_FILE"
 
+rm -f "$ZIP_NAME"
+
 # Create zip archive
 zip -r "$ZIP_NAME" . \
     -x ".git/*" \
-    -x "__pycache__\*" \
+    -x "__pycache__/*" \
+    -x "*/__pycache__/*" \
+    -x ".python_version" \
     -x ".venv/*" \
     -x "$ZIP_NAME"
 
