@@ -1,7 +1,7 @@
 from models import Product
 
 
-class Inventory:
+class _Inventory:
     _products: list[Product] = []
 
     def __init__(self):
