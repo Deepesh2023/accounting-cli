@@ -16,5 +16,13 @@ class _Inventory:
 
         return [product for product in self._products if not product.archived]
 
+    def archive_product(self, id: str) -> Product | None:
+        for product in self._products:
+            if product.id == id:
+                product.archived = True
+                return product
+
+        return None
+
 
 inventory = _Inventory()
