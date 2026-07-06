@@ -2,8 +2,9 @@ from inventory.models import Product
 import uuid
 
 MENU_OPTIONS = {
-    "1": "Add product",
-    "2": "Remove product",
+    "1": "List products",
+    "2": "Add product",
+    "3": "Remove product",
 }
 
 
