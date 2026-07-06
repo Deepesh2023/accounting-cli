@@ -51,6 +51,8 @@ def show_menu():
                 quantity=qnt,
             )
 
+        print()
+
 
 def add_product(
     name: str,
