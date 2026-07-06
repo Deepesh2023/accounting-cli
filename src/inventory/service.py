@@ -51,6 +51,10 @@ def show_menu():
                 quantity=qnt,
             )
 
+        if choice == "3":
+            id = input("Enter the product id: ")
+            change_visibility(id)
+
         print()
 
 
