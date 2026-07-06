@@ -6,7 +6,7 @@ USER_COMMANDS = {
 }
 
 
-def show_main_menu():
+def show_main_menu(inventory: []):
     print("=" * 28)
     print("Welcome to Printos accounting!")
     print("=" * 28)
