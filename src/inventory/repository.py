@@ -11,9 +11,8 @@ class _Repository:
     def list_products(self) -> list[Product]:
         return self._products
 
-    def change_visibility(self, id: str) -> Product | None:
+    def change_visibility(self, product_id: str) -> Product | None:
         for product in self._products:
-            if product.id == id:
                 product.archived = not product.archived
                 return product
 
