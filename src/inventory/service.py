@@ -25,7 +25,7 @@ def show_menu(inventory_repository: InventoryRepository):
             continue
 
         if choice == "1":
-            products = list_products()
+            products = list_products(inventory_repository=inventory_repository)
             display_products(products)
 
         if choice == "2":
