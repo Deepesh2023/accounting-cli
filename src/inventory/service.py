@@ -40,9 +40,9 @@ def show_menu():
                 print("Error occured")
                 return
 
-            qnt = input("Quantity: ")
+            quantity = input("Quantity: ")
             try:
-                qnt = int(qnt)
+                quantity = int(quantity)
             except ValueError:
                 print("Error occured")
                 return
@@ -52,7 +52,7 @@ def show_menu():
                 add_product(
                     name=name,
                     selling_price=selling_price,
-                    quantity=qnt,
+                    quantity=quantity,
                 )
             except ValueError as e:
                 print(e)
