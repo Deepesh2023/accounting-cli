@@ -79,8 +79,6 @@ def display_products(products: list[Product]):
                 f"{product.id}    {product.name}    {product.selling_price}    {product.quantity}"
             )
 
-    print()
-
 
 def list_products(show_archived=False) -> list[Product]:
     products = [
