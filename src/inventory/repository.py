@@ -18,6 +18,3 @@ class Repository:
                 return product
 
         return None
-
-
-repository = _Repository()
