@@ -1,5 +1,5 @@
 from inventory.models import Product
-from inventory.repository import repository
+from inventory.repository import Repository as InventoryRepository
 import uuid
 
 MENU_OPTIONS = {
