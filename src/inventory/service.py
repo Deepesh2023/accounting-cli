@@ -65,12 +65,15 @@ def show_menu():
 def list_products(show_archived=False):
     print()
 
-    if len(repository.list_products(show_archived)) == 0:
+    products = [
+        product
+        for product in repository.list_products()
+        if product.archived == show_archived
+    ]
+
         print("No products")
         return
 
-    print("id    Name    price    quantity")
-    for product in repository.list_products(show_archived=show_archived):
         print(
             f"{product.id}    {product.name}    {product.selling_price}    {product.quantity}"
         )
