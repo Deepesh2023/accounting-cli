@@ -26,6 +26,7 @@ def show_menu():
 
         if choice == "1":
             products = list_products()
+            display_products(products)
 
         if choice == "2":
             print("Add product")
