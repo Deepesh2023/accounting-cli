@@ -74,3 +74,12 @@ Products of same name can exist. They will be identified with their ID.
 
 It's prefered that the IDs never change because when the product is archived
 it still need to be able to be viewed.
+
+## Editing a product
+
+While on inventory menu, user have the option to edit a certain product. The
+user can edit the name, selling price, and quantity. The product to be edited
+is identified by the product' id. A confirmation will be asked before confirming
+the edit. 
+When on edit mode, user will be shown a summary of the product and the options available
+to edit. Either select a field to edit or cancel the operation.
