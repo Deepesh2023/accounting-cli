@@ -117,12 +117,14 @@ def add_product(
         selling_price=selling_price,
         quantity=quantity,
     )
+    inventory_repository.add_product(product)
 
 
 def change_visibility(
     inventory_repository: InventoryRepository,
     product_id: str,
 ) -> Product:
+    result = inventory_repository.change_visibility(product_id)
     if not result:
         raise ValueError("Product not found.")
 
