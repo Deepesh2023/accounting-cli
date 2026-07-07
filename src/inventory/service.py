@@ -47,11 +47,14 @@ def show_menu():
                 print("Error occured")
                 return
 
-            add_product(
-                name=name,
-                selling_price=selling_price,
-                quantity=qnt,
-            )
+            try:
+                add_product(
+                    name=name,
+                    selling_price=selling_price,
+                    quantity=qnt,
+                )
+            except ValueError as e:
+                print(e)
 
         if choice == "3":
             id = input("Enter the product id: ")
