@@ -99,6 +99,7 @@ def add_product(
 
 
 def change_visibility(product_id: str):
+    result = repository.change_visibility(product_id)
     if not result:
         print("Product not found.")
         return
