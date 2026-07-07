@@ -1,5 +1,5 @@
 from inventory.models import Product
-from inventory.repository import inventory
+from inventory.repository import repository
 import uuid
 
 MENU_OPTIONS = {
@@ -65,12 +65,12 @@ def show_menu():
 def list_products(show_archived=False):
     print()
 
-    if len(inventory.list_products(show_archived)) == 0:
+    if len(repository.list_products(show_archived)) == 0:
         print("No products")
         return
 
     print("id    Name    price    quantity")
-    for product in inventory.list_products(show_archived=show_archived):
+    for product in repository.list_products(show_archived=show_archived):
         print(
             f"{product.id}    {product.name}    {product.selling_price}    {product.quantity}"
         )
@@ -88,13 +88,13 @@ def add_product(
     id = str(uuid.uuid4())
 
     product = Product(id=id, name=name, selling_price=selling_price, quantity=quantity)
-    inventory.add_product(product)
+    repository.add_product(product)
 
     print("Product added.")
 
 
 def change_visibility(id: str):
-    result = inventory.change_visibility(id)
+    result = repository.change_visibility(id)
     if not result:
         print("Product not found.")
         return
