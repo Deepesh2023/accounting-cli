@@ -13,7 +13,7 @@ class _Repository:
 
     def change_visibility(self, product_id: str) -> Product | None:
         for product in self._products:
-            if product.id == product_id:
+            if product.product_id == product_id:
                 product.archived = not product.archived
                 return product
 
