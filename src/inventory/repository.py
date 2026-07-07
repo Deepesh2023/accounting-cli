@@ -8,10 +8,8 @@ class _Repository:
     def add_product(self, product: Product):
         self._products.append(product)
 
-    def list_products(self, show_archived=False):
-        return [
-            product for product in self._products if product.archived == show_archived
-        ]
+    def list_products(self) -> list[Product]:
+        return self._products
 
     def change_visibility(self, id: str) -> Product | None:
         for product in self._products:
