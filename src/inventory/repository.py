@@ -1,7 +1,7 @@
 from inventory.models import Product
 
 
-class _Repository:
+class Repository:
     def __init__(self):
         self._products: list[Product] = []
 
