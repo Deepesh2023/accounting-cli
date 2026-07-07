@@ -63,7 +63,19 @@ def show_menu():
         print()
 
 
+def display_products(products: list[Product]):
     print()
+
+    if len(products) == 0:
+        print("No products")
+    else:
+        for product in products:
+            print(
+                f"{product.id}    {product.name}    {product.selling_price}    {product.quantity}"
+            )
+
+    print()
+
 
 def list_products(show_archived=False) -> list[Product]:
     products = [
