@@ -104,10 +104,9 @@ def add_product(
     repository.add_product(product)
 
 
-def change_visibility(product_id: str):
+def change_visibility(product_id: str) -> Product:
     result = repository.change_visibility(product_id)
     if not result:
-        print("Product not found.")
-        return
+        raise ValueError("Product not found.")
 
-    print(f"{result.name}({result.id}) archived.")
+    return result
