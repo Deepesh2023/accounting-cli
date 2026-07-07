@@ -57,28 +57,22 @@ def show_menu():
             change_visibility(id)
 
         if choice == "4":
-            list_products(show_archived=True)
+            products = list_products(show_archived=True)
+            display_products(products)
 
         print()
 
 
-def list_products(show_archived=False):
     print()
 
+def list_products(show_archived=False) -> list[Product]:
     products = [
         product
         for product in repository.list_products()
         if product.archived == show_archived
     ]
 
-    if len(products) == 0:
-        print("No products")
-        return
-
-    for product in products:
-        print(
-            f"{product.id}    {product.name}    {product.selling_price}    {product.quantity}"
-        )
+    return products
 
 
 def add_product(
