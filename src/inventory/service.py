@@ -61,7 +61,10 @@ def show_menu(inventory_repository: InventoryRepository):
         if choice == "3":
             product_id = input("Enter the product id: ")
             try:
-                product = change_visibility(product_id)
+                product = change_visibility(
+                    inventory_repository=inventory_repository,
+                    product_id=product_id,
+                )
                 print(
                     f"{product.name}({product.product_id}) {'archived' if product.archived else 'unarchived'}."
                 )
