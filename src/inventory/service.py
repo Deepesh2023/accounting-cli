@@ -61,7 +61,7 @@ def show_menu():
             product_id = input("Enter the product id: ")
             try:
                 product = change_visibility(product_id)
-                print(f"{product.name}({product.id}) archived.")
+                print(f"{product.name}({product.product_id}) archived.")
             except ValueError as e:
                 print(e)
 
