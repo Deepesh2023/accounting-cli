@@ -101,6 +101,7 @@ def list_products(
 
 
 def add_product(
+    inventory_repository: InventoryRepository,
     name: str,
     selling_price: float,
     quantity: int,
