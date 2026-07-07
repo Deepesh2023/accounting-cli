@@ -2,10 +2,8 @@ from inventory.models import Product
 
 
 class _Repository:
-    _products: list[Product] = []
-
     def __init__(self):
-        pass
+        self._products: list[Product] = []
 
     def add_product(self, product: Product):
         self._products.append(product)
