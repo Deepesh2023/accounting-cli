@@ -10,7 +10,7 @@ MENU_OPTIONS = {
 }
 
 
-def show_menu():
+def show_menu(inventory_repository: InventoryRepository):
     while True:
         for option, description in MENU_OPTIONS.items():
             print(f"{option}: {description}")
