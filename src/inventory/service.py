@@ -47,6 +47,7 @@ def show_menu():
                 print("Error occured")
                 return
 
+            print()
             try:
                 add_product(
                     name=name,
