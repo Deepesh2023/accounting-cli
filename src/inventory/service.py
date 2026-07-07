@@ -50,6 +50,7 @@ def show_menu(inventory_repository: InventoryRepository):
             print()
             try:
                 add_product(
+                    inventory_repository=inventory_repository,
                     name=name,
                     selling_price=selling_price,
                     quantity=quantity,
