@@ -58,8 +58,12 @@ def show_menu():
                 print(e)
 
         if choice == "3":
-            id = input("Enter the product id: ")
-            change_visibility(id)
+            product_id = input("Enter the product id: ")
+            try:
+                product = change_visibility(product_id)
+                print(f"{product.name}({product.id}) archived.")
+            except ValueError as e:
+                print(e)
 
         if choice == "4":
             products = list_products(show_archived=True)
