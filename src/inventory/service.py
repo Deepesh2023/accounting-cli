@@ -80,7 +80,7 @@ def display_products(products: list[Product]):
     else:
         for product in products:
             print(
-                f"{product.id}    {product.name}    {product.selling_price}    {product.quantity}"
+                f"{product.product_id}    {product.name}    {product.selling_price}    {product.quantity}"
             )
 
 
@@ -102,9 +102,14 @@ def add_product(
     if selling_price < 0 or quantity < 0:
         raise ValueError("selling-price/quantity shouldn't be negative")
 
-    id = str(uuid.uuid4())
+    product_id = str(uuid.uuid4())
 
-    product = Product(id=id, name=name, selling_price=selling_price, quantity=quantity)
+    product = Product(
+        product_id=product_id,
+        name=name,
+        selling_price=selling_price,
+        quantity=quantity,
+    )
     repository.add_product(product)
 
 
