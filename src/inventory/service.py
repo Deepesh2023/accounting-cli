@@ -73,7 +73,10 @@ def show_menu(inventory_repository: InventoryRepository):
                 print(e)
 
         if choice == "4":
-            products = list_products(show_archived=True)
+            products = list_products(
+                inventory_repository=inventory_repository,
+                show_archived=True,
+            )
             display_products(products)
 
         print()
