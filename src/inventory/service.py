@@ -71,9 +71,11 @@ def list_products(show_archived=False):
         if product.archived == show_archived
     ]
 
+    if len(products) == 0:
         print("No products")
         return
 
+    for product in products:
         print(
             f"{product.id}    {product.name}    {product.selling_price}    {product.quantity}"
         )
