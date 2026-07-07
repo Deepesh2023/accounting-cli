@@ -87,10 +87,13 @@ def display_products(products: list[Product]):
             )
 
 
-def list_products(show_archived=False) -> list[Product]:
+def list_products(
+    inventory_repository: InventoryRepository,
+    show_archived=False,
+) -> list[Product]:
     products = [
         product
-        for product in repository.list_products()
+        for product in inventory_repository.list_products()
         if product.archived == show_archived
     ]
 
