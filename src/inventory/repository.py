@@ -1,7 +1,7 @@
 from inventory.models import Product
 
 
-class _Inventory:
+class _Repository:
     _products: list[Product] = []
 
     def __init__(self):
@@ -24,4 +24,4 @@ class _Inventory:
         return None
 
 
-inventory = _Inventory()
+repository = _Repository()
