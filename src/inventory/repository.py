@@ -9,7 +9,7 @@ class _Repository:
         self._products.append(product)
 
     def list_products(self) -> list[Product]:
-        return self._products
+        return self._products.copy()
 
     def change_visibility(self, product_id: str) -> Product | None:
         for product in self._products:
