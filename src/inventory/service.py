@@ -94,15 +94,12 @@ def add_product(
     quantity: int,
 ):
     if selling_price < 0 or quantity < 0:
-        print("Error")
-        return
+        raise ValueError("selling-price/quantity shouldn't be negative")
 
     id = str(uuid.uuid4())
 
     product = Product(id=id, name=name, selling_price=selling_price, quantity=quantity)
     repository.add_product(product)
-
-    print("Product added.")
 
 
 def change_visibility(product_id: str):
