@@ -29,7 +29,7 @@ def show_main_menu():
 
         print("0: Return")
         if choice == "1":
-            show_inventory_menu()
+            show_inventory_menu(inventory_repository)
 
     print("=" * 28)
     print("Goodbye!")
