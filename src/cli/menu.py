@@ -1,4 +1,6 @@
 from inventory.service import show_menu as show_inventory_menu
+from inventory.repository import Repository as InventoryRepository
+
 
 USER_COMMANDS = {
     "0": "exit",
