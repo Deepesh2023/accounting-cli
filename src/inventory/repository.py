@@ -26,3 +26,12 @@ class Repository:
                 return product
 
         return None
+
+    def update_product(self, updated_product: Product):
+        product = self.get_product(product_id=updated_product.product_id)
+        if not product:
+            raise ValueError("Cannot find product.")
+
+        product.name = updated_product.name
+        product.selling_price = updated_product.selling_price
+        product.quantity = updated_product.quantity
