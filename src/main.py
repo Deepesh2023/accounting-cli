@@ -3,3 +3,4 @@ from inventory.repository import Repository as InventoryRepository
 
 inventory_repository = InventoryRepository()
 
+show_main_menu(inventory_repository=inventory_repository)
