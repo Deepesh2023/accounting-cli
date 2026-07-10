@@ -1,5 +1,5 @@
 from inventory.service import show_menu as show_inventory_menu
-from inventory.repository import Repository as InventoryRepository
+from inventory.repository import InventoryRepository
 
 
 USER_COMMANDS = {
