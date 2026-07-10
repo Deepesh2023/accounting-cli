@@ -3,6 +3,7 @@ from inventory.repository import InventoryRepository
 from dataclasses import replace
 import uuid
 from shared.exceptions import InventoryError, ProductNotFoundError, InvalidProductDataError
+from shared.utils import get_input, get_confirmation
 
 MENU_OPTIONS = {
     "1": "List products",
@@ -36,13 +37,14 @@ def edit_product_workflow(inventory_repository: InventoryRepository):
         field = input("Enter field to edit (name/selling_price/quantity) or 'done' to save, 'cancel' to abort: ").strip()
         
         if field == "cancel":
+            print("\nEdit cancelled.")
             break
         if field == "done":
             if draft_product == product:
-                print("No changes made.")
+                print("\nNo changes made.")
                 break
             
-            print("\nReview changes:")
+            print("\n--- Review Changes ---")
             if draft_product.name != product.name:
                 print(f"Name: {product.name} -> {draft_product.name}")
             if draft_product.selling_price != product.selling_price:
@@ -50,37 +52,27 @@ def edit_product_workflow(inventory_repository: InventoryRepository):
             if draft_product.quantity != product.quantity:
                 print(f"Quantity: {product.quantity} -> {draft_product.quantity}")
             
-            confirm = input("Confirm changes? (y/n): ").strip().lower()
-            if confirm == "y":
+            if get_confirmation("Confirm changes?"):
                 try:
                     inventory_repository.update_product(updated_product=draft_product)
-                    print("Product updated successfully.")
+                    print("\nProduct updated successfully.")
                 except ProductNotFoundError as e:
-                    print(f"Error: {e}")
+                    print(f"\nError: {e}")
             else:
-                print("Update cancelled.")
+                print("\nUpdate cancelled.")
             break
 
-
         if field == "name":
-            new_val = input("Enter new name: ").strip()
-            if new_val:
-                draft_product.name = new_val
+            new_val = get_input("Enter new name: ", str)
+            draft_product.name = new_val
         elif field == "selling_price":
-            try:
-                new_val = float(input("Enter new selling price: "))
-                draft_product.selling_price = new_val
-            except ValueError:
-                print("Invalid price. Please enter a number.")
+            draft_product.selling_price = get_input("Enter new selling price: ", float, "Invalid price. Please enter a number.")
         elif field == "quantity":
-            try:
-                new_val = int(input("Enter new quantity: "))
-                draft_product.quantity = new_val
-            except ValueError:
-                print("Invalid quantity. Please enter an integer.")
+            draft_product.quantity = get_input("Enter new quantity: ", int, "Invalid quantity. Please enter an integer.")
         else:
-            print("Invalid field. Use 'name', 'selling_price', or 'quantity'.")
+            print("\nInvalid field. Use 'name', 'selling_price', or 'quantity'.")
     print()
+
 
 
 def search_product_workflow(inventory_repository: InventoryRepository):
@@ -108,25 +100,11 @@ def show_menu(inventory_repository: InventoryRepository):
             display_products(products)
 
         if choice == "2":
-            print("Add product")
+            print("\n--- Add New Product ---")
+            name = get_input("Name: ", str)
+            selling_price = get_input("Selling price: ", float, "Please enter a valid number for price.")
+            quantity = get_input("Quantity: ", int, "Please enter a valid integer for quantity.")
 
-            name = input("Name: ")
-
-            selling_price = input("Selling price: ")
-            try:
-                selling_price = float(selling_price)
-            except ValueError:
-                print("Error occured")
-                return
-
-            quantity = input("Quantity: ")
-            try:
-                quantity = int(quantity)
-            except ValueError:
-                print("Error occured")
-                return
-
-            print()
             try:
                 add_product(
                     inventory_repository=inventory_repository,
@@ -134,26 +112,27 @@ def show_menu(inventory_repository: InventoryRepository):
                     selling_price=selling_price,
                     quantity=quantity,
                 )
+                print("\nProduct added successfully!")
             except InvalidProductDataError as e:
-                print(e)
+                print(f"\nError: {e}")
 
         if choice == "3":
-            product_id = input("Enter the product id: ")
+            product_id_str = get_input("Enter the product id to archive/unarchive: ", str)
             try:
-                product_id = uuid.UUID(product_id)
+                product_id = uuid.UUID(product_id_str)
+                if get_confirmation(f"Change visibility for product {product_id_str}?"):
+                    product = change_visibility(
+                        inventory_repository=inventory_repository,
+                        product_id=product_id,
+                    )
+                    status = 'unarchived' if not product.archived else 'archived'
+                    print(f"\nProduct {product.name} has been {status}.")
+                else:
+                    print("\nOperation cancelled.")
             except ValueError:
-                print("Invalid UUID format.")
-                continue
-            try:
-                product = change_visibility(
-                    inventory_repository=inventory_repository,
-                    product_id=product_id,
-                )
-                print(
-                    f"{product.name}({product.product_id}) {'archived' if product.archived else 'unarchived'}."
-                )
+                print("\nError: Invalid UUID format.")
             except ProductNotFoundError as e:
-                print(e)
+                print(f"\nError: {e}")
 
         if choice == "4":
             products = list_products(
