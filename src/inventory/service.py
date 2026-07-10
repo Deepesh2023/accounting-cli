@@ -1,5 +1,6 @@
 from inventory.models import Product
 from inventory.repository import Repository as InventoryRepository
+from dataclasses import replace
 import uuid
 
 MENU_OPTIONS = {
@@ -90,13 +91,7 @@ def show_menu(inventory_repository: InventoryRepository):
             print("The product being edited:")
             print(f"ID: {product.product_id}\nName: {product.name}\nPrice: {product.selling_price}\nQuantity: {product.quantity}")
 
-            original_name = product.name
-            original_price = product.selling_price
-            original_quantity = product.quantity
-            
-            current_name = original_name
-            current_price = original_price
-            current_quantity = original_quantity
+            draft_product = replace(product)
 
             while True:
                 field = input("Enter field to edit (name/selling_price/quantity) or 'done' to save, 'cancel' to abort: ").strip()
@@ -104,14 +99,17 @@ def show_menu(inventory_repository: InventoryRepository):
                 if field == "cancel":
                     break
                 if field == "done":
-                    if current_name == original_name and current_price == original_price and current_quantity == original_quantity:
+                    if draft_product == product:
                         print("No changes made.")
                         break
                     
                     print("\nReview changes:")
-                    print(f"Name: {original_name} -> {current_name}")
-                    print(f"Price: {original_price} -> {current_price}")
-                    print(f"Quantity: {original_quantity} -> {current_quantity}")
+                    if draft_product.name != product.name:
+                        print(f"Name: {product.name} -> {draft_product.name}")
+                    if draft_product.selling_price != product.selling_price:
+                        print(f"Price: {product.selling_price} -> {draft_product.selling_price}")
+                    if draft_product.quantity != product.quantity:
+                        print(f"Quantity: {product.quantity} -> {draft_product.quantity}")
                     
                     confirm = input("Confirm changes? (y/n): ").strip().lower()
                     if confirm == "y":
@@ -119,9 +117,9 @@ def show_menu(inventory_repository: InventoryRepository):
                             update_product(
                                 inventory_repository=inventory_repository,
                                 product=product,
-                                name=current_name,
-                                selling_price=current_price,
-                                quantity=current_quantity
+                                name=draft_product.name,
+                                selling_price=draft_product.selling_price,
+                                quantity=draft_product.quantity
                             )
                             print("Product updated successfully.")
                         except ValueError as e:
@@ -133,17 +131,17 @@ def show_menu(inventory_repository: InventoryRepository):
                 if field == "name":
                     new_val = input("Enter new name: ").strip()
                     if new_val:
-                        current_name = new_val
+                        draft_product.name = new_val
                 elif field == "selling_price":
                     try:
                         new_val = float(input("Enter new selling price: "))
-                        current_price = new_val
+                        draft_product.selling_price = new_val
                     except ValueError:
                         print("Invalid price. Please enter a number.")
                 elif field == "quantity":
                     try:
                         new_val = int(input("Enter new quantity: "))
-                        current_quantity = new_val
+                        draft_product.quantity = new_val
                     except ValueError:
                         print("Invalid quantity. Please enter an integer.")
                 else:
