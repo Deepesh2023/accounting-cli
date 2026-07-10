@@ -64,8 +64,8 @@ Everything else builds on top of this.
 
 The program stores all the products and can be edited and viewed.
 The products can only be edited from the inventory but viewed by
-inventory and sales. When starting out I'll be using an in memory
-storage placed in 'src/main.py' and passed in as dependancy injection.
+inventory and sales. I'm using JSON file persistence in 'src/inventory/repository.py' 
+and passed in as dependancy injection.
 
 Inventory - view, add, archive, edit
 Sales - view
