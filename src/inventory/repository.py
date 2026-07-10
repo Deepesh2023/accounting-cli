@@ -2,7 +2,7 @@ from inventory.models import Product
 import uuid
 
 
-class Repository:
+class InventoryRepository:
     def __init__(self):
         self._products: list[Product] = []
 
