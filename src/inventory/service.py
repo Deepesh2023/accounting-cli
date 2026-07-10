@@ -12,6 +12,73 @@ MENU_OPTIONS = {
 }
 
 
+def edit_product_workflow(inventory_repository: InventoryRepository):
+    product_id = input("Enter the product id: ")
+    try:
+        product_id = uuid.UUID(product_id)
+    except ValueError:
+        print("Invalid UUID format.")
+        return
+
+    product = inventory_repository.get_product(product_id=product_id)
+    if not product:
+        print("Product not found.")
+        return
+
+    print("The product being edited:")
+    print(f"ID: {product.product_id}\nName: {product.name}\nPrice: {product.selling_price}\nQuantity: {product.quantity}")
+
+    draft_product = replace(product)
+
+    while True:
+        field = input("Enter field to edit (name/selling_price/quantity) or 'done' to save, 'cancel' to abort: ").strip()
+        
+        if field == "cancel":
+            break
+        if field == "done":
+            if draft_product == product:
+                print("No changes made.")
+                break
+            
+            print("\nReview changes:")
+            if draft_product.name != product.name:
+                print(f"Name: {product.name} -> {draft_product.name}")
+            if draft_product.selling_price != product.selling_price:
+                print(f"Price: {product.selling_price} -> {draft_product.selling_price}")
+            if draft_product.quantity != product.quantity:
+                print(f"Quantity: {product.quantity} -> {draft_product.quantity}")
+            
+            confirm = input("Confirm changes? (y/n): ").strip().lower()
+            if confirm == "y":
+                try:
+                    inventory_repository.update_product(updated_product=draft_product)
+                    print("Product updated successfully.")
+                except ValueError as e:
+                    print(f"Error: {e}")
+            else:
+                print("Update cancelled.")
+            break
+
+        if field == "name":
+            new_val = input("Enter new name: ").strip()
+            if new_val:
+                draft_product.name = new_val
+        elif field == "selling_price":
+            try:
+                new_val = float(input("Enter new selling price: "))
+                draft_product.selling_price = new_val
+            except ValueError:
+                print("Invalid price. Please enter a number.")
+        elif field == "quantity":
+            try:
+                new_val = int(input("Enter new quantity: "))
+                draft_product.quantity = new_val
+            except ValueError:
+                print("Invalid quantity. Please enter an integer.")
+        else:
+            print("Invalid field. Use 'name', 'selling_price', or 'quantity'.")
+    print()
+
 def show_menu(inventory_repository: InventoryRepository):
     while True:
         for option, description in MENU_OPTIONS.items():
@@ -78,7 +145,6 @@ def show_menu(inventory_repository: InventoryRepository):
             except ValueError as e:
                 print(e)
 
-
         if choice == "4":
             products = list_products(
                 inventory_repository=inventory_repository,
@@ -87,70 +153,8 @@ def show_menu(inventory_repository: InventoryRepository):
             display_products(products)
 
         if choice == "5":
-            product_id = input("Enter the product id: ")
-            try:
-                product_id = uuid.UUID(product_id)
-            except ValueError:
-                print("Invalid UUID format.")
-                continue
-            product = inventory_repository.get_product(product_id=product_id)
-            if not product:
-                print("Product not found.")
-                continue
+            edit_product_workflow(inventory_repository=inventory_repository)
 
-            print("The product being edited:")
-            print(f"ID: {product.product_id}\nName: {product.name}\nPrice: {product.selling_price}\nQuantity: {product.quantity}")
-
-            draft_product = replace(product)
-
-            while True:
-                field = input("Enter field to edit (name/selling_price/quantity) or 'done' to save, 'cancel' to abort: ").strip()
-                
-                if field == "cancel":
-                    break
-                if field == "done":
-                    if draft_product == product:
-                        print("No changes made.")
-                        break
-                    
-                    print("\nReview changes:")
-                    if draft_product.name != product.name:
-                        print(f"Name: {product.name} -> {draft_product.name}")
-                    if draft_product.selling_price != product.selling_price:
-                        print(f"Price: {product.selling_price} -> {draft_product.selling_price}")
-                    if draft_product.quantity != product.quantity:
-                        print(f"Quantity: {product.quantity} -> {draft_product.quantity}")
-                    
-                    confirm = input("Confirm changes? (y/n): ").strip().lower()
-                    if confirm == "y":
-                        try:
-                            inventory_repository.update_product(updated_product=draft_product)
-                            print("Product updated successfully.")
-                        except ValueError as e:
-                            print(f"Error: {e}")
-                    else:
-                        print("Update cancelled.")
-                    break
-
-                if field == "name":
-                    new_val = input("Enter new name: ").strip()
-                    if new_val:
-                        draft_product.name = new_val
-                elif field == "selling_price":
-                    try:
-                        new_val = float(input("Enter new selling price: "))
-                        draft_product.selling_price = new_val
-                    except ValueError:
-                        print("Invalid price. Please enter a number.")
-                elif field == "quantity":
-                    try:
-                        new_val = int(input("Enter new quantity: "))
-                        draft_product.quantity = new_val
-                    except ValueError:
-                        print("Invalid quantity. Please enter an integer.")
-                else:
-                    print("Invalid field. Use 'name', 'selling_price', or 'quantity'.")
-            print()
 
 
 
