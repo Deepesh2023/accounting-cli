@@ -7,6 +7,7 @@ MENU_OPTIONS = {
     "2": "Add product",
     "3": "Archive product",
     "4": "Show archived",
+    "5": "edit product",
 }
 
 
