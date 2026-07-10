@@ -173,14 +173,18 @@ def show_menu(inventory_repository: InventoryRepository):
 
 def display_products(products: list[Product]):
     print()
+    if not products:
+        print("No products found.")
+        return
 
-    if len(products) == 0:
-        print("No products")
-    else:
-        for product in products:
-            print(
-                f"{product.product_id}    {product.name}    {product.selling_price}    {product.quantity}"
-            )
+    header = f"{'ID':<38} {'Name':<20} {'Price':<10} {'Qty':<10}"
+    separator = "-" * 78
+    print(header)
+    print(separator)
+
+    for product in products:
+        print(f"{str(product.product_id):<38} {product.name:<20} {product.selling_price:<10.2f} {product.quantity:<10}")
+    print()
 
 
 def list_products(
