@@ -81,6 +81,13 @@ def edit_product_workflow(inventory_repository: InventoryRepository):
             print("Invalid field. Use 'name', 'selling_price', or 'quantity'.")
     print()
 
+
+def search_product_workflow(inventory_repository: InventoryRepository):
+    query = input("Enter product name or ID to search: ")
+    results = inventory_repository.search_products(query)
+    display_products(results)
+
+
 def show_menu(inventory_repository: InventoryRepository):
     while True:
         for option, description in MENU_OPTIONS.items():
