@@ -3,6 +3,8 @@ import uuid
 import json
 import os
 from uuid import UUID
+from shared.exceptions import ProductNotFoundError
+
 
 class InventoryRepository:
     def __init__(self, storage_file="inventory.json"):
@@ -69,7 +71,7 @@ class InventoryRepository:
     def update_product(self, updated_product: Product):
         product = self.get_product(product_id=updated_product.product_id)
         if not product:
-            raise ValueError("Cannot find product.")
+            raise ProductNotFoundError("Cannot find product.")
 
         product.name = updated_product.name
         product.selling_price = updated_product.selling_price

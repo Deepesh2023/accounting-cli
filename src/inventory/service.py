@@ -2,6 +2,7 @@ from inventory.models import Product
 from inventory.repository import InventoryRepository
 from dataclasses import replace
 import uuid
+from shared.exceptions import InventoryError, ProductNotFoundError, InvalidProductDataError
 
 MENU_OPTIONS = {
     "1": "List products",
@@ -48,16 +49,17 @@ def edit_product_workflow(inventory_repository: InventoryRepository):
             if draft_product.quantity != product.quantity:
                 print(f"Quantity: {product.quantity} -> {draft_product.quantity}")
             
-            confirm = input("Confirm changes? (y/n): ").strip().lower()
-            if confirm == "y":
-                try:
-                    inventory_repository.update_product(updated_product=draft_product)
-                    print("Product updated successfully.")
-                except ValueError as e:
-                    print(f"Error: {e}")
-            else:
-                print("Update cancelled.")
-            break
+                    confirm = input("Confirm changes? (y/n): ").strip().lower()
+                    if confirm == "y":
+                        try:
+                            inventory_repository.update_product(updated_product=draft_product)
+                            print("Product updated successfully.")
+                        except ProductNotFoundError as e:
+                            print(f"Error: {e}")
+                    else:
+                        print("Update cancelled.")
+                    break
+
 
         if field == "name":
             new_val = input("Enter new name: ").strip()
@@ -124,7 +126,7 @@ def show_menu(inventory_repository: InventoryRepository):
                     selling_price=selling_price,
                     quantity=quantity,
                 )
-            except ValueError as e:
+            except InvalidProductDataError as e:
                 print(e)
 
         if choice == "3":
@@ -142,7 +144,7 @@ def show_menu(inventory_repository: InventoryRepository):
                 print(
                     f"{product.name}({product.product_id}) {'archived' if product.archived else 'unarchived'}."
                 )
-            except ValueError as e:
+            except ProductNotFoundError as e:
                 print(e)
 
         if choice == "4":
@@ -190,7 +192,7 @@ def add_product(
     quantity: int,
 ):
     if selling_price < 0 or quantity < 0:
-        raise ValueError("selling-price/quantity shouldn't be negative")
+        raise InvalidProductDataError("selling-price/quantity shouldn't be negative")
 
     product_id = uuid.uuid4()
 
@@ -209,7 +211,7 @@ def change_visibility(
 ) -> Product:
     result = inventory_repository.change_visibility(product_id)
     if not result:
-        raise ValueError("Product not found.")
+        raise ProductNotFoundError("Product not found.")
 
     return result
 
