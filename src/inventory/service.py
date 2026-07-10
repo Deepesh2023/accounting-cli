@@ -10,6 +10,7 @@ MENU_OPTIONS = {
     "3": "Archive product",
     "4": "Show archived",
     "5": "edit product",
+    "6": "Search product",
 }
 
 
@@ -163,6 +164,9 @@ def show_menu(inventory_repository: InventoryRepository):
 
         if choice == "5":
             edit_product_workflow(inventory_repository=inventory_repository)
+
+        if choice == "6":
+            search_product_workflow(inventory_repository=inventory_repository)
 
 
 
