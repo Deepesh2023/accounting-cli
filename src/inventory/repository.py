@@ -47,7 +47,7 @@ class InventoryRepository:
         self._products.append(product)
         self._save_to_disk()
 
-    def get_product(self, product_id: uuid) -> Product | None:
+    def get_product(self, product_id: UUID) -> Product | None:
         for product in self._products:
             if product.product_id == product_id:
                 return product
