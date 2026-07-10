@@ -49,16 +49,16 @@ def edit_product_workflow(inventory_repository: InventoryRepository):
             if draft_product.quantity != product.quantity:
                 print(f"Quantity: {product.quantity} -> {draft_product.quantity}")
             
-                    confirm = input("Confirm changes? (y/n): ").strip().lower()
-                    if confirm == "y":
-                        try:
-                            inventory_repository.update_product(updated_product=draft_product)
-                            print("Product updated successfully.")
-                        except ProductNotFoundError as e:
-                            print(f"Error: {e}")
-                    else:
-                        print("Update cancelled.")
-                    break
+            confirm = input("Confirm changes? (y/n): ").strip().lower()
+            if confirm == "y":
+                try:
+                    inventory_repository.update_product(updated_product=draft_product)
+                    print("Product updated successfully.")
+                except ProductNotFoundError as e:
+                    print(f"Error: {e}")
+            else:
+                print("Update cancelled.")
+            break
 
 
         if field == "name":
