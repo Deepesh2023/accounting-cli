@@ -59,6 +59,13 @@ class InventoryRepository:
     def list_products(self) -> list[Product]:
         return self._products.copy()
 
+    def search_products(self, query: str) -> list[Product]:
+        query = query.lower()
+        return [
+            p for p in self._products 
+            if query == str(p.product_id).lower() or query in p.name.lower()
+        ]
+
     def change_visibility(self, product_id: uuid.UUID) -> Product | None:
         for product in self._products:
             if product.product_id == product_id:
