@@ -1,5 +1,5 @@
 from inventory.models import Product
-from inventory.repository import Repository as InventoryRepository
+from inventory.repository import InventoryRepository
 from dataclasses import replace
 import uuid
 
