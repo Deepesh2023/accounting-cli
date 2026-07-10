@@ -19,7 +19,7 @@ class Repository:
     def list_products(self) -> list[Product]:
         return self._products.copy()
 
-    def change_visibility(self, product_id: str) -> Product | None:
+    def change_visibility(self, product_id: uuid.UUID) -> Product | None:
         for product in self._products:
             if product.product_id == product_id:
                 product.archived = not product.archived

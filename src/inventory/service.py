@@ -63,6 +63,11 @@ def show_menu(inventory_repository: InventoryRepository):
         if choice == "3":
             product_id = input("Enter the product id: ")
             try:
+                product_id = uuid.UUID(product_id)
+            except ValueError:
+                print("Invalid UUID format.")
+                continue
+            try:
                 product = change_visibility(
                     inventory_repository=inventory_repository,
                     product_id=product_id,
@@ -70,9 +75,9 @@ def show_menu(inventory_repository: InventoryRepository):
                 print(
                     f"{product.name}({product.product_id}) {'archived' if product.archived else 'unarchived'}."
                 )
-
             except ValueError as e:
                 print(e)
+
 
         if choice == "4":
             products = list_products(
@@ -83,6 +88,11 @@ def show_menu(inventory_repository: InventoryRepository):
 
         if choice == "5":
             product_id = input("Enter the product id: ")
+            try:
+                product_id = uuid.UUID(product_id)
+            except ValueError:
+                print("Invalid UUID format.")
+                continue
             product = inventory_repository.get_product(product_id=product_id)
             if not product:
                 print("Product not found.")
@@ -178,7 +188,7 @@ def add_product(
     if selling_price < 0 or quantity < 0:
         raise ValueError("selling-price/quantity shouldn't be negative")
 
-    product_id = str(uuid.uuid4())
+    product_id = uuid.uuid4()
 
     product = Product(
         product_id=product_id,
@@ -191,7 +201,7 @@ def add_product(
 
 def change_visibility(
     inventory_repository: InventoryRepository,
-    product_id: str,
+    product_id: uuid.UUID,
 ) -> Product:
     result = inventory_repository.change_visibility(product_id)
     if not result:
