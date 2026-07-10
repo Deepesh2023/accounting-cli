@@ -114,13 +114,7 @@ def show_menu(inventory_repository: InventoryRepository):
                     confirm = input("Confirm changes? (y/n): ").strip().lower()
                     if confirm == "y":
                         try:
-                            update_product(
-                                inventory_repository=inventory_repository,
-                                product=product,
-                                name=draft_product.name,
-                                selling_price=draft_product.selling_price,
-                                quantity=draft_product.quantity
-                            )
+                            inventory_repository.update_product(updated_product=draft_product)
                             print("Product updated successfully.")
                         except ValueError as e:
                             print(f"Error: {e}")
@@ -205,25 +199,4 @@ def change_visibility(
 
     return result
 
-
-def update_product(
-    inventory_repository: InventoryRepository,
-    product: Product,
-    name: str | None = None,
-    selling_price: float | None = None,
-    quantity: int | None = None,
-):
-    if selling_price is not None and selling_price < 0:
-        raise ValueError("selling-price shouldn't be negative")
-    if quantity is not None and quantity < 0:
-        raise ValueError("quantity shouldn't be negative")
-
-    if name is not None:
-        product.name = name
-    if selling_price is not None:
-        product.selling_price = selling_price
-    if quantity is not None:
-        product.quantity = quantity
-
-    inventory_repository.update_product(updated_product=product)
 
