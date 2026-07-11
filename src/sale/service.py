@@ -122,11 +122,11 @@ def add_item_to_list(inventory_repository: InventoryRepository) -> Optional[Sale
         f"Selected: {product.name} | Price: {product.selling_price} | Stock: {product.quantity}"
     )
 
-    price = (
-        get_input(f"Selling Price [{product.selling_price}]: ", float)
-        or product.selling_price
-    )
-    quantity = get_input(f"Quantity [{product.quantity}]: ", int) or 1
+    price_input = get_input(f"Selling Price [{product.selling_price}]: ", float)
+    price = price_input if price_input is not None else product.selling_price
+    
+    quantity_input = get_input(f"Quantity [{product.quantity}]: ", int)
+    quantity = quantity_input if quantity_input is not None else 1
 
     if price < 0:
         print("Warning: Selling price cannot be negative.")
@@ -179,10 +179,11 @@ def edit_item_in_list(
     item = selling_items[idx_str]
     product = inventory_repository.get_product(item.product_id)
 
-    price = (
-        get_input(f"New Price [{item.selling_price}]: ", float) or item.selling_price
-    )
-    quantity = get_input(f"New Quantity [{item.quantity}]: ", int) or item.quantity
+    price_input = get_input(f"New Price [{item.selling_price}]: ", float)
+    price = price_input if price_input is not None else item.selling_price
+    
+    quantity_input = get_input(f"New Quantity [{item.quantity}]: ", int)
+    quantity = quantity_input if quantity_input is not None else item.quantity
 
     if price < 0:
         print("Error: Price cannot be negative.")
