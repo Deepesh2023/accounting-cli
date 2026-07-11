@@ -5,10 +5,10 @@ from typing import List, Optional
 from uuid import UUID
 
 from sale.models import Sale, SaleItem
-from shared.interfaces import SaleRepositoryProtocol
+from shared.interfaces import SaleRepositoryProtocol, InventoryRepositoryProtocol
+from sale.service import SaleService
 
-# This is a "Fake" repository. 
-# It follows the SaleRepositoryProtocol contract but doesn't touch the disk.
+# Mock for Sale Repository
 class MockSaleRepository(SaleRepositoryProtocol):
     def __init__(self):
         self._sales = {}
@@ -22,23 +22,53 @@ class MockSaleRepository(SaleRepositoryProtocol):
     def get_sale(self, sale_id: UUID) -> Optional[Sale]:
         return self._sales.get(sale_id)
 
-def test_service_with_mock_repo():
+# Mock for Inventory Repository
+class MockInventoryRepository(InventoryRepositoryProtocol):
+    def __init__(self):
+        self._products = {}
+
+    def add_product(self, product) -> None:
+        self._products[product.product_id] = product
+
+    def list_products(self) -> List:
+        return list(self._products.values())
+
+    def get_product(self, product_id: UUID):
+        return self._products.get(product_id)
+
+    def update_product(self, product) -> None:
+        self._products[product.product_id] = product
+
+    def change_visibility(self, product_id: UUID):
+        return self._products.get(product_id)
+
+    def search_products(self, query: str):
+        return list(self._products.values())
+
+def test_sale_service_record_sale():
     # Arrange
-    # We inject the Mock instead of the real JSON repository
-    mock_repo = MockSaleRepository()
-    
-    sale_id = uuid4()
-    sale = Sale(
-        sale_id=sale_id, 
-        date=datetime.now(), 
-        items=[SaleItem(uuid4(), "Mock Product", 10.0, 1)], 
-        customer_name="Mock Customer"
-    )
+    sale_repo = MockSaleRepository()
+    inv_repo = MockInventoryRepository()
+    service = SaleService(sale_repo, inv_repo)
+
+    # Setup a product in inventory
+    product_id = uuid4()
+    from inventory.models import Product
+    product = Product(product_id=product_id, name="Test Prod", selling_price=10.0, quantity=10)
+    inv_repo.add_product(product)
+
+    items = [SaleItem(product_id=product_id, name="Test Prod", selling_price=10.0, quantity=2)]
 
     # Act
-    mock_repo.add_sale(sale)
-    result = mock_repo.get_sale(sale_id)
+    sale = service.record_sale(items=items, customer_name="John Doe")
 
     # Assert
-    assert result == sale
-    print("\nSuccess: The service layer works with a Mock repository!")
+    # 1. Check if sale was recorded
+    assert sale.customer_name == "John Doe"
+    assert len(sale_repo.list_sales()) == 1
+    
+    # 2. Check if inventory was decreased (10 - 2 = 8)
+    updated_product = inv_repo.get_product(product_id)
+    assert updated_product.quantity == 8
+    
+    print("\nSuccess: SaleService logic verified with Mock repositories!")
