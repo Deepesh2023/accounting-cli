@@ -3,7 +3,7 @@ from inventory.repository import InventoryRepository
 from dataclasses import replace
 import uuid
 from shared.exceptions import InventoryError, ProductNotFoundError, InvalidProductDataError
-from shared.utils import get_input, get_confirmation
+from shared.utils import get_input, get_confirmation, display_table
 
 MENU_OPTIONS = {
     "1": "List products",
@@ -151,19 +151,13 @@ def show_menu(inventory_repository: InventoryRepository):
 
 
 def display_products(products: list[Product]):
-    print()
-    if not products:
-        print("No products found.")
-        return
-
     header = f"{'ID':<38} {'Name':<20} {'Price':<10} {'Qty':<10}"
-    separator = "-" * 78
-    print(header)
-    print(separator)
+    rows = [
+        f"{str(product.product_id):<38} {product.name:<20} {product.selling_price:<10.2f} {product.quantity:<10}"
+        for product in products
+    ]
+    display_table(header, rows)
 
-    for product in products:
-        print(f"{str(product.product_id):<38} {product.name:<20} {product.selling_price:<10.2f} {product.quantity:<10}")
-    print()
 
 
 def list_products(

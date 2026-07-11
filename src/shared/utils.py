@@ -23,3 +23,22 @@ def get_confirmation(prompt: str) -> bool:
         if val == 'n':
             return False
         print("Please enter 'y' for yes or 'n' for no.")
+
+
+def display_table(header: str, rows: list[str], footer: Optional[str] = None):
+    """Generic table renderer for CLI."""
+    print()
+    if not rows:
+        print("No data found.")
+        return
+
+    print(header)
+    print("-" * len(header))
+    
+    for row in rows:
+        print(row)
+    
+    if footer:
+        print("-" * len(header))
+        print(footer)
+    print()

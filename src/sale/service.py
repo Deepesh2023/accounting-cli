@@ -6,7 +6,7 @@ from dataclasses import replace
 from sale.models import Sale, SaleItem
 from sale.repository import SaleRepository
 from inventory.repository import InventoryRepository
-from shared.utils import get_input, get_confirmation
+from shared.utils import get_input, get_confirmation, display_table
 from inventory.service import search_product_workflow
 
 SALE_MENU_OPTIONS = {
@@ -236,23 +236,16 @@ def view_sales_history(sale_repository: SaleRepository):
 
 
 def display_selling_items(items: List[SaleItem]):
-    if not items:
-        print("No items in list.")
-        return
-
     header = f"{'Item':<20} {'Price':<10} {'Qty':<10} {'Subtotal':<10}"
-    print(header)
-    print("-" * 50)
-
+    rows = []
     total = 0
     total_qty = 0
     for item in items:
         subtotal = item.selling_price * item.quantity
         total += subtotal
         total_qty += item.quantity
-        print(
-            f"{item.name:<20} {item.selling_price:<10.2f} {item.quantity:<10} {subtotal:<10.2f}"
-        )
+        rows.append(f"{item.name:<20} {item.selling_price:<10.2f} {item.quantity:<10} {subtotal:<10.2f}")
+    
+    footer = f"TOTAL: {total_qty} items | Grand Total: {total:.2f}"
+    display_table(header, rows, footer)
 
-    print("-" * 50)
-    print(f"TOTAL: {total_qty} items | Grand Total: {total:.2f}")
