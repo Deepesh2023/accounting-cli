@@ -8,7 +8,15 @@ wheels/
 
 # Virtual environments
 .venv
-data.json
+
+# Storage and logs
+*.json
 gitlog.txt
 cli.zip
-inventory.json
+
+
+
+
+
+
+
