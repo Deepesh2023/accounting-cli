@@ -10,7 +10,7 @@ USER_COMMANDS = {
 }
 
 
-def show_main_menu(inventory_repository: InventoryRepositoryProtocol, sale_repository: SaleRepositoryProtocol):
+def show_main_menu(inventory_service, sale_service):
     print("=" * 28)
     print("Welcome to Printos accounting!")
     print("=" * 28)
@@ -31,13 +31,9 @@ def show_main_menu(inventory_repository: InventoryRepositoryProtocol, sale_repos
 
         print("0: Return")
         if choice == "1":
-            from inventory.service import InventoryService
-            service = InventoryService(inventory_repository)
-            show_inventory_menu(service)
+            show_inventory_menu(inventory_service)
         if choice == "2":
-            from sale.service import SaleService
-            sale_service = SaleService(sale_repository, inventory_repository)
-            show_sale_menu(sale_service, service)
+            show_sale_menu(sale_service, inventory_service)
 
     print("=" * 28)
     print("Goodbye!")
