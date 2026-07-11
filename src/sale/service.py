@@ -12,6 +12,7 @@ from inventory.service import search_product_workflow
 SALE_MENU_OPTIONS = {
     "1": "Record a sale",
     "2": "View sale history",
+    "3": "View sale detail",
 }
 
 
@@ -33,9 +34,13 @@ def show_menu(
 
         if choice == "1":
             record_sale_workflow(inventory_repository, sale_repository)
-
+        
         if choice == "2":
             view_sales_history(sale_repository)
+        
+        if choice == "3":
+            view_sale_detail_workflow(sale_repository)
+
 
 
 def record_sale_workflow(
