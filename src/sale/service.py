@@ -249,3 +249,34 @@ def display_selling_items(items: List[SaleItem]):
     footer = f"TOTAL: {total_qty} items | Grand Total: {total:.2f}"
     display_table(header, rows, footer)
 
+def view_sale_detail_workflow(sale_repository: SaleRepository):
+    sale_id_str = get_input("Enter Sale ID to view details: ", str)
+    try:
+        sale_id = uuid.UUID(sale_id_str)
+    except ValueError:
+        print("Invalid UUID format.")
+        return
+
+    sale = sale_repository.get_sale(sale_id)
+    if not sale:
+        print("Sale not found.")
+        return
+
+    print(f"\n--- Sale Details ---")
+    print(f"Sale ID: {sale.sale_id}")
+    print(f"Date: {sale.date}")
+    print(f"Customer: {sale.customer_name or 'N/A'}")
+    
+    header = f"{'Item':<20} {'Price':<10} {'Qty':<10} {'Subtotal':<10}"
+    rows = []
+    total = 0
+    total_qty = 0
+    for item in sale.items:
+        subtotal = item.selling_price * item.quantity
+        total += subtotal
+        total_qty += item.quantity
+        rows.append(f"{item.name:<20} {item.selling_price:<10.2f} {item.quantity:<10} {subtotal:<10.2f}")
+    
+    footer = f"TOTAL: {total_qty} items | Grand Total: {total:.2f}"
+    display_table(header, rows, footer)
+
