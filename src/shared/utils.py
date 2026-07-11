@@ -2,13 +2,12 @@ from typing import Optional, Type, TypeVar, Callable
 
 T = TypeVar("T")
 
-def get_input(prompt: str, cast_type: Type[T], error_msg: str = "Invalid input. Please try again.") -> T:
-    """Generic input helper with type casting and error handling."""
+def get_input(prompt: str, cast_type: Type[T], error_msg: str = "Invalid input. Please try again.") -> Optional[T]:
+    """Generic input helper with type casting and error handling. Returns None if input is empty."""
     while True:
         val = input(prompt).strip()
         if not val:
-            print("Input cannot be empty.")
-            continue
+            return None
         try:
             return cast_type(val)
         except (ValueError, TypeError):
