@@ -63,3 +63,9 @@ class SaleRepository:
 
     def list_sales(self) -> list[Sale]:
         return self._sales.copy()
+
+    def get_sale(self, sale_id: UUID) -> Sale | None:
+        for sale in self._sales:
+            if sale.sale_id == sale_id:
+                return sale
+        return None
