@@ -1,14 +1,17 @@
 from inventory.service import show_menu as show_inventory_menu
+from sale.service import show_menu as show_sale_menu
 from inventory.repository import InventoryRepository
+from sale.repository import SaleRepository
 
 
 USER_COMMANDS = {
     "0": "exit",
     "1": "Inventory",
+    "2": "Sales",
 }
 
 
-def show_main_menu(inventory_repository: InventoryRepository):
+def show_main_menu(inventory_repository: InventoryRepository, sale_repository: SaleRepository):
     print("=" * 28)
     print("Welcome to Printos accounting!")
     print("=" * 28)
@@ -30,6 +33,8 @@ def show_main_menu(inventory_repository: InventoryRepository):
         print("0: Return")
         if choice == "1":
             show_inventory_menu(inventory_repository)
+        if choice == "2":
+            show_sale_menu(inventory_repository, sale_repository)
 
     print("=" * 28)
     print("Goodbye!")
