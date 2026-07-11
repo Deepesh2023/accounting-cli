@@ -1,8 +1,7 @@
 from cli.menu import show_main_menu
-from inventory.repository import InventoryRepository
-from sale.repository import SaleRepository
+from container import container
 
-inventory_repository = InventoryRepository()
-sale_repository = SaleRepository()
-
-show_main_menu(inventory_repository=inventory_repository, sale_repository=sale_repository)
+show_main_menu(
+    inventory_repository=container.inventory_repository, 
+    sale_repository=container.sale_repository
+)
