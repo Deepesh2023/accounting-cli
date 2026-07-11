@@ -53,7 +53,7 @@ def record_sale_workflow(
         print("2: Remove item")
         print("3: Edit item")
         print("4: Confirm sale")
-        print("S: Search for product ID")
+        print("5: Search for product ID")
         print("0: Cancel and return")
 
         choice = input("Choice: ")
@@ -124,7 +124,7 @@ def add_item_to_list(inventory_repository: InventoryRepository) -> Optional[Sale
 
     price_input = get_input(f"Selling Price [{product.selling_price}]: ", float)
     price = price_input if price_input is not None else product.selling_price
-    
+
     quantity_input = get_input(f"Quantity [{product.quantity}]: ", int)
     quantity = quantity_input if quantity_input is not None else 1
 
@@ -181,7 +181,7 @@ def edit_item_in_list(
 
     price_input = get_input(f"New Price [{item.selling_price}]: ", float)
     price = price_input if price_input is not None else item.selling_price
-    
+
     quantity_input = get_input(f"New Quantity [{item.quantity}]: ", int)
     quantity = quantity_input if quantity_input is not None else item.quantity
 
