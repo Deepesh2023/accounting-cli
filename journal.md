@@ -83,3 +83,69 @@ is identified by the product' id. A confirmation will be asked before confirming
 the edit. 
 When on edit mode, user will be shown a summary of the product and the options available
 to edit. Either select a field to edit or cancel the operation.
+
+## Sale
+
+User can record a sale. A selling item consist of
+
+- id
+- name
+- selling price
+- quantity 
+
+A product selected from the inventory for selling is now a selling item. The selling_price
+and quantity can be edited. 
+
+When editing, the quantity cannot go below the available stock of the product in the inventory
+and the selling price cannot be negative. If either constraint is violated, the user is shown a warning.
+If all goes well the product is now officially a selling product and can move to a list of selling items
+
+The list of selling items is what the user can view as a table when recording sale. Here the user can
+
+- add to the list (selling item)
+- remove a selling item
+- update a selling item
+
+If a selling item is added that's already present in the list and with the same selling price,
+it just updates the quantity of that specific item.
+
+At the end of the list, a summary is shown with total price and total number quantity.
+
+User now have the option to confirm the sale. Once confirmed, the quantity change is
+reflected in the corresponding items in the inventory and the sale is recorded. A
+sale has
+
+- id
+- date
+- items (selling items)
+- customer name (optional)
+
+### Business rules
+
+- A sale must contain at least one sale item.
+
+- Sale quantity must be greater than zero.
+
+- Sale quantity cannot exceed available inventory.
+
+- Sale items with the same product and same selling price are merged.
+
+- Inventory is updated only after the sale is confirmed.
+
+- A completed sale cannot be edited.
+
+- Sale history preserves the selling price at the time of purchase.
+
+### Workflow
+
+1. picks an item from inventory for sale. If the quantity is not more
+than the quantity of the item in inventory and selling price is not negative,
+its added to the selling list
+
+2. If there is atleast one item in the selling list, the user can confirm the sale.
+
+3. Once confirmed the quantity is reflected across the inventory, specifically the
+products being sold. Then the sale is recorded
+
+4. The user is now shown a fresh table for sales for a fresh start.
+
