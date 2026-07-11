@@ -1,7 +1,6 @@
-from inventory.service import show_menu as show_inventory_menu
+from inventory.workflows import show_menu as show_inventory_menu
 from sale.service import show_menu as show_sale_menu
-from inventory.repository import InventoryRepository
-from sale.repository import SaleRepository
+from shared.interfaces import InventoryRepositoryProtocol, SaleRepositoryProtocol
 
 
 USER_COMMANDS = {
@@ -11,7 +10,7 @@ USER_COMMANDS = {
 }
 
 
-def show_main_menu(inventory_repository: InventoryRepository, sale_repository: SaleRepository):
+def show_main_menu(inventory_repository: InventoryRepositoryProtocol, sale_repository: SaleRepositoryProtocol):
     print("=" * 28)
     print("Welcome to Printos accounting!")
     print("=" * 28)
@@ -32,7 +31,9 @@ def show_main_menu(inventory_repository: InventoryRepository, sale_repository: S
 
         print("0: Return")
         if choice == "1":
-            show_inventory_menu(inventory_repository)
+            from inventory.service import InventoryService
+            service = InventoryService(inventory_repository)
+            show_inventory_menu(service)
         if choice == "2":
             show_sale_menu(inventory_repository, sale_repository)
 
