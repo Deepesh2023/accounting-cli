@@ -20,6 +20,7 @@ zip -r "$ZIP_NAME" . \
     -x "*/__pycache__/*" \
     -x ".python_version" \
     -x ".venv/*" \
+    -x "*.json" \
     -x "$ZIP_NAME"
 
 echo "Created $ZIP_NAME"
