@@ -1,5 +1,5 @@
 from inventory.models import Product
-from inventory.repository import InventoryRepository
+from shared.interfaces import InventoryRepositoryProtocol
 from dataclasses import replace
 import uuid
 from shared.exceptions import InventoryError, ProductNotFoundError, InvalidProductDataError
@@ -15,7 +15,7 @@ MENU_OPTIONS = {
 }
 
 
-def edit_product_workflow(inventory_repository: InventoryRepository):
+def edit_product_workflow(inventory_repository: InventoryRepositoryProtocol):
     product_id = input("Enter the product id: ")
     try:
         product_id = uuid.UUID(product_id)
@@ -75,13 +75,13 @@ def edit_product_workflow(inventory_repository: InventoryRepository):
 
 
 
-def search_product_workflow(inventory_repository: InventoryRepository):
+def search_product_workflow(inventory_repository: InventoryRepositoryProtocol):
     query = input("Enter product name or ID to search: ")
     results = inventory_repository.search_products(query)
     display_products(results)
 
 
-def show_menu(inventory_repository: InventoryRepository):
+def show_menu(inventory_repository: InventoryRepositoryProtocol):
     while True:
         for option, description in MENU_OPTIONS.items():
             print(f"{option}: {description}")
@@ -161,7 +161,7 @@ def display_products(products: list[Product]):
 
 
 def list_products(
-    inventory_repository: InventoryRepository,
+    inventory_repository: InventoryRepositoryProtocol,
     show_archived=False,
 ) -> list[Product]:
     products = [
@@ -174,7 +174,7 @@ def list_products(
 
 
 def add_product(
-    inventory_repository: InventoryRepository,
+    inventory_repository: InventoryRepositoryProtocol,
     name: str,
     selling_price: float,
     quantity: int,
@@ -194,7 +194,7 @@ def add_product(
 
 
 def change_visibility(
-    inventory_repository: InventoryRepository,
+    inventory_repository: InventoryRepositoryProtocol,
     product_id: uuid.UUID,
 ) -> Product:
     result = inventory_repository.change_visibility(product_id)
