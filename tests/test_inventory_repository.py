@@ -62,3 +62,34 @@ def test_list_and_search_products(repo):
     search_case = repo.search_products("apple")
     assert len(search_case) == 1
     assert search_case[0].product_id == p1_id
+
+def test_change_visibility(repo):
+    # Arrange
+    p_id = uuid4()
+    product = Product(product_id=p_id, name="Test", selling_price=1.0, quantity=1)
+    repo.add_product(product)
+    assert product.archived is False
+
+    # Act
+    repo.change_visibility(p_id)
+    
+    # Assert
+    assert product.archived is True
+    repo.change_visibility(p_id)
+    assert product.archived is False
+
+def test_update_product(repo):
+    # Arrange
+    p_id = uuid4()
+    product = Product(product_id=p_id, name="Old Name", selling_price=1.0, quantity=1)
+    repo.add_product(product)
+
+    # Act
+    updated_product = Product(product_id=p_id, name="New Name", selling_price=2.0, quantity=5)
+    repo.update_product(updated_product)
+
+    # Assert
+    retrieved = repo.get_product(p_id)
+    assert retrieved.name == "New Name"
+    assert retrieved.selling_price == 2.0
+    assert retrieved.quantity == 5
