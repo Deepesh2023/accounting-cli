@@ -4,8 +4,7 @@ from typing import List, Optional
 from dataclasses import replace
 
 from sale.models import Sale, SaleItem
-from sale.repository import SaleRepository
-from inventory.repository import InventoryRepository
+from shared.interfaces import SaleRepositoryProtocol, InventoryRepositoryProtocol
 from shared.utils import get_input, get_confirmation, display_table
 from inventory.service import search_product_workflow
 
@@ -17,7 +16,7 @@ SALE_MENU_OPTIONS = {
 
 
 def show_menu(
-    inventory_repository: InventoryRepository, sale_repository: SaleRepository
+    inventory_repository: InventoryRepositoryProtocol, sale_repository: SaleRepositoryProtocol
 ):
     while True:
         for option, description in SALE_MENU_OPTIONS.items():
@@ -44,7 +43,7 @@ def show_menu(
 
 
 def record_sale_workflow(
-    inventory_repository: InventoryRepository, sale_repository: SaleRepository
+    inventory_repository: InventoryRepositoryProtocol, sale_repository: SaleRepositoryProtocol
 ):
     selling_items: List[SaleItem] = []
 
@@ -110,7 +109,7 @@ def record_sale_workflow(
             print("Invalid option.")
 
 
-def add_item_to_list(inventory_repository: InventoryRepository) -> Optional[SaleItem]:
+def add_item_to_list(inventory_repository: InventoryRepositoryProtocol) -> Optional[SaleItem]:
     product_id_str = get_input("Enter Product ID: ", str)
     try:
         product_id = uuid.UUID(product_id_str)
@@ -167,7 +166,7 @@ def remove_item_from_list(selling_items: List[SaleItem]):
 
 
 def edit_item_in_list(
-    selling_items: List[SaleItem], inventory_repository: InventoryRepository
+    selling_items: List[SaleItem], inventory_repository: InventoryRepositoryProtocol
 ):
     if not selling_items:
         print("List is empty.")
@@ -205,8 +204,8 @@ def edit_item_in_list(
 
 
 def confirm_sale(
-    inventory_repository: InventoryRepository,
-    sale_repository: SaleRepository,
+    inventory_repository: InventoryRepositoryProtocol,
+    sale_repository: SaleRepositoryProtocol,
     items: List[SaleItem],
 ):
     # 1. Update Inventory
@@ -226,7 +225,7 @@ def confirm_sale(
     sale_repository.add_sale(sale)
 
 
-def view_sales_history(sale_repository: SaleRepository):
+def view_sales_history(sale_repository: SaleRepositoryProtocol):
     sales = sale_repository.list_sales()
     if not sales:
         print("\nNo sales recorded yet.")
@@ -254,7 +253,7 @@ def display_selling_items(items: List[SaleItem]):
     footer = f"TOTAL: {total_qty} items | Grand Total: {total:.2f}"
     display_table(header, rows, footer)
 
-def view_sale_detail_workflow(sale_repository: SaleRepository):
+def view_sale_detail_workflow(sale_repository: SaleRepositoryProtocol):
     sale_id_str = get_input("Enter Sale ID to view details: ", str)
     try:
         sale_id = uuid.UUID(sale_id_str)
