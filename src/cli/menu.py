@@ -1,5 +1,5 @@
 from inventory.workflows import show_menu as show_inventory_menu
-from sale.service import show_menu as show_sale_menu
+from sale.workflows import show_menu as show_sale_menu
 from shared.interfaces import InventoryRepositoryProtocol, SaleRepositoryProtocol
 
 
@@ -35,7 +35,9 @@ def show_main_menu(inventory_repository: InventoryRepositoryProtocol, sale_repos
             service = InventoryService(inventory_repository)
             show_inventory_menu(service)
         if choice == "2":
-            show_sale_menu(inventory_repository, sale_repository)
+            from sale.service import SaleService
+            sale_service = SaleService(sale_repository, inventory_repository)
+            show_sale_menu(sale_service, service)
 
     print("=" * 28)
     print("Goodbye!")
