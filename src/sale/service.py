@@ -56,7 +56,7 @@ def record_sale_workflow(
         print("S: Search for product ID")
         print("0: Cancel and return")
 
-        choice = input("Choice: ").lower()
+        choice = input("Choice: ")
 
         if choice == "0":
             print("Sale cancelled.")
