@@ -49,3 +49,20 @@ def test_get_sale(sale_repo):
     assert retrieved_sale == sale
     assert non_existent_sale is None
 
+def test_list_sales(sale_repo):
+    # Arrange
+    sales_to_add = [
+        Sale(sale_id=uuid4(), date=datetime.now(), items=[SaleItem(uuid4(), "P1", 10.0, 1)], customer_name="C1"),
+        Sale(sale_id=uuid4(), date=datetime.now(), items=[SaleItem(uuid4(), "P2", 20.0, 2)], customer_name="C2"),
+    ]
+    for s in sales_to_add:
+        sale_repo.add_sale(s)
+
+    # Act
+    sales = sale_repo.list_sales()
+
+    # Assert
+    assert len(sales) == 2
+    assert sales == sales_to_add
+
+
