@@ -65,4 +65,21 @@ def test_list_sales(sale_repo):
     assert len(sales) == 2
     assert sales == sales_to_add
 
+def test_persistence(sale_repo):
+    # Arrange
+    sale_id = uuid4()
+    item = SaleItem(product_id=uuid4(), name="Persistent Product", selling_price=15.0, quantity=1)
+    sale = Sale(sale_id=sale_id, date=datetime.now(), items=[item], customer_name="Jane Doe")
+    sale_repo.add_sale(sale)
+
+    # Act
+    # Create a new repository instance pointing to the same file to test loading
+    new_repo = SaleRepository(storage_file=TEST_STORAGE)
+    retrieved_sale = new_repo.get_sale(sale_id)
+
+    # Assert
+    assert retrieved_sale is not None
+    assert retrieved_sale == sale
+
+
 
