@@ -8,16 +8,19 @@ from purchase.models import Purchase, PurchaseItem
 from purchase.repository import PurchaseRepository
 from inventory.repository import InventoryRepository
 from parties.repository import PartyRepository
+from ledger.service import LedgerService
 from shared.exceptions import ProductNotFoundError
 
 class PurchaseService:
     def __init__(self, 
                  purchase_repository: PurchaseRepository, 
                  inventory_repository: InventoryRepository,
-                 party_repository: PartyRepository):
+                 party_repository: PartyRepository,
+                 ledger_service: LedgerService):
         self.purchase_repository = purchase_repository
         self.inventory_repository = inventory_repository
         self.party_repository = party_repository
+        self.ledger_service = ledger_service
 
     def record_purchase(self, 
                        items_data: list, 
@@ -63,7 +66,7 @@ class PurchaseService:
             
             purchase_items.append(PurchaseItem(
                 purchase_item_id=uuid.uuid4(),
-                purchase_id=None, # Set later when Purchase is created
+                purchase_id=None, 
                 product_id=product.product_id,
                 name=product.name,
                 quantity=data['quantity'],
@@ -93,9 +96,6 @@ class PurchaseService:
             
         # Update Party Balance
         if party_id:
-            # Credit purchase increases Creditor balance (amount owed)
-            # In our Parties logic, we adjust balance. For creditors, a positive 
-            # increase in balance usually means more liability.
             self.party_repository.update_balance(party_id, balance)
 
         # 3. Save Purchase
@@ -112,7 +112,27 @@ class PurchaseService:
             items=purchase_items
         )
         
-        return self.purchase_repository.add_purchase(purchase)
+        # Assign purchase_id to items
+        for item in purchase_items:
+            item.purchase_id = purchase.purchase_id
+            
+        self.purchase_repository.add_purchase(purchase)
+
+        # 4. Ledger Entry (Double Entry)
+        # DR: Purchases, CR: Cash/Party
+        entries = []
+        entries.append({'account': 'Purchases', 'debit': grand_total, 'credit': Decimal("0"), 'desc': f"Purchase Transaction {purchase.purchase_id}"})
+        
+        if paid_amount > 0:
+            entries.append({'account': 'Cash', 'debit': Decimal("0"), 'credit': paid_amount, 'desc': f"Payment for Purchase {purchase.purchase_id}"})
+        
+        if balance > 0 and party_id:
+            party = self.party_repository.get_party(party_id)
+            entries.append({'account': f"Party: {party.name}", 'debit': Decimal("0"), 'credit': balance, 'desc': f"Credit Purchase from {party.name}"})
+        
+        self.ledger_service.record_transaction(purchase.purchase_id, entries)
+
+        return purchase
 
     def list_purchases(self) -> list[Purchase]:
         return self.purchase_repository.list_purchases()
