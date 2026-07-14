@@ -2,6 +2,7 @@ from inventory.models import Product
 from shared.interfaces import InventoryRepositoryProtocol
 from shared.exceptions import ProductNotFoundError, InvalidProductDataError
 import uuid
+from decimal import Decimal
 
 class InventoryService:
     def __init__(self, repository: InventoryRepositoryProtocol):
@@ -13,14 +14,15 @@ class InventoryService:
             if p.archived == show_archived
         ]
 
-    def add_product(self, name: str, selling_price: float, quantity: int) -> Product:
-        if selling_price < 0 or quantity < 0:
+    def add_product(self, name: str, selling_price: float | Decimal, quantity: int) -> Product:
+        price = Decimal(str(selling_price))
+        if price < 0 or quantity < 0:
             raise InvalidProductDataError("selling-price/quantity shouldn't be negative")
         
         product = Product(
             product_id=uuid.uuid4(),
             name=name,
-            selling_price=selling_price,
+            selling_price=price,
             quantity=quantity,
         )
         self.repository.add_product(product)
