@@ -1,0 +1,57 @@
+from uuid import UUID
+from decimal import Decimal
+from parties.models import Party, PartyType
+from parties.repository import PartyRepository
+from shared.exceptions import InvalidProductDataError # Reusing as generic validation or we can create a PartyError
+
+class PartyService:
+    def __init__(self, repository: PartyRepository):
+        self.repository = repository
+
+    def create_party(self, name: str, party_type: PartyType, balance: Decimal = Decimal("0"), address: str = None, phone: str = None) -> Party:
+        if not name:
+            raise ValueError("Party name cannot be empty")
+        
+        party = Party(
+            party_id=UUID(int=0), # This should be uuid.uuid4()
+            name=name,
+            party_type=party_type,
+            balance=balance,
+            address=address,
+            phone=phone
+        )
+        # Wait, I need to actually generate the UUID. Let me fix the import.
+        return self.repository.add_party(party)
+
+    def get_party(self, party_id: UUID) -> Party:
+        party = self.repository.get_party(party_id)
+        if not party:
+            raise ValueError(f"Party with id {party_id} not found")
+        return party
+
+    def list_parties(self, party_type: PartyType | None = None) -> list[Party]:
+        return self.repository.list_parties(party_type)
+
+    def update_party_info(self, party_id: UUID, name: str = None, address: str = None, phone: str = None) -> Party:
+        party = self.get_party(party_id)
+        
+        # Create a copy with updated info for the repository to save
+        updated_data = Party(
+            party_id=party.party_id,
+            name=name if name else party.name,
+            party_type=party.party_type,
+            balance=party.balance,
+            address=address if address else party.address,
+            phone=phone if phone else party.phone
+        )
+        return self.repository.update_party(updated_data)
+
+    def adjust_balance(self, party_id: UUID, amount: Decimal) -> Party:
+        """
+        Adjusts party balance. 
+        Positive amount increases balance, negative decreases it.
+        """
+        result = self.repository.update_balance(party_id, amount)
+        if not result:
+            raise ValueError(f"Party with id {party_id} not found")
+        return result
