@@ -1,0 +1,39 @@
+import uuid
+from uuid import UUID
+from decimal import Decimal
+from ledger.models import LedgerEntry
+from ledger.repository import LedgerRepository
+
+class LedgerService:
+    def __init__(self, repository: LedgerRepository):
+        self.repository = repository
+
+    def record_transaction(self, transaction_id: UUID, entries: list[dict]):
+        """
+        Expects a list of entries: [{'account': str, 'debit': Decimal, 'credit': Decimal, 'desc': str}]
+        """
+        total_debit = sum(e['debit'] for e in entries)
+        total_credit = sum(e['credit'] for e in entries)
+
+        if total_debit != total_credit:
+            raise ValueError(f"Transaction unbalanced: DR {total_debit} != CR {total_credit}")
+
+        ledger_entries = [
+            LedgerEntry(
+                entry_id=uuid.uuid4(),
+                account_name=e['account'],
+                debit=e['debit'],
+                credit=e['credit'],
+                transaction_id=transaction_id,
+                description=e.get('desc', '')
+            )
+            for e in entries
+        ]
+        
+        self.repository.add_entries(ledger_entries)
+
+    def get_balance(self, account_name: str) -> Decimal:
+        return self.repository.get_account_balance(account_name)
+
+    def clear_transaction(self, transaction_id: UUID):
+        self.repository.delete_entries_by_transaction(transaction_id)
