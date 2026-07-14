@@ -1,8 +1,8 @@
+import uuid
 from uuid import UUID
 from decimal import Decimal
 from parties.models import Party, PartyType
 from parties.repository import PartyRepository
-from shared.exceptions import InvalidProductDataError # Reusing as generic validation or we can create a PartyError
 
 class PartyService:
     def __init__(self, repository: PartyRepository):
@@ -13,14 +13,13 @@ class PartyService:
             raise ValueError("Party name cannot be empty")
         
         party = Party(
-            party_id=UUID(int=0), # This should be uuid.uuid4()
+            party_id=uuid.uuid4(),
             name=name,
             party_type=party_type,
             balance=balance,
             address=address,
             phone=phone
         )
-        # Wait, I need to actually generate the UUID. Let me fix the import.
         return self.repository.add_party(party)
 
     def get_party(self, party_id: UUID) -> Party:
@@ -35,7 +34,6 @@ class PartyService:
     def update_party_info(self, party_id: UUID, name: str = None, address: str = None, phone: str = None) -> Party:
         party = self.get_party(party_id)
         
-        # Create a copy with updated info for the repository to save
         updated_data = Party(
             party_id=party.party_id,
             name=name if name else party.name,
