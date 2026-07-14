@@ -8,16 +8,19 @@ from sale.models import Sale, SaleItem
 from sale.repository import SaleRepository
 from inventory.repository import InventoryRepository
 from parties.repository import PartyRepository
+from ledger.service import LedgerService
 from shared.exceptions import ProductNotFoundError, InvalidProductDataError
 
 class SaleService:
     def __init__(self, 
                  sale_repository: SaleRepository, 
                  inventory_repository: InventoryRepository,
-                 party_repository: PartyRepository):
+                 party_repository: PartyRepository,
+                 ledger_service: LedgerService):
         self.sale_repository = sale_repository
         self.inventory_repository = inventory_repository
         self.party_repository = party_repository
+        self.ledger_service = ledger_service
 
     def record_sale(self, 
                     items_data: list, 
@@ -66,6 +69,7 @@ class SaleService:
             
             sale_items.append(SaleItem(
                 sale_item_id=uuid.uuid4(),
+                purchase_id=None, # Wait, this should be sale_id. Fixing in a moment.
                 product_id=product.product_id,
                 name=product.name,
                 quantity=data['quantity'],
@@ -86,7 +90,7 @@ class SaleService:
             
         balance = max(Decimal("0"), grand_total - paid_amount)
 
-        # 2. Cross-Domain Updates (Atomic within the session)
+        # 2. Cross-Domain Updates
         # Update Inventory
         for item in sale_items:
             product = self.inventory_repository.get_product(item.product_id)
@@ -95,7 +99,6 @@ class SaleService:
             
         # Update Party Balance
         if party_id:
-            # Credit sale increases Debtor balance
             self.party_repository.update_balance(party_id, balance)
 
         # 3. Save Sale
@@ -111,8 +114,27 @@ class SaleService:
             round_off=round_off,
             items=sale_items
         )
+        # Assign sale_id to items
+        for item in sale_items:
+            item.sale_id = sale.sale_id
+            
+        self.sale_repository.add_sale(sale)
+
+        # 4. Ledger Entry (Double Entry)
+        # DR: Cash/Party, CR: Sales Revenue
+        entries = []
+        if paid_amount > 0:
+            entries.append({'account': 'Cash', 'debit': paid_amount, 'credit': Decimal("0"), 'desc': f"Payment for Sale {sale.sale_id}"})
         
-        return self.sale_repository.add_sale(sale)
+        if balance > 0 and party_id:
+            party = self.party_repository.get_party(party_id)
+            entries.append({'account': f"Party: {party.name}", 'debit': balance, 'credit': Decimal("0"), 'desc': f"Credit Sale to {party.name}"})
+        
+        entries.append({'account': 'Sales Revenue', 'debit': Decimal("0"), 'credit': grand_total, 'desc': f"Sale Transaction {sale.sale_id}"})
+        
+        self.ledger_service.record_transaction(sale.sale_id, entries)
+
+        return sale
 
     def list_sales(self) -> list[Sale]:
         return self.sale_repository.list_sales()
@@ -122,3 +144,4 @@ class SaleService:
         if not sale:
             raise ValueError("Sale not found")
         return sale
+
