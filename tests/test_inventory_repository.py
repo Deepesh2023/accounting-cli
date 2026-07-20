@@ -5,12 +5,8 @@ from inventory.models import Product
 from inventory.repository import InventoryRepository
 
 @pytest.fixture
-def repo():
-    test_file = "test_inventory.json"
-    repository = InventoryRepository(storage_file=test_file)
-    yield repository
-    if os.path.exists(test_file):
-        os.remove(test_file)
+def repo(session):
+    return InventoryRepository(session)
 
 def test_add_and_get_product(repo):
     # Arrange
