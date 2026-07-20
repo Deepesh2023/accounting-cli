@@ -46,6 +46,25 @@ def test_get_balance(service, mock_repo):
     assert service.get_balance("Cash") == Decimal("500")
     mock_repo.get_account_balance.assert_called_once_with("Cash")
 
+def test_get_gst_summary(service, mock_repo):
+    # Mock balances for different GST accounts
+    balances = {
+        'Input CGST': Decimal("100"),
+        'Input SGST': Decimal("100"),
+        'Input IGST': Decimal("0"),
+        'Output CGST': Decimal("200"),
+        'Output SGST': Decimal("200"),
+        'Output IGST': Decimal("0"),
+    }
+    mock_repo.get_account_balance.side_effect = lambda acc: balances.get(acc, Decimal("0"))
+    
+    summary = service.get_gst_summary()
+    
+    assert summary['Input CGST'] == Decimal("100")
+    assert summary['Output CGST'] == Decimal("200")
+    assert summary['Input IGST'] == Decimal("0")
+    assert len(summary) == 6
+
 def test_clear_transaction(service, mock_repo):
     tx_id = uuid4()
     service.clear_transaction(tx_id)

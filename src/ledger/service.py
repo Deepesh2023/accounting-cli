@@ -35,5 +35,13 @@ class LedgerService:
     def get_balance(self, account_name: str) -> Decimal:
         return self.repository.get_account_balance(account_name)
 
+    def get_gst_summary(self) -> dict:
+        """Returns the balance of all GST related accounts."""
+        gst_accounts = ['Input CGST', 'Input SGST', 'Input IGST', 'Output CGST', 'Output SGST', 'Output IGST']
+        summary = {}
+        for acc in gst_accounts:
+            summary[acc] = self.get_balance(acc)
+        return summary
+
     def clear_transaction(self, transaction_id: UUID):
         self.repository.delete_entries_by_transaction(transaction_id)
