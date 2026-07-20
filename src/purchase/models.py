@@ -42,6 +42,9 @@ class PurchaseItem(SQLModel, table=True, __tablename__="purchase_item"):
     discount_amount: Decimal = Field(default=0, nullable=False)
     taxable_amount: Decimal = Field(default=0, nullable=False)
     tax_amount: Decimal = Field(default=0, nullable=False)
+    cgst_amount: Decimal = Field(default=0, nullable=False)
+    sgst_amount: Decimal = Field(default=0, nullable=False)
+    igst_amount: Decimal = Field(default=0, nullable=False)
     row_total: Decimal = Field(default=0, nullable=False)
     
     # Relationships

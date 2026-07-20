@@ -14,3 +14,5 @@ class Party(SQLModel, table=True, __tablename__="parties"):
     balance: Decimal = Field(default=0, nullable=False)
     address: str | None = Field(default=None)
     phone: str | None = Field(default=None)
+    state: str = Field(default="", nullable=False)
+    gstin: str | None = Field(default=None)
