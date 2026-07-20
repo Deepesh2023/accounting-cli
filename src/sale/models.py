@@ -12,7 +12,7 @@ class Sale(SQLModel, table=True, __tablename__="sale"):
     date: datetime = Field(default_factory=datetime.now)
     
     # Link to Party (Customer)
-    party_id: Optional[UUID] = Field(default=None, foreign_key="parties.party_id")
+    party_id: Optional[UUID] = Field(default=None, foreign_key="party.party_id")
     
     # Financial Totals
     total_taxable: Decimal = Field(default=0, nullable=False)
@@ -33,7 +33,7 @@ class SaleItem(SQLModel, table=True, __tablename__="sale_item"):
     sale_id: UUID = Field(foreign_key="sale.sale_id")
     
     # Product Link
-    product_id: UUID = Field(foreign_key="products.product_id")
+    product_id: UUID = Field(foreign_key="product.product_id")
     
     # Row Level Data
     name: str = Field(nullable=False) # Snapshot of name at time of sale
@@ -42,6 +42,9 @@ class SaleItem(SQLModel, table=True, __tablename__="sale_item"):
     discount_amount: Decimal = Field(default=0, nullable=False)
     taxable_amount: Decimal = Field(default=0, nullable=False)
     tax_amount: Decimal = Field(default=0, nullable=False)
+    cgst_amount: Decimal = Field(default=0, nullable=False)
+    sgst_amount: Decimal = Field(default=0, nullable=False)
+    igst_amount: Decimal = Field(default=0, nullable=False)
     row_total: Decimal = Field(default=0, nullable=False)
     
     # Relationships

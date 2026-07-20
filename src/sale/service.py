@@ -23,19 +23,32 @@ class SaleService:
         self.ledger_service = ledger_service
 
     def record_sale(self, 
-                    items_data: list, 
-                    party_id: Optional[UUID] = None, 
-                    paid_amount: Decimal = Decimal("0"), 
-                    round_off: bool = False,
-                    tax_inclusive: bool = False) -> Sale:
+                     items_data: list, 
+                     party_id: Optional[UUID] = None, 
+                     paid_amount: Decimal = Decimal("0"), 
+                     round_off: bool = False,
+                     tax_inclusive: bool = False) -> Sale:
         """
         items_data should be a list of dicts: 
         [{'product_id': UUID, 'quantity': int, 'discount_perc': float | None, 'discount_amt': float | None, 'tax_perc': float}]
         """
         total_taxable = Decimal("0")
         total_tax = Decimal("0")
+        total_cgst = Decimal("0")
+        total_sgst = Decimal("0")
+        total_igst = Decimal("0")
         sale_items = []
         
+        # Determine if Inter-state or Intra-state
+        is_interstate = False
+        party = None
+        if party_id:
+            party = self.party_repository.get_party(party_id)
+            # Hardcoded Company State for prototype: "Karnataka"
+            company_state = "Karnataka"
+            if party.state and party.state != company_state:
+                is_interstate = True
+
         # 1. Process Row-level Calculations
         for data in items_data:
             product = self.inventory_repository.get_product(data['product_id'])
@@ -55,7 +68,9 @@ class SaleService:
                 disc_amt = Decimal(str(data['discount_amt']))
             
             taxable = max(Decimal("0"), gross - disc_amt)
-            tax_perc = Decimal(str(data.get('tax_perc', 0)))
+            
+            # Use product's GST rate if tax_perc not provided
+            tax_perc = Decimal(str(data.get('tax_perc', product.gst_rate)))
             
             # Tax Calculation
             if not tax_inclusive: # Exclusive
@@ -65,11 +80,18 @@ class SaleService:
                 tax_amt = taxable - base
                 taxable = base
             
+            # Split GST
+            cgst, sgst, igst = Decimal("0"), Decimal("0"), Decimal("0")
+            if is_interstate:
+                igst = tax_amt
+            else:
+                cgst = tax_amt / 2
+                sgst = tax_amt / 2
+            
             row_total = taxable + tax_amt
             
             sale_items.append(SaleItem(
                 sale_item_id=uuid.uuid4(),
-                purchase_id=None, # Wait, this should be sale_id. Fixing in a moment.
                 product_id=product.product_id,
                 name=product.name,
                 quantity=data['quantity'],
@@ -77,11 +99,17 @@ class SaleService:
                 discount_amount=disc_amt,
                 taxable_amount=taxable.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP),
                 tax_amount=tax_amt.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP),
+                cgst_amount=cgst.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP),
+                sgst_amount=sgst.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP),
+                igst_amount=igst.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP),
                 row_total=row_total.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
             ))
             
             total_taxable += taxable
             total_tax += tax_amt
+            total_cgst += cgst
+            total_sgst += sgst
+            total_igst += igst
 
         grand_total = (total_taxable + total_tax).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
         
@@ -121,16 +149,24 @@ class SaleService:
         self.sale_repository.add_sale(sale)
 
         # 4. Ledger Entry (Double Entry)
-        # DR: Cash/Party, CR: Sales Revenue
+        # DR: Cash/Party, CR: Sales Revenue & Output Tax
         entries = []
         if paid_amount > 0:
             entries.append({'account': 'Cash', 'debit': paid_amount, 'credit': Decimal("0"), 'desc': f"Payment for Sale {sale.sale_id}"})
         
-        if balance > 0 and party_id:
-            party = self.party_repository.get_party(party_id)
+        if balance > 0 and party:
             entries.append({'account': f"Party: {party.name}", 'debit': balance, 'credit': Decimal("0"), 'desc': f"Credit Sale to {party.name}"})
         
-        entries.append({'account': 'Sales Revenue', 'debit': Decimal("0"), 'credit': grand_total, 'desc': f"Sale Transaction {sale.sale_id}"})
+        # Revenue (CR)
+        entries.append({'account': 'Sales Revenue', 'debit': Decimal("0"), 'credit': total_taxable.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP), 'desc': f"Sale Transaction {sale.sale_id}"})
+        
+        # Output GST (CR)
+        if total_cgst > 0:
+            entries.append({'account': 'Output CGST', 'debit': Decimal("0"), 'credit': total_cgst.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP), 'desc': f"Output CGST for {sale.sale_id}"})
+        if total_sgst > 0:
+            entries.append({'account': 'Output SGST', 'debit': Decimal("0"), 'credit': total_sgst.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP), 'desc': f"Output SGST for {sale.sale_id}"})
+        if total_igst > 0:
+            entries.append({'account': 'Output IGST', 'debit': Decimal("0"), 'credit': total_igst.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP), 'desc': f"Output IGST for {sale.sale_id}"})
         
         self.ledger_service.record_transaction(sale.sale_id, entries)
 

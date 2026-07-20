@@ -1,77 +1,97 @@
 import pytest
 from uuid import uuid4, UUID
 from decimal import Decimal
-from unittest.mock import Mock, patch
-from dataclasses import dataclass
+from unittest.mock import Mock
+from sqlalchemy.orm import Session
 
 from sale.service import SaleService
+from sale.models import Sale, SaleItem
+from inventory.models import Product
+from parties.models import Party, PartyType
 from shared.exceptions import ProductNotFoundError
 
-@dataclass
-class ProductMock:
-    product_id: UUID
-    name: str
-    selling_price: Decimal
-    quantity: int
+@pytest.fixture
+def service(session):
+    mock_ledger = Mock()
+    
+    from sale.repository import SaleRepository
+    from inventory.repository import InventoryRepository
+    from parties.repository import PartyRepository
+    
+    sale_repo = SaleRepository(session)
+    inv_repo = InventoryRepository(session)
+    party_repo = PartyRepository(session)
+    
+    return SaleService(sale_repo, inv_repo, party_repo, mock_ledger)
 
-@dataclass
-class PartyMock:
-    party_id: UUID
-    name: str
-    balance: Decimal
-
-@pytest.fixture
-def mock_sale_repo(): return Mock()
-@pytest.fixture
-def mock_inv_repo(): return Mock()
-@pytest.fixture
-def mock_party_repo(): return Mock()
-@pytest.fixture
-def mock_ledger_service(): return Mock()
-
-@pytest.fixture
-def service(mock_sale_repo, mock_inv_repo, mock_party_repo, mock_ledger_service):
-    return SaleService(mock_sale_repo, mock_inv_repo, mock_party_repo, mock_ledger_service)
-
-def test_record_sale_success(service, mock_sale_repo, mock_inv_repo, mock_party_repo, mock_ledger_service):
+def test_record_sale_gst_intra_state(service, session):
     p_id = uuid4()
-    product = ProductMock(p_id, "Laptop", Decimal("1000"), 10)
-    mock_inv_repo.get_product.return_value = product
+    product = Product(product_id=p_id, name="Laptop", selling_price=Decimal("1000"), quantity=10, gst_rate=Decimal("18"))
+    session.add(product)
     
     party_id = uuid4()
-    party = PartyMock(party_id, "Customer Inc", Decimal("0"))
-    mock_party_repo.get_party.return_value = party
+    party = Party(party_id=party_id, name="Local Customer", party_type=PartyType.DEBTOR, balance=Decimal("0"), state="Karnataka")
+    session.add(party)
+    session.commit()
     
-    items_data = [{'product_id': p_id, 'quantity': 1, 'tax_perc': 10}]
+    items_data = [{'product_id': p_id, 'quantity': 1}] # Taxable 1000, GST 180 (90 CGST, 90 SGST)
     
-    with patch('sale.service.Sale') as MockSale:
-        mock_sale_inst = MockSale.return_value
-        mock_sale_inst.sale_id = uuid4()
-        
-        sale = service.record_sale(items_data, party_id=party_id, paid_amount=Decimal("500"))
-        
-        assert sale is not None
-        mock_inv_repo.update_product.assert_called()
-        mock_party_repo.update_balance.assert_called()
-        mock_sale_repo.add_sale.assert_called()
-        mock_ledger_service.record_transaction.assert_called()
+    sale = service.record_sale(items_data, party_id=party_id)
+    
+    item = sale.items[0]
+    assert item.cgst_amount == Decimal("90.00")
+    assert item.sgst_amount == Decimal("90.00")
+    assert item.igst_amount == Decimal("0.00")
+    
+    entries = service.ledger_service.record_transaction.call_args[0][1]
+    accounts = [e['account'] for e in entries]
+    assert 'Output CGST' in accounts
+    assert 'Output SGST' in accounts
+    assert 'Output IGST' not in accounts
+    assert 'Sales Revenue' in accounts
 
-def test_record_sale_insufficient_stock(service, mock_inv_repo):
+def test_record_sale_gst_inter_state(service, session):
     p_id = uuid4()
-    product = ProductMock(p_id, "Laptop", Decimal("1000"), 1)
-    mock_inv_repo.get_product.return_value = product
+    product = Product(product_id=p_id, name="Laptop", selling_price=Decimal("1000"), quantity=10, gst_rate=Decimal("18"))
+    session.add(product)
+    
+    party_id = uuid4()
+    party = Party(party_id=party_id, name="Outstate Customer", party_type=PartyType.DEBTOR, balance=Decimal("0"), state="Maharashtra")
+    session.add(party)
+    session.commit()
+    
+    items_data = [{'product_id': p_id, 'quantity': 1}] # Taxable 1000, GST 180 (180 IGST)
+    
+    sale = service.record_sale(items_data, party_id=party_id)
+    
+    item = sale.items[0]
+    assert item.igst_amount == Decimal("180.00")
+    assert item.cgst_amount == Decimal("0.00")
+    assert item.sgst_amount == Decimal("0.00")
+    
+    entries = service.ledger_service.record_transaction.call_args[0][1]
+    accounts = [e['account'] for e in entries]
+    assert 'Output IGST' in accounts
+    assert 'Output CGST' not in accounts
+    assert 'Output SGST' not in accounts
+    assert 'Sales Revenue' in accounts
+
+def test_record_sale_insufficient_stock(service, session):
+    p_id = uuid4()
+    product = Product(product_id=p_id, name="Laptop", selling_price=Decimal("1000"), quantity=1, gst_rate=Decimal("18"))
+    session.add(product)
+    session.commit()
     
     items_data = [{'product_id': p_id, 'quantity': 2}]
     
     with pytest.raises(ValueError, match="Insufficient stock"):
         service.record_sale(items_data)
 
-def test_list_sales(service, mock_sale_repo):
-    mock_sale_repo.list_sales.return_value = [Mock(), Mock()]
-    assert len(service.list_sales()) == 2
+def test_record_sale_product_not_found(service):
+    items_data = [{'product_id': uuid4(), 'quantity': 1}]
+    with pytest.raises(ProductNotFoundError):
+        service.record_sale(items_data)
 
-def test_get_sale_success(service, mock_sale_repo):
-    s_id = uuid4()
-    sale = Mock()
-    mock_sale_repo.get_sale.return_value = sale
-    assert service.get_sale(s_id) == sale
+def test_get_sale_not_found(service):
+    with pytest.raises(ValueError, match="Sale not found"):
+        service.get_sale(uuid4())
