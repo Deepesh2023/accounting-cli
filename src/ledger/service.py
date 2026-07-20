@@ -43,5 +43,8 @@ class LedgerService:
             summary[acc] = self.get_balance(acc)
         return summary
 
+    def list_all_transactions(self) -> list[LedgerEntry]:
+        return self.repository.list_all_entries()
+
     def clear_transaction(self, transaction_id: UUID):
         self.repository.delete_entries_by_transaction(transaction_id)

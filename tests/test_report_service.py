@@ -65,3 +65,33 @@ def test_get_balance_sheet(service, mock_ledger_service, mock_inv_repo, mock_par
     assert result["assets"]["closing_stock"] == Decimal("100")
     assert result["assets"]["debtors"] == Decimal("200")
     assert result["assets"]["total"] == Decimal("5300")
+
+def test_get_outstanding_report(service, mock_party_repo):
+    from dataclasses import dataclass
+    @dataclass
+    class PartyMock:
+        party_id: UUID
+        name: str
+        balance: Decimal
+    
+    mock_party_repo.list_parties.return_value = [
+        PartyMock(uuid4(), "Customer A", Decimal("500")),
+        PartyMock(uuid4(), "Supplier B", Decimal("-1000")),
+        PartyMock(uuid4(), "Neutral Party", Decimal("0"))
+    ]
+    
+    result = service.get_outstanding_report()
+    
+    assert len(result) == 2
+    debtor = next(r for r in result if r["name"] == "Customer A")
+    assert debtor["type"] == "Debtor"
+    assert debtor["amount_due"] == Decimal("500")
+    
+    creditor = next(r for r in result if r["name"] == "Supplier B")
+    assert creditor["type"] == "Creditor"
+    assert creditor["amount_due"] == Decimal("1000")
+
+def test_get_transaction_history(service, mock_ledger_service):
+    mock_ledger_service.list_all_transactions.return_value = ["Tx1", "Tx2"]
+    result = service.get_transaction_history()
+    assert result == ["Tx1", "Tx2"]

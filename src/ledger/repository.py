@@ -37,6 +37,9 @@ class LedgerRepository:
         
         return debit_sum - credit_sum
 
+    def list_all_entries(self) -> list[LedgerEntry]:
+        return self.session.exec(select(LedgerEntry)).all()
+
     def delete_entries_by_transaction(self, transaction_id: UUID):
         stmt = select(LedgerEntry).where(LedgerEntry.transaction_id == transaction_id)
         entries = self.session.execute(stmt).scalars().all()

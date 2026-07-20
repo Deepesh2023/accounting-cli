@@ -51,6 +51,36 @@ class ReportService:
             "is_loss": net_profit < 0
         }
 
+    def get_outstanding_report(self) -> list[dict]:
+        """
+        Returns a list of parties with non-zero balances, 
+        identifying them as Debtors (positive) or Creditors (negative).
+        """
+        parties = self.party_repository.list_parties()
+        report = []
+        
+        for party in parties:
+            if party.balance != 0:
+                report.append({
+                    "party_id": party.party_id,
+                    "name": party.name,
+                    "balance": party.balance,
+                    "type": "Debtor" if party.balance > 0 else "Creditor",
+                    "amount_due": abs(party.balance)
+                })
+        
+        return report
+
+    def get_transaction_history(self) -> list[dict]:
+        """
+        Returns all ledger transactions sorted by date.
+        """
+        try:
+            transactions = self.ledger_service.list_all_transactions()
+            return transactions
+        except AttributeError:
+            return []
+
     def get_balance_sheet(self) -> Dict:
         """
         Assets = Liabilities + Equity
