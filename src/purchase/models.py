@@ -12,7 +12,7 @@ class Purchase(SQLModel, table=True, __tablename__="purchase"):
     date: datetime = Field(default_factory=datetime.now)
     
     # Link to Party (Supplier)
-    party_id: Optional[UUID] = Field(default=None, foreign_key="parties.party_id")
+    party_id: Optional[UUID] = Field(default=None, foreign_key="party.party_id")
     
     # Financial Totals
     total_taxable: Decimal = Field(default=0, nullable=False)
@@ -33,7 +33,7 @@ class PurchaseItem(SQLModel, table=True, __tablename__="purchase_item"):
     purchase_id: UUID = Field(foreign_key="purchase.purchase_id")
     
     # Product Link
-    product_id: UUID = Field(foreign_key="products.product_id")
+    product_id: UUID = Field(foreign_key="product.product_id")
     
     # Row Level Data
     name: str = Field(nullable=False)
