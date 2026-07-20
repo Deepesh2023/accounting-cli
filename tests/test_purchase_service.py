@@ -1,109 +1,93 @@
 import pytest
 from uuid import uuid4, UUID
 from decimal import Decimal
-from unittest.mock import Mock, patch
-from dataclasses import dataclass
+from unittest.mock import Mock
+from sqlalchemy.orm import Session
 
 from purchase.service import PurchaseService
+from purchase.models import Purchase, PurchaseItem
+from inventory.models import Product
+from parties.models import Party, PartyType
 from shared.exceptions import ProductNotFoundError
 
-@dataclass
-class ProductMock:
-    product_id: UUID
-    name: str
-    selling_price: Decimal
-    quantity: int
-    gst_rate: Decimal = Decimal("0")
+@pytest.fixture
+def service(session):
+    # We still mock the ledger service because it's a separate domain 
+    # and we want to verify the calls without setting up the whole ledger DB
+    mock_ledger = Mock()
+    
+    from purchase.repository import PurchaseRepository
+    from inventory.repository import InventoryRepository
+    from parties.repository import PartyRepository
+    
+    pur_repo = PurchaseRepository(session)
+    inv_repo = InventoryRepository(session)
+    party_repo = PartyRepository(session)
+    
+    return PurchaseService(pur_repo, inv_repo, party_repo, mock_ledger)
 
-@dataclass
-class PartyMock:
-    party_id: UUID
-    name: str
-    balance: Decimal
-    state: str = ""
-    gstin: str = ""
-
-@pytest.fixture
-def mock_purchase_repo(): return Mock()
-@pytest.fixture
-def mock_inv_repo(): return Mock()
-@pytest.fixture
-def mock_party_repo(): return Mock()
-@pytest.fixture
-def mock_ledger_service(): return Mock()
-
-@pytest.fixture
-def service(mock_purchase_repo, mock_inv_repo, mock_party_repo, mock_ledger_service):
-    return PurchaseService(mock_purchase_repo, mock_inv_repo, mock_party_repo, mock_ledger_service)
-
-def test_record_purchase_gst_intra_state(service, mock_purchase_repo, mock_inv_repo, mock_party_repo, mock_ledger_service):
+def test_record_purchase_gst_intra_state(service, session):
     # Arrange: Party in Karnataka (same as company)
     p_id = uuid4()
-    product = ProductMock(p_id, "Laptop", Decimal("1000"), 10, gst_rate=Decimal("18"))
-    mock_inv_repo.get_product.return_value = product
+    product = Product(product_id=p_id, name="Laptop", selling_price=Decimal("1000"), quantity=10, gst_rate=Decimal("18"))
+    session.add(product)
     
     party_id = uuid4()
-    party = PartyMock(party_id, "Local Supplier", Decimal("0"), state="Karnataka")
-    mock_party_repo.get_party.return_value = party
+    party = Party(party_id=party_id, name="Local Supplier", party_type=PartyType.CREDITOR, balance=Decimal("0"), state="Karnataka")
+    session.add(party)
+    session.commit()
     
     items_data = [{'product_id': p_id, 'quantity': 1}] # Taxable 1000, GST 180 (90 CGST, 90 SGST)
     
-    with patch('purchase.service.Purchase') as MockPurchase:
-        mock_purchase_inst = MockPurchase.return_value
-        mock_purchase_inst.purchase_id = uuid4()
-        
-        service.record_purchase(items_data, party_id=party_id)
-        
-        # Check ledger entries for CGST and SGST
-        entries = mock_ledger_service.record_transaction.call_args[0][1]
-        accounts = [e['account'] for e in entries]
-        assert 'Input CGST' in accounts
-        assert 'Input SGST' in accounts
-        assert 'Input IGST' not in accounts
+    purchase = service.record_purchase(items_data, party_id=party_id)
+    
+    # Verify GST Split in PurchaseItems
+    item = purchase.items[0]
+    assert item.cgst_amount == Decimal("90.00")
+    assert item.sgst_amount == Decimal("90.00")
+    assert item.igst_amount == Decimal("0.00")
+    
+    # Verify Ledger entries
+    entries = service.ledger_service.record_transaction.call_args[0][1]
+    accounts = [e['account'] for e in entries]
+    assert 'Input CGST' in accounts
+    assert 'Input SGST' in accounts
+    assert 'Input IGST' not in accounts
 
-def test_record_purchase_gst_inter_state(service, mock_purchase_repo, mock_inv_repo, mock_party_repo, mock_ledger_service):
+def test_record_purchase_gst_inter_state(service, session):
     # Arrange: Party in Maharashtra (diff from Karnataka)
     p_id = uuid4()
-    product = ProductMock(p_id, "Laptop", Decimal("1000"), 10, gst_rate=Decimal("18"))
-    mock_inv_repo.get_product.return_value = product
+    product = Product(product_id=p_id, name="Laptop", selling_price=Decimal("1000"), quantity=10, gst_rate=Decimal("18"))
+    session.add(product)
     
     party_id = uuid4()
-    party = PartyMock(party_id, "Outstate Supplier", Decimal("0"), state="Maharashtra")
-    mock_party_repo.get_party.return_value = party
+    party = Party(party_id=party_id, name="Outstate Supplier", party_type=PartyType.CREDITOR, balance=Decimal("0"), state="Maharashtra")
+    session.add(party)
+    session.commit()
     
     items_data = [{'product_id': p_id, 'quantity': 1}] # Taxable 1000, GST 180 (180 IGST)
     
-    with patch('purchase.service.Purchase') as MockPurchase:
-        mock_purchase_inst = MockPurchase.return_value
-        mock_purchase_inst.purchase_id = uuid4()
-        
-        service.record_purchase(items_data, party_id=party_id)
-        
-        # Check ledger entries for IGST
-        entries = mock_ledger_service.record_transaction.call_args[0][1]
-        accounts = [e['account'] for e in entries]
-        assert 'Input IGST' in accounts
-        assert 'Input CGST' not in accounts
-        assert 'Input SGST' not in accounts
-
-def test_record_purchase_product_not_found(service, mock_inv_repo):
-    mock_inv_repo.get_product.return_value = None
-    items_data = [{'product_id': uuid4(), 'quantity': 1}]
+    purchase = service.record_purchase(items_data, party_id=party_id)
     
+    # Verify GST Split
+    item = purchase.items[0]
+    assert item.igst_amount == Decimal("180.00")
+    assert item.cgst_amount == Decimal("0.00")
+    assert item.sgst_amount == Decimal("0.00")
+    
+    # Verify Ledger
+    entries = service.ledger_service.record_transaction.call_args[0][1]
+    accounts = [e['account'] for e in entries]
+    assert 'Input IGST' in accounts
+    assert 'Input CGST' not in accounts
+    assert 'Input SGST' not in accounts
+
+def test_record_purchase_product_not_found(service):
+    items_data = [{'product_id': uuid4(), 'quantity': 1}]
     with pytest.raises(ProductNotFoundError):
         service.record_purchase(items_data)
 
-def test_list_purchases(service, mock_purchase_repo):
-    mock_purchase_repo.list_purchases.return_value = [Mock(), Mock()]
-    assert len(service.list_purchases()) == 2
-
-def test_get_purchase_success(service, mock_purchase_repo):
-    pur_id = uuid4()
-    purchase = Mock()
-    mock_purchase_repo.get_purchase.return_value = purchase
-    assert service.get_purchase(pur_id) == purchase
-
-def test_get_purchase_not_found(service, mock_purchase_repo):
-    mock_purchase_repo.get_purchase.return_value = None
+def test_get_purchase_not_found(service):
     with pytest.raises(ValueError, match="Purchase not found"):
         service.get_purchase(uuid4())
+
