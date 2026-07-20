@@ -7,7 +7,7 @@ class PartyType(enum.Enum):
     DEBTOR = "DEBTOR"     # Customer (Asset)
     CREDITOR = "CREDITOR" # Supplier (Liability)
 
-class Party(SQLModel, table=True):
+class Party(SQLModel, table=True, __tablename__="parties"):
     party_id: UUID = Field(primary_key=True)
     name: str = Field(nullable=False)
     party_type: PartyType = Field(nullable=False)

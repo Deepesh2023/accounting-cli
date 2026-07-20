@@ -12,7 +12,9 @@ class ProductMock:
     product_id: UUID
     name: str
     selling_price: Decimal
-    quantity: int
+    gst_rate: Decimal = Decimal("0.0")
+    hsn_code: str = ""
+    quantity: int = 0
     archived: bool = False
 
 @pytest.fixture
@@ -37,14 +39,14 @@ def test_add_product_success(service, mock_repo):
         mock_product_inst = MockProduct.return_value
         mock_product_inst.name = "Test Product"
         
-        product = service.add_product("Test Product", 10.5, 100)
+        product = service.add_product("Test Product", 10.5, 100, gst_rate=18, hsn_code="1234")
 
         assert product.name == "Test Product"
         mock_repo.add_product.assert_called_once_with(mock_product_inst)
 
-def test_add_product_negative_price(service):
+def test_add_product_negative_gst(service):
     with pytest.raises(InvalidProductDataError):
-        service.add_product("Bad", -10, 10)
+        service.add_product("Bad", 10, 10, gst_rate=-1)
 
 def test_add_product_negative_qty(service):
     with pytest.raises(InvalidProductDataError):

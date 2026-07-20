@@ -14,15 +14,18 @@ class InventoryService:
             if p.archived == show_archived
         ]
 
-    def add_product(self, name: str, selling_price: float | Decimal, quantity: int) -> Product:
+    def add_product(self, name: str, selling_price: float | Decimal, quantity: int, gst_rate: float | Decimal = 0, hsn_code: str = "") -> Product:
         price = Decimal(str(selling_price))
-        if price < 0 or quantity < 0:
-            raise InvalidProductDataError("selling-price/quantity shouldn't be negative")
+        rate = Decimal(str(gst_rate))
+        if price < 0 or quantity < 0 or rate < 0:
+            raise InvalidProductDataError("selling-price/quantity/gst-rate shouldn't be negative")
         
         product = Product(
             product_id=uuid.uuid4(),
             name=name,
             selling_price=price,
+            gst_rate=rate,
+            hsn_code=hsn_code,
             quantity=quantity,
         )
         self.repository.add_product(product)

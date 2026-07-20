@@ -9,10 +9,19 @@ class Container:
     A simple Dependency Container.
     Its only job is to know HOW to create the objects the app needs.
     """
+from storage.database import get_db
+from sqlalchemy.orm import Session
+
+class Container:
     def __init__(self):
-        # 1. Repositories (The bottom layer)
-        self.inventory_repository: InventoryRepositoryProtocol = InventoryRepository()
-        self.sale_repository: SaleRepositoryProtocol = SaleRepository()
+        # Database session
+        self.session: Session = next(get_db())
+        
+        # 1. Repositories
+        self.inventory_repository = InventoryRepository(self.session)
+        self.sale_repository = SaleRepository(self.session)
+        
+        # ... rest of the services
 
         # 2. Services (The business layer - injected with repositories)
         self.inventory_service = InventoryService(self.inventory_repository)

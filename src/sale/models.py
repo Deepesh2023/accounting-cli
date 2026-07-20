@@ -7,7 +7,7 @@ from sqlmodel import SQLModel, Field, Relationship
 from inventory.models import Product
 from parties.models import Party
 
-class Sale(SQLModel, table=True):
+class Sale(SQLModel, table=True, __tablename__="sale"):
     sale_id: UUID = Field(primary_key=True)
     date: datetime = Field(default_factory=datetime.now)
     
@@ -28,7 +28,7 @@ class Sale(SQLModel, table=True):
     items: List["SaleItem"] = Relationship(back_populates="sale")
     party: Optional[Party] = Relationship()
 
-class SaleItem(SQLModel, table=True):
+class SaleItem(SQLModel, table=True, __tablename__="sale_item"):
     sale_item_id: UUID = Field(primary_key=True)
     sale_id: UUID = Field(foreign_key="sale.sale_id")
     
