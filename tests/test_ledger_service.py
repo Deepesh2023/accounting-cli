@@ -65,7 +65,14 @@ def test_get_gst_summary(service, mock_repo):
     assert summary['Input IGST'] == Decimal("0")
     assert len(summary) == 6
 
+def test_get_account_balances(service, mock_repo):
+    mock_repo.get_account_balance.side_effect = lambda acc: Decimal("100") if acc == "Cash" else Decimal("200")
+    balances = service.get_account_balances(["Cash", "Bank"])
+    assert balances == {"Cash": Decimal("100"), "Bank": Decimal("200")}
+    assert mock_repo.get_account_balance.call_count == 2
+
 def test_clear_transaction(service, mock_repo):
+
     tx_id = uuid4()
     service.clear_transaction(tx_id)
     mock_repo.delete_entries_by_transaction.assert_called_once_with(tx_id)

@@ -43,7 +43,12 @@ class LedgerService:
             summary[acc] = self.get_balance(acc)
         return summary
 
+    def get_account_balances(self, accounts: list[str]) -> dict[str, Decimal]:
+        """Returns balances for a set of accounts, e.g., ['Cash', 'Bank']."""
+        return {acc: self.get_balance(acc) for acc in accounts}
+
     def list_all_transactions(self) -> list[LedgerEntry]:
+
         return self.repository.list_all_entries()
 
     def clear_transaction(self, transaction_id: UUID):
