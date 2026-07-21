@@ -172,6 +172,31 @@ class SaleService:
 
         return sale
 
+    def record_payment(self, sale_id: UUID, amount: Decimal) -> Sale:
+        """Records a partial or full payment against a sale."""
+        sale = self.get_sale(sale_id)
+        if amount > sale.balance_amount:
+            raise ValueError(f"Payment amount {amount} exceeds balance {sale.balance_amount}")
+        
+        sale.paid_amount += amount
+        sale.balance_amount -= amount
+        
+        # Update Party Balance
+        if sale.party_id:
+            self.party_repository.update_balance(sale.party_id, sale.balance_amount)
+            
+        self.sale_repository.update_sale(sale)
+        
+        # Ledger: DR Party, CR Cash
+        party = self.party_repository.get_party(sale.party_id) if sale.party_id else None
+        entries = [
+            {'account': f"Party: {party.name}" if party else "Unknown Party", 'debit': Decimal("0"), 'credit': amount, 'desc': f"Payment received for Sale {sale_id}"},
+            {'account': 'Cash', 'debit': amount, 'credit': Decimal("0"), 'desc': f"Payment received for Sale {sale_id}"}
+        ]
+        self.ledger_service.record_transaction(uuid.uuid4(), entries)
+        
+        return sale
+
     def list_sales(self) -> list[Sale]:
         return self.sale_repository.list_sales()
 

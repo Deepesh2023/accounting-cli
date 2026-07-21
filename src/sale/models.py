@@ -20,6 +20,7 @@ class Sale(SQLModel, table=True, __tablename__="sale"):
     grand_total: Decimal = Field(default=0, nullable=False)
     paid_amount: Decimal = Field(default=0, nullable=False)
     balance_amount: Decimal = Field(default=0, nullable=False)
+    due_date: Optional[datetime] = Field(default=None)
     
     # Settings
     round_off: bool = Field(default=False)

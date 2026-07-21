@@ -171,6 +171,31 @@ class PurchaseService:
 
         return purchase
 
+    def record_payment(self, purchase_id: UUID, amount: Decimal) -> Purchase:
+        """Records a partial or full payment against a purchase."""
+        purchase = self.get_purchase(purchase_id)
+        if amount > purchase.balance_amount:
+            raise ValueError(f"Payment amount {amount} exceeds balance {purchase.balance_amount}")
+        
+        purchase.paid_amount += amount
+        purchase.balance_amount -= amount
+        
+        # Update Party Balance
+        if purchase.party_id:
+            self.party_repository.update_balance(purchase.party_id, purchase.balance_amount)
+            
+        self.purchase_repository.update_purchase(purchase)
+        
+        # Ledger: DR Party, CR Cash
+        party = self.party_repository.get_party(purchase.party_id) if purchase.party_id else None
+        entries = [
+            {'account': f"Party: {party.name}" if party else "Unknown Party", 'debit': amount, 'credit': Decimal("0"), 'desc': f"Payment made for Purchase {purchase_id}"},
+            {'account': 'Cash', 'debit': Decimal("0"), 'credit': amount, 'desc': f"Payment made for Purchase {purchase_id}"}
+        ]
+        self.ledger_service.record_transaction(uuid.uuid4(), entries)
+        
+        return purchase
+
     def list_purchases(self) -> list[Purchase]:
         return self.purchase_repository.list_purchases()
 
