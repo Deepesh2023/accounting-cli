@@ -1,52 +1,12 @@
 import pytest
 from uuid import uuid4
 from decimal import Decimal
-from fastapi.testclient import TestClient
-from sqlalchemy.pool import StaticPool
-from sqlmodel import SQLModel, Session, create_engine
 
-from main import app
-from api.deps import get_expense_service, get_session
 from expenses.repository import ExpenseRepository
 from expenses.service import ExpenseService
 from expenses.models import Expense
 from ledger.service import LedgerService
 from ledger.repository import LedgerRepository
-
-import inventory.models  # noqa: F401
-import quotation.models  # noqa: F401
-import sale.models  # noqa: F401
-import parties.models  # noqa: F401
-import expenses.models  # noqa: F401
-import purchase.models  # noqa: F401
-import ledger.models  # noqa: F401
-import company.models  # noqa: F401
-
-_TEST_ENGINE = create_engine(
-    "sqlite://",
-    connect_args={"check_same_thread": False},
-    poolclass=StaticPool,
-)
-SQLModel.metadata.create_all(_TEST_ENGINE)
-
-
-def get_test_session():
-    with Session(_TEST_ENGINE) as session:
-        yield session
-
-
-@pytest.fixture(autouse=True)
-def _clean_db():
-    with _TEST_ENGINE.connect() as conn:
-        for table in reversed(SQLModel.metadata.sorted_tables):
-            conn.execute(table.delete())
-        conn.commit()
-
-
-@pytest.fixture
-def session():
-    with Session(_TEST_ENGINE) as session:
-        yield session
 
 
 @pytest.fixture
@@ -54,13 +14,6 @@ def service(session):
     repo = ExpenseRepository(session)
     ledger_svc = LedgerService(LedgerRepository(session))
     return ExpenseService(repo, ledger_service=ledger_svc)
-
-
-@pytest.fixture
-def client():
-    app.dependency_overrides[get_session] = get_test_session
-    yield TestClient(app)
-    app.dependency_overrides.clear()
 
 
 class TestListExpenses:

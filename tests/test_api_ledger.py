@@ -1,45 +1,12 @@
 from uuid import uuid4
 from decimal import Decimal
-from fastapi.testclient import TestClient
-from sqlalchemy.pool import StaticPool
-from sqlmodel import SQLModel, Session, create_engine
 
-from main import app
-from api.deps import get_session
 from ledger.repository import LedgerRepository
 from ledger.service import LedgerService
 
-import inventory.models  # noqa: F401
-import quotation.models  # noqa: F401
-import sale.models  # noqa: F401
-import parties.models  # noqa: F401
-import expenses.models  # noqa: F401
-import purchase.models  # noqa: F401
-import ledger.models  # noqa: F401
-import company.models  # noqa: F401
 
-_TEST_ENGINE = create_engine(
-    "sqlite://",
-    connect_args={"check_same_thread": False},
-    poolclass=StaticPool,
-)
-SQLModel.metadata.create_all(_TEST_ENGINE)
-
-
-def get_test_session():
-    with Session(_TEST_ENGINE) as session:
-        yield session
-
-
-def _clean_db():
-    with _TEST_ENGINE.connect() as conn:
-        for table in reversed(SQLModel.metadata.sorted_tables):
-            conn.execute(table.delete())
-        conn.commit()
-
-
-def _ledger_service():
-    return LedgerService(LedgerRepository(Session(_TEST_ENGINE)))
+def _ledger_service(session):
+    return LedgerService(LedgerRepository(session))
 
 
 def _seed_entry(service, account: str, debit: str, credit: str, desc: str = ""):
@@ -50,107 +17,77 @@ def _seed_entry(service, account: str, debit: str, credit: str, desc: str = ""):
     ])
 
 
-class TestListTransactions:
-    def test_empty(self):
-        _clean_db()
-        app.dependency_overrides[get_session] = get_test_session
-        c = TestClient(app)
-        resp = c.get("/api/ledger/transactions")
-        app.dependency_overrides.clear()
-        assert resp.status_code == 200
-        assert resp.json() == []
-
-    def test_all(self):
-        _clean_db()
-        svc = _ledger_service()
-        tx_id = uuid4()
-        svc.record_transaction(tx_id, [
-            {"account": "Sales Revenue", "debit": Decimal("0"), "credit": Decimal("1000")},
-            {"account": "Cash", "debit": Decimal("1000"), "credit": Decimal("0")},
-        ])
-        app.dependency_overrides[get_session] = get_test_session
-        c = TestClient(app)
-        resp = c.get("/api/ledger/transactions")
-        app.dependency_overrides.clear()
-        assert resp.status_code == 200
-        data = resp.json()
-        assert len(data) == 2
-
-    def test_filter_by_account(self):
-        _clean_db()
-        svc = _ledger_service()
-        _seed_entry(svc, "Sales Revenue", "0", "500")
-        _seed_entry(svc, "Purchases", "300", "0")
-        app.dependency_overrides[get_session] = get_test_session
-        c = TestClient(app)
-        resp = c.get("/api/ledger/transactions?account_name=Sales Revenue")
-        app.dependency_overrides.clear()
-        assert resp.status_code == 200
-        data = resp.json()
-        assert all(e["account_name"] == "Sales Revenue" for e in data)
+def test_list_transactions_empty(client):
+    resp = client.get("/api/ledger/transactions")
+    assert resp.status_code == 200
+    assert resp.json() == []
 
 
-class TestAccountBalance:
-    def test_returns_balance(self):
-        _clean_db()
-        svc = _ledger_service()
-        _seed_entry(svc, "Cash", "1000", "0")
-        app.dependency_overrides[get_session] = get_test_session
-        c = TestClient(app)
-        resp = c.get("/api/ledger/accounts/Cash/balance")
-        app.dependency_overrides.clear()
-        assert resp.status_code == 200
-        data = resp.json()
-        assert data["account"] == "Cash"
-        assert Decimal(data["balance"]) == Decimal("1000")
+def test_list_transactions_all(client, session):
+    svc = _ledger_service(session)
+    _seed_entry(svc, "Cash", "1000", "0", "Sale")
+    _seed_entry(svc, "Bank", "0", "500", "Payment")
 
-    def test_zero_balance(self):
-        _clean_db()
-        app.dependency_overrides[get_session] = get_test_session
-        c = TestClient(app)
-        resp = c.get("/api/ledger/accounts/Unknown/balance")
-        app.dependency_overrides.clear()
-        assert resp.status_code == 200
-        assert Decimal(resp.json()["balance"]) == Decimal("0")
+    resp = client.get("/api/ledger/transactions")
+    assert resp.status_code == 200
+    data = resp.json()
+    assert len(data) == 4
 
 
-class TestGstSummary:
-    def test_returns_summary(self):
-        _clean_db()
-        svc = _ledger_service()
-        _seed_entry(svc, "Input CGST", "100", "0")
-        _seed_entry(svc, "Output CGST", "0", "180")
-        app.dependency_overrides[get_session] = get_test_session
-        c = TestClient(app)
-        resp = c.get("/api/ledger/gst-summary")
-        app.dependency_overrides.clear()
-        assert resp.status_code == 200
-        data = resp.json()
-        assert "Input CGST" in data
-        assert "Output CGST" in data
-        assert Decimal(data["Input CGST"]) == Decimal("100")
-        assert Decimal(data["Output CGST"]) == Decimal("-180")
+def test_list_transactions_filter(client, session):
+    svc = _ledger_service(session)
+    _seed_entry(svc, "Sales Revenue", "0", "500")
+    _seed_entry(svc, "Purchases", "300", "0")
+
+    resp = client.get("/api/ledger/transactions?account_name=Sales Revenue")
+    assert resp.status_code == 200
+    data = resp.json()
+    assert all(e["account_name"] == "Sales Revenue" for e in data)
 
 
-class TestAccountBalances:
-    def test_returns_multiple(self):
-        _clean_db()
-        svc = _ledger_service()
-        _seed_entry(svc, "Cash", "5000", "0")
-        _seed_entry(svc, "Bank", "10000", "0")
-        app.dependency_overrides[get_session] = get_test_session
-        c = TestClient(app)
-        resp = c.get("/api/ledger/account-balances?accounts=Cash,Bank")
-        app.dependency_overrides.clear()
-        assert resp.status_code == 200
-        data = resp.json()
-        assert Decimal(data["Cash"]) == Decimal("5000")
-        assert Decimal(data["Bank"]) == Decimal("10000")
+def test_account_balance(client, session):
+    svc = _ledger_service(session)
+    _seed_entry(svc, "Cash", "1000", "0")
+    _seed_entry(svc, "Cash", "500", "0")
+    _seed_entry(svc, "Cash", "0", "200")
 
-    def test_empty_accounts_param(self):
-        _clean_db()
-        app.dependency_overrides[get_session] = get_test_session
-        c = TestClient(app)
-        resp = c.get("/api/ledger/account-balances?accounts=")
-        app.dependency_overrides.clear()
-        assert resp.status_code == 400
+    resp = client.get("/api/ledger/accounts/Cash/balance")
+    assert resp.status_code == 200
+    assert resp.json()["account"] == "Cash"
+    assert Decimal(resp.json()["balance"]) == Decimal("1300")
+
+
+def test_account_balance_zero(client):
+    resp = client.get("/api/ledger/accounts/Unknown/balance")
+    assert resp.status_code == 200
+    assert Decimal(resp.json()["balance"]) == Decimal("0")
+
+
+def test_gst_summary(client, session):
+    svc = _ledger_service(session)
+    _seed_entry(svc, "Output CGST", "0", "90")
+    _seed_entry(svc, "Output SGST", "0", "90")
+    _seed_entry(svc, "Input CGST", "50", "0")
+
+    resp = client.get("/api/ledger/gst-summary")
+    assert resp.status_code == 200
+    data = resp.json()
+    assert Decimal(data["Output CGST"]) == Decimal("-90")
+    assert Decimal(data["Input CGST"]) == Decimal("50")
+
+
+def test_account_balances(client, session):
+    svc = _ledger_service(session)
+    _seed_entry(svc, "Cash", "5000", "0")
+    _seed_entry(svc, "Bank", "0", "1000")
+
+    resp = client.get("/api/ledger/account-balances?accounts=Cash,Bank")
+    assert resp.status_code == 200
+    data = resp.json()
+    assert Decimal(data["Cash"]) == Decimal("5000")
+    assert Decimal(data["Bank"]) == Decimal("-1000")
+
+
+def test_account_balances_empty(client):
+    resp = client.get("/api/ledger/account-balances?accounts=")
+    assert resp.status_code == 400
