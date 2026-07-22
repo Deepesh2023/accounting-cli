@@ -6,7 +6,6 @@ from fastapi import APIRouter, Depends, HTTPException, status, Query
 from pydantic import BaseModel, ConfigDict
 
 from expenses.service import ExpenseService
-from expenses.models import Expense
 from api.deps import get_expense_service
 
 
@@ -62,14 +61,12 @@ def create_expense(
     data: ExpenseCreate,
     service: ExpenseService = Depends(get_expense_service),
 ):
-    expense = Expense(
-        expense_id=uuid.uuid4(),
+    return service.record_expense(
         category=data.category,
-        paid_by=data.paid_by,
         amount=data.amount,
+        paid_by=data.paid_by,
         notes=data.notes,
     )
-    return service.record_expense(expense)
 
 
 @router.put("/{expense_id}", response_model=ExpenseResponse)
@@ -78,18 +75,14 @@ def update_expense(
     data: ExpenseUpdate,
     service: ExpenseService = Depends(get_expense_service),
 ):
-    existing = service.get_expense_by_id(expense_id)
-    if not existing:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Expense not found")
-    expense = Expense(
-        expense_id=expense_id,
-        category=data.category if data.category is not None else existing.category,
-        paid_by=data.paid_by if data.paid_by is not None else existing.paid_by,
-        amount=data.amount if data.amount is not None else existing.amount,
-        notes=data.notes if data.notes is not None else existing.notes,
-    )
     try:
-        updated = service.update_expense(expense_id, expense)
+        updated = service.update_expense(
+            expense_id=expense_id,
+            category=data.category,
+            paid_by=data.paid_by,
+            amount=data.amount,
+            notes=data.notes,
+        )
         return updated
     except ValueError:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Expense not found")

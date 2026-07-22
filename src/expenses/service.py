@@ -1,6 +1,8 @@
+import uuid
 from uuid import UUID
 from decimal import Decimal
 from typing import Optional
+from datetime import datetime
 from expenses.models import Expense
 from expenses.repository import ExpenseRepository
 from ledger.service import LedgerService
@@ -10,7 +12,15 @@ class ExpenseService:
         self.repository = repository
         self.ledger_service = ledger_service
 
-    def record_expense(self, expense: Expense) -> Expense:
+    def record_expense(self, category: str, amount: Decimal, paid_by: str = "Cash", notes: str | None = None) -> Expense:
+        expense = Expense(
+            expense_id=uuid.uuid4(),
+            date=datetime.now(),
+            category=category,
+            paid_by=paid_by,
+            amount=amount,
+            notes=notes,
+        )
         recorded = self.repository.add_expense(expense)
         if self.ledger_service:
             entries = [
@@ -27,9 +37,20 @@ class ExpenseService:
         uid = UUID(expense_id) if isinstance(expense_id, str) else expense_id
         return self.repository.get_expense(uid)
 
-    def update_expense(self, expense_id: UUID | str, expense_data: Expense) -> Expense:
+    def update_expense(self, expense_id: UUID | str, category: str | None = None, paid_by: str | None = None, amount: Decimal | None = None, notes: str | None = None) -> Expense:
         uid = UUID(expense_id) if isinstance(expense_id, str) else expense_id
-        expense_data.expense_id = uid
+        existing = self.get_expense_by_id(uid)
+        if not existing:
+            raise ValueError("Expense not found")
+
+        expense_data = Expense(
+            expense_id=uid,
+            date=existing.date,
+            category=category if category is not None else existing.category,
+            paid_by=paid_by if paid_by is not None else existing.paid_by,
+            amount=amount if amount is not None else existing.amount,
+            notes=notes if notes is not None else existing.notes,
+        )
         if self.ledger_service:
             self.ledger_service.clear_transaction(uid)
         updated = self.repository.update_expense(expense_data)

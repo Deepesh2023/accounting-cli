@@ -4,7 +4,6 @@ from decimal import Decimal
 
 from expenses.repository import ExpenseRepository
 from expenses.service import ExpenseService
-from expenses.models import Expense
 from ledger.service import LedgerService
 from ledger.repository import LedgerRepository
 
@@ -23,18 +22,15 @@ class TestListExpenses:
         assert resp.json() == []
 
     def test_all(self, client, service):
-        e1 = Expense(category="Rent", paid_by="Cash", amount=Decimal("5000"))
-        e2 = Expense(category="Salary", paid_by="Bank", amount=Decimal("30000"))
-        service.record_expense(e1)
-        service.record_expense(e2)
+        service.record_expense("Rent", Decimal("5000"), paid_by="Cash")
+        service.record_expense("Salary", Decimal("30000"), paid_by="Bank")
 
         resp = client.get("/api/expenses")
         data = resp.json()
         assert len(data) == 2
 
     def test_filter_by_category(self, client, service):
-        e1 = Expense(category="Rent", paid_by="Cash", amount=Decimal("5000"))
-        service.record_expense(e1)
+        service.record_expense("Rent", Decimal("5000"), paid_by="Cash")
 
         resp = client.get("/api/expenses?category=Rent")
         data = resp.json()
@@ -50,8 +46,7 @@ class TestGetExpense:
         assert resp.status_code == 404
 
     def test_found(self, client, service):
-        e = Expense(category="Rent", paid_by="Cash", amount=Decimal("5000"))
-        recorded = service.record_expense(e)
+        recorded = service.record_expense("Rent", Decimal("5000"), paid_by="Cash")
         resp = client.get(f"/api/expenses/{recorded.expense_id}")
         assert resp.status_code == 200
         assert resp.json()["category"] == "Rent"
@@ -73,8 +68,7 @@ class TestCreateExpense:
 
 class TestUpdateExpense:
     def test_updates(self, client, service):
-        e = Expense(category="Rent", paid_by="Cash", amount=Decimal("5000"))
-        recorded = service.record_expense(e)
+        recorded = service.record_expense("Rent", Decimal("5000"), paid_by="Cash")
         resp = client.put(f"/api/expenses/{recorded.expense_id}", json={
             "category": "Rent Updated",
             "paid_by": "Bank",
@@ -95,8 +89,7 @@ class TestUpdateExpense:
 
 class TestDeleteExpense:
     def test_deletes(self, client, service):
-        e = Expense(category="Rent", paid_by="Cash", amount=Decimal("5000"))
-        recorded = service.record_expense(e)
+        recorded = service.record_expense("Rent", Decimal("5000"), paid_by="Cash")
         resp = client.delete(f"/api/expenses/{recorded.expense_id}")
         assert resp.status_code == 204
 

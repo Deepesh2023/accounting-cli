@@ -3,7 +3,6 @@ from uuid import uuid4
 from decimal import Decimal
 from datetime import datetime
 from unittest.mock import Mock
-from expenses.models import Expense
 from expenses.repository import ExpenseRepository
 from expenses.service import ExpenseService
 
@@ -12,15 +11,8 @@ def test_expense_lifecycle(session):
     repo = ExpenseRepository(session)
     service = ExpenseService(repo)
     
-    expense_data = Expense(
-        category="Utilities",
-        paid_by="Cash",
-        amount=Decimal("500.00"),
-        notes="Electricity bill for June"
-    )
-    
     # Act - Record
-    recorded = service.record_expense(expense_data)
+    recorded = service.record_expense("Utilities", Decimal("500.00"), paid_by="Cash", notes="Electricity bill for June")
     assert recorded.expense_id is not None
     assert recorded.category == "Utilities"
     
@@ -42,9 +34,9 @@ def test_expense_lifecycle(session):
 def test_expense_category_filter(session):
     repo = ExpenseRepository(session)
     service = ExpenseService(repo)
-    
-    service.record_expense(Expense(category="Rent", paid_by="Bank", amount=Decimal("10000")))
-    service.record_expense(Expense(category="Food", paid_by="Cash", amount=Decimal("200")))
+
+    service.record_expense("Rent", Decimal("10000"), paid_by="Bank")
+    service.record_expense("Food", Decimal("200"), paid_by="Cash")
     
     rent_expenses = service.get_all_expenses(category="Rent")
     assert len(rent_expenses) == 1
@@ -54,15 +46,8 @@ def test_expense_with_ledger_integration(session):
     repo = ExpenseRepository(session)
     mock_ledger = Mock()
     service = ExpenseService(repo, ledger_service=mock_ledger)
-    
-    expense = Expense(
-        category="Rent",
-        paid_by="Bank",
-        amount=Decimal("10000"),
-        notes="Office rent"
-    )
-    
-    recorded = service.record_expense(expense)
+
+    recorded = service.record_expense("Rent", Decimal("10000"), paid_by="Bank", notes="Office rent")
     assert recorded.expense_id is not None
     
     assert mock_ledger.record_transaction.called
@@ -78,19 +63,10 @@ def test_expense_with_ledger_integration(session):
 def test_update_expense(session):
     repo = ExpenseRepository(session)
     service = ExpenseService(repo)
-    
-    expense = Expense(category="Rent", paid_by="Cash", amount=Decimal("5000"))
-    recorded = service.record_expense(expense)
-    
-    updated_data = Expense(
-        expense_id=recorded.expense_id,
-        category="Rent",
-        paid_by="Bank",
-        amount=Decimal("5500"),
-        notes="Updated rent"
-    )
-    
-    updated = service.update_expense(recorded.expense_id, updated_data)
+
+    recorded = service.record_expense("Rent", Decimal("5000"), paid_by="Cash")
+
+    updated = service.update_expense(recorded.expense_id, paid_by="Bank", amount=Decimal("5500"), notes="Updated rent")
     assert updated.paid_by == "Bank"
     assert updated.amount == Decimal("5500")
     assert updated.notes == "Updated rent"
@@ -103,9 +79,8 @@ def test_remove_expense_with_ledger(session):
     repo = ExpenseRepository(session)
     mock_ledger = Mock()
     service = ExpenseService(repo, ledger_service=mock_ledger)
-    
-    expense = Expense(category="Travel", paid_by="Cash", amount=Decimal("2000"))
-    recorded = service.record_expense(expense)
+
+    recorded = service.record_expense("Travel", Decimal("2000"), paid_by="Cash")
     
     assert mock_ledger.record_transaction.called
     mock_ledger.reset_mock()
