@@ -132,6 +132,6 @@ def test_update_purchase_creates_new_purchase(service, session):
     updated_purchase = service.update_purchase(purchase.purchase_id, updated_items, party_id=party_id)
 
     assert product.quantity == 32
-    assert updated_purchase.purchase_id != purchase.purchase_id
+    assert updated_purchase.purchase_id == purchase.purchase_id
     assert updated_purchase.grand_total == Decimal("472")
 

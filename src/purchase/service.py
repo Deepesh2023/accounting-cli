@@ -2,7 +2,6 @@ import uuid
 from uuid import UUID
 from datetime import datetime
 from decimal import Decimal, ROUND_HALF_UP
-from typing import List, Optional
 
 from purchase.models import Purchase, PurchaseItem
 from purchase.repository import PurchaseRepository
@@ -10,10 +9,14 @@ from inventory.repository import InventoryRepository
 from parties.repository import PartyRepository
 from ledger.service import LedgerService
 from shared.exceptions import ProductNotFoundError
+from shared.accounts import CASH, PURCHASES, INPUT_CGST, INPUT_SGST, INPUT_IGST
+from shared.transaction_utils import compute_row, compute_grand_total, party_prefix
+
+COMPANY_STATE = "Karnataka"
 
 class PurchaseService:
-    def __init__(self, 
-                 purchase_repository: PurchaseRepository, 
+    def __init__(self,
+                 purchase_repository: PurchaseRepository,
                  inventory_repository: InventoryRepository,
                  party_repository: PartyRepository,
                  ledger_service: LedgerService):
@@ -22,184 +25,157 @@ class PurchaseService:
         self.party_repository = party_repository
         self.ledger_service = ledger_service
 
-    def record_purchase(self, 
-                        items_data: list, 
-                        party_id: Optional[UUID] = None, 
-                        paid_amount: Decimal = Decimal("0"), 
-                        round_off: bool = False,
-                        tax_inclusive: bool = False) -> Purchase:
-        """
-        items_data should be a list of dicts: 
-        [{'product_id': UUID, 'quantity': int, 'discount_perc': float | None, 'discount_amt': float | None, 'tax_perc': float}]
-        """
+    def _resolve_party_and_state(self, party_id: UUID | None):
+        is_interstate = False
+        party = None
+        if party_id:
+            party = self.party_repository.get_party(party_id)
+            if party.state and party.state != COMPANY_STATE:
+                is_interstate = True
+        return party, is_interstate
+
+    def _process_items(self, items_data: list, is_interstate: bool, tax_inclusive: bool):
         total_taxable = Decimal("0")
         total_tax = Decimal("0")
         total_cgst = Decimal("0")
         total_sgst = Decimal("0")
         total_igst = Decimal("0")
         purchase_items = []
-        
-        # Determine if Inter-state or Intra-state
-        is_interstate = False
-        party = None
-        if party_id:
-            party = self.party_repository.get_party(party_id)
-            # Hardcoded Company State for prototype: "Karnataka"
-            company_state = "Karnataka"
-            if party.state and party.state != company_state:
-                is_interstate = True
 
-        # 1. Process Row-level Calculations
         for data in items_data:
             product = self.inventory_repository.get_product(data['product_id'])
             if not product:
                 raise ProductNotFoundError(f"Product {data['product_id']} not found")
 
-            purchase_price = data.get('price', product.selling_price)
-            gross = purchase_price * data['quantity']
-            
-            # Discount Logic
-            disc_amt = Decimal("0")
-            if data.get('discount_perc') is not None:
-                disc_amt = (gross * Decimal(str(data['discount_perc']))) / Decimal("100")
-            elif data.get('discount_amt') is not None:
-                disc_amt = Decimal(str(data['discount_amt']))
-            
-            taxable = max(Decimal("0"), gross - disc_amt)
-            
-            # Use product's GST rate if tax_perc not provided
+            price = data.get('price', product.selling_price)
             raw_tax = data.get('tax_perc')
-            if raw_tax is None:
-                raw_tax = product.gst_rate
-            elif not isinstance(raw_tax, Decimal):
-                raw_tax = Decimal(str(raw_tax))
-            tax_perc = raw_tax
-            
-            # Tax Calculation
-            if not tax_inclusive: # Exclusive
-                tax_amt = taxable * (tax_perc / Decimal("100"))
-            else: # Inclusive
-                base = taxable / (1 + (tax_perc / Decimal("100")))
-                tax_amt = taxable - base
-                taxable = base
-            
-            # Split GST
-            cgst, sgst, igst = Decimal("0"), Decimal("0"), Decimal("0")
-            if is_interstate:
-                igst = tax_amt
-            else:
-                cgst = tax_amt / 2
-                sgst = tax_amt / 2
-            
-            row_total = taxable + tax_amt
-            
+            tax_perc = product.gst_rate if raw_tax is None else Decimal(str(raw_tax))
+
+            row = compute_row(
+                price=price,
+                quantity=data['quantity'],
+                gst_rate=tax_perc,
+                discount_perc=data.get('discount_perc'),
+                discount_amt=data.get('discount_amt'),
+                is_interstate=is_interstate,
+                tax_inclusive=tax_inclusive,
+            )
+
             purchase_items.append(PurchaseItem(
                 purchase_item_id=uuid.uuid4(),
-                purchase_id=None, 
                 product_id=product.product_id,
                 name=product.name,
                 quantity=data['quantity'],
-                price=purchase_price,
-                discount_amount=disc_amt,
-                taxable_amount=taxable.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP),
-                tax_amount=tax_amt.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP),
-                cgst_amount=cgst.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP),
-                sgst_amount=sgst.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP),
-                igst_amount=igst.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP),
-                row_total=row_total.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+                price=price,
+                discount_amount=row['discount_amount'],
+                taxable_amount=row['taxable_amount'],
+                tax_amount=row['tax_amount'],
+                cgst_amount=row['cgst_amount'],
+                sgst_amount=row['sgst_amount'],
+                igst_amount=row['igst_amount'],
+                row_total=row['row_total'],
             ))
-            
-            total_taxable += taxable
-            total_tax += tax_amt
-            total_cgst += cgst
-            total_sgst += sgst
-            total_igst += igst
 
-        grand_total = (total_taxable + total_tax).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
-        
-        if round_off:
-            grand_total = grand_total.quantize(Decimal("1"), rounding=ROUND_HALF_UP)
-            
-        balance = max(Decimal("0"), grand_total - paid_amount)
+            total_taxable += row['taxable_amount']
+            total_tax += row['tax_amount']
+            total_cgst += row['cgst_amount']
+            total_sgst += row['sgst_amount']
+            total_igst += row['igst_amount']
 
-        # 2. Cross-Domain Updates
-        # Update Inventory (ADD stock)
+        return purchase_items, total_taxable, total_tax, total_cgst, total_sgst, total_igst
+
+    def _update_inventory(self, purchase_items: list[PurchaseItem], delta: int):
         for item in purchase_items:
             product = self.inventory_repository.get_product(item.product_id)
-            product.quantity += item.quantity
+            product.quantity += item.quantity * delta
             self.inventory_repository.update_product(product)
-            
-        # Update Party Balance
+
+    def _build_ledger_entries(self, purchase_id: UUID, party, paid_amount: Decimal, balance: Decimal,
+                              total_taxable: Decimal, total_cgst: Decimal, total_sgst: Decimal,
+                              total_igst: Decimal) -> list[dict]:
+        entries = []
+        entries.append({'account': PURCHASES, 'debit': total_taxable, 'credit': Decimal("0"),
+                        'desc': f"Purchase Transaction {purchase_id}"})
+        if total_cgst > 0:
+            entries.append({'account': INPUT_CGST, 'debit': total_cgst, 'credit': Decimal("0"),
+                            'desc': f"ITC CGST for {purchase_id}"})
+        if total_sgst > 0:
+            entries.append({'account': INPUT_SGST, 'debit': total_sgst, 'credit': Decimal("0"),
+                            'desc': f"ITC SGST for {purchase_id}"})
+        if total_igst > 0:
+            entries.append({'account': INPUT_IGST, 'debit': total_igst, 'credit': Decimal("0"),
+                            'desc': f"ITC IGST for {purchase_id}"})
+        if paid_amount > 0:
+            entries.append({'account': CASH, 'debit': Decimal("0"), 'credit': paid_amount,
+                            'desc': f"Payment for Purchase {purchase_id}"})
+        if balance > 0 and party:
+            entries.append({'account': party_prefix(party.name), 'debit': Decimal("0"), 'credit': balance,
+                            'desc': f"Credit Purchase from {party.name}"})
+        return entries
+
+    def record_purchase(self,
+                        items_data: list,
+                        party_id: UUID | None = None,
+                        paid_amount: Decimal = Decimal("0"),
+                        round_off: bool = False,
+                        tax_inclusive: bool = False) -> Purchase:
+        party, is_interstate = self._resolve_party_and_state(party_id)
+        purchase_items, total_taxable, total_tax, total_cgst, total_sgst, total_igst = self._process_items(
+            items_data, is_interstate, tax_inclusive)
+
+        grand_total = compute_grand_total(total_taxable, total_tax, round_off)
+        balance = max(Decimal("0"), grand_total - paid_amount)
+
+        self._update_inventory(purchase_items, 1)
+
         if party_id:
             self.party_repository.update_balance(party_id, balance)
 
-        # 3. Save Purchase
         purchase = Purchase(
             purchase_id=uuid.uuid4(),
             date=datetime.now(),
             party_id=party_id,
-            total_taxable=total_taxable.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP),
-            total_tax=total_tax.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP),
+            total_taxable=total_taxable,
+            total_tax=total_tax,
             grand_total=grand_total,
             paid_amount=paid_amount,
             balance_amount=balance,
             round_off=round_off,
-            items=purchase_items
+            items=purchase_items,
         )
-        
-        # Assign purchase_id to items
         for item in purchase_items:
             item.purchase_id = purchase.purchase_id
-            
+
         self.purchase_repository.add_purchase(purchase)
 
-        # 4. Ledger Entry (Double Entry)
-        entries = []
-        # Basic Purchase Value (DR)
-        entries.append({'account': 'Purchases', 'debit': total_taxable.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP), 'credit': Decimal("0"), 'desc': f"Purchase Transaction {purchase.purchase_id}"})
-        
-        # Input Tax Credits (DR)
-        if total_cgst > 0:
-            entries.append({'account': 'Input CGST', 'debit': total_cgst.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP), 'credit': Decimal("0"), 'desc': f"ITC CGST for {purchase.purchase_id}"})
-        if total_sgst > 0:
-            entries.append({'account': 'Input SGST', 'debit': total_sgst.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP), 'credit': Decimal("0"), 'desc': f"ITC SGST for {purchase.purchase_id}"})
-        if total_igst > 0:
-            entries.append({'account': 'Input IGST', 'debit': total_igst.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP), 'credit': Decimal("0"), 'desc': f"ITC IGST for {purchase.purchase_id}"})
-        
-        # Payments/Liability (CR)
-        if paid_amount > 0:
-            entries.append({'account': 'Cash', 'debit': Decimal("0"), 'credit': paid_amount, 'desc': f"Payment for Purchase {purchase.purchase_id}"})
-        
-        if balance > 0 and party:
-            entries.append({'account': f"Party: {party.name}", 'debit': Decimal("0"), 'credit': balance, 'desc': f"Credit Purchase from {party.name}"})
-        
+        entries = self._build_ledger_entries(purchase.purchase_id, party, paid_amount, balance,
+                                              total_taxable, total_cgst, total_sgst, total_igst)
         self.ledger_service.record_transaction(purchase.purchase_id, entries)
 
         return purchase
 
     def record_payment(self, purchase_id: UUID, amount: Decimal) -> Purchase:
-        """Records a partial or full payment against a purchase."""
         purchase = self.get_purchase(purchase_id)
         if amount > purchase.balance_amount:
             raise ValueError(f"Payment amount {amount} exceeds balance {purchase.balance_amount}")
-        
+
         purchase.paid_amount += amount
         purchase.balance_amount -= amount
-        
-        # Update Party Balance
+
         if purchase.party_id:
             self.party_repository.update_balance(purchase.party_id, purchase.balance_amount)
-            
+
         self.purchase_repository.update_purchase(purchase)
-        
-        # Ledger: DR Party, CR Cash
+
         party = self.party_repository.get_party(purchase.party_id) if purchase.party_id else None
         entries = [
-            {'account': f"Party: {party.name}" if party else "Unknown Party", 'debit': amount, 'credit': Decimal("0"), 'desc': f"Payment made for Purchase {purchase_id}"},
-            {'account': 'Cash', 'debit': Decimal("0"), 'credit': amount, 'desc': f"Payment made for Purchase {purchase_id}"}
+            {'account': party_prefix(party.name) if party else "Unknown Party", 'debit': amount,
+             'credit': Decimal("0"), 'desc': f"Payment made for Purchase {purchase_id}"},
+            {'account': CASH, 'debit': Decimal("0"), 'credit': amount,
+             'desc': f"Payment made for Purchase {purchase_id}"},
         ]
         self.ledger_service.record_transaction(uuid.uuid4(), entries)
-        
+
         return purchase
 
     def list_purchases(self) -> list[Purchase]:
@@ -213,11 +189,7 @@ class PurchaseService:
 
     def delete_purchase(self, purchase_id: UUID) -> None:
         purchase = self.get_purchase(purchase_id)
-        for item in purchase.items:
-            product = self.inventory_repository.get_product(item.product_id)
-            if product:
-                product.quantity -= item.quantity
-                self.inventory_repository.update_product(product)
+        self._update_inventory(purchase.items, -1)
         if purchase.party_id:
             self.party_repository.update_balance(purchase.party_id, -purchase.balance_amount)
         self.ledger_service.clear_transaction(purchase.purchase_id)
@@ -226,9 +198,43 @@ class PurchaseService:
     def update_purchase(self,
                         purchase_id: UUID,
                         items_data: list,
-                        party_id: Optional[UUID] = None,
+                        party_id: UUID | None = None,
                         paid_amount: Decimal = Decimal("0"),
                         round_off: bool = False,
                         tax_inclusive: bool = False) -> Purchase:
-        self.delete_purchase(purchase_id)
-        return self.record_purchase(items_data, party_id, paid_amount, round_off, tax_inclusive)
+        existing = self.get_purchase(purchase_id)
+
+        self._update_inventory(existing.items, -1)
+        if existing.party_id:
+            self.party_repository.update_balance(existing.party_id, -existing.balance_amount)
+        self.ledger_service.clear_transaction(purchase_id)
+
+        party, is_interstate = self._resolve_party_and_state(party_id)
+        purchase_items, total_taxable, total_tax, total_cgst, total_sgst, total_igst = self._process_items(
+            items_data, is_interstate, tax_inclusive)
+
+        grand_total = compute_grand_total(total_taxable, total_tax, round_off)
+        balance = max(Decimal("0"), grand_total - paid_amount)
+
+        self._update_inventory(purchase_items, 1)
+        if party_id:
+            self.party_repository.update_balance(party_id, balance)
+
+        for item in purchase_items:
+            item.purchase_id = purchase_id
+        self.purchase_repository.replace_items(purchase_id, purchase_items)
+
+        existing.party_id = party_id
+        existing.total_taxable = total_taxable
+        existing.total_tax = total_tax
+        existing.grand_total = grand_total
+        existing.paid_amount = paid_amount
+        existing.balance_amount = balance
+        existing.round_off = round_off
+        self.purchase_repository.update_purchase(existing)
+
+        entries = self._build_ledger_entries(purchase_id, party, paid_amount, balance,
+                                              total_taxable, total_cgst, total_sgst, total_igst)
+        self.ledger_service.record_transaction(purchase_id, entries)
+
+        return self.purchase_repository.get_purchase(purchase_id)

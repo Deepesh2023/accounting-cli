@@ -31,6 +31,14 @@ class PurchaseRepository:
         self.session.commit()
         return True
 
+    def replace_items(self, purchase_id: UUID, items: list[PurchaseItem]):
+        existing = self.get_purchase(purchase_id)
+        if existing:
+            for item in list(existing.items):
+                self.session.delete(item)
+        self.session.add_all(items)
+        self.session.commit()
+
     def update_purchase(self, purchase_data: Purchase) -> Purchase:
         db_purchase = self.get_purchase(purchase_data.purchase_id)
         if not db_purchase:
