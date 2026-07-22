@@ -10,6 +10,8 @@
     "postinstall": "nuxi prepare"
   },
   "dependencies": {
+    "@iconify-json/heroicons": "^1.2.3",
+    "@iconify-json/lucide": "^1.2.118",
     "nuxt": "^4.5.0",
     "pinia": "^4.0.2",
     "vue": "^3.5.40",

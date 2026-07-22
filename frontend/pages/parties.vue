@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { api } from '~/lib/api/client'
 import { usePartiesStore } from '~/stores/parties'
 import type { PartyResponse, PartyCreate, PartyUpdate } from '~/lib/api/client'
 

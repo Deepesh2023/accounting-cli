@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { api } from '~/lib/api/client'
+
 definePageMeta({ title: 'Reports' })
 
 const trading = ref<any>(null)

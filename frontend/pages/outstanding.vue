@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { api } from '~/lib/api/client'
 import type { PartyResponse } from '~/lib/api/client'
 
 definePageMeta({ title: 'Outstanding' })

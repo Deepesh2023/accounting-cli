@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { api } from '~/lib/api/client'
 import type { ExpenseResponse, ExpenseCreate, ExpenseUpdate } from '~/lib/api/client'
 
 definePageMeta({ title: 'Expenses' })

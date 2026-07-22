@@ -1,3 +1,4 @@
+import { api } from '~/lib/api/client'
 import type { PartyResponse, PartyCreate, PartyUpdate } from '~/lib/api/client'
 
 export const usePartiesStore = defineStore('parties', () => {

@@ -1,3 +1,4 @@
+import { api } from '~/lib/api/client'
 import type { CompanyResponse, CompanyUpdate } from '~/lib/api/client'
 
 export const useCompanyStore = defineStore('company', () => {

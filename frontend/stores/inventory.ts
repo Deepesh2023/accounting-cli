@@ -1,3 +1,4 @@
+import { api } from '~/lib/api/client'
 import type { ProductResponse, ProductCreate, ProductUpdate } from '~/lib/api/client'
 
 export const useInventoryStore = defineStore('inventory', () => {

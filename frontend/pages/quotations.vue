@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { api } from '~/lib/api/client'
 import type { QuotationResponse, QuotationCreate, QuotationItemInput, PartyResponse, ProductResponse } from '~/lib/api/client'
 
 definePageMeta({ title: 'Quotations' })
@@ -176,7 +177,7 @@ const currency = (v: string | number) => new Intl.NumberFormat('en-IN', { style:
             <tbody>
               <tr v-for="(item, i) in form.items" :key="i" class="border-b border-gray-200">
                 <td class="p-1 min-w-40">
-                  <USelect v-model="item.product_id" :items="[{label: 'Select', value: ''}, ...products.map(p => ({label: p.name, value: p.product_id}))]" size="sm" @change="onProductSelect(item)" />
+                  <USelect v-model="item.product_id" :items="[{label: 'Select', value: ''}, ...products.map(p => ({label: p.name, value: p.product_id}))]" size="sm" @update:model-value="onProductSelect(item)" />
                 </td>
                 <td class="p-1">
                   <UInput v-model.number="item.quantity" type="number" size="sm" class="w-20" @input="calcRow(item)" />
@@ -186,7 +187,7 @@ const currency = (v: string | number) => new Intl.NumberFormat('en-IN', { style:
                 </td>
                 <td class="p-1 text-sm whitespace-nowrap">{{ currency(item.row_total || 0) }}</td>
                 <td class="p-1">
-                  <UButton size="2xs" color="error" variant="ghost" @click="removeItem(i)">×</UButton>
+                  <UButton size="xs" color="error" variant="ghost" @click="removeItem(i)">×</UButton>
                 </td>
               </tr>
             </tbody>
