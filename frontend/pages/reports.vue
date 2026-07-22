@@ -132,7 +132,7 @@ function entries(section: any, side: 'debit' | 'credit') {
         </div>
         <div class="card-body p-0">
           <div class="row g-0">
-            <div class="col-6 border-end">
+            <div class="col-12 col-md-6 border-end-md">
               <table class="table mb-0">
                 <thead class="table-light"><tr><th>Liabilities</th><th class="text-end">Amount</th></tr></thead>
                 <tbody>
@@ -147,7 +147,7 @@ function entries(section: any, side: 'debit' | 'credit') {
                 </tbody>
               </table>
             </div>
-            <div class="col-6">
+            <div class="col-12 col-md-6">
               <table class="table mb-0">
                 <thead class="table-light"><tr><th>Assets</th><th class="text-end">Amount</th></tr></thead>
                 <tbody>
@@ -175,4 +175,7 @@ function entries(section: any, side: 'debit' | 'credit') {
 .card-header h5 { font-weight: 700; }
 .table th { font-weight: 600; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px; }
 .table td { vertical-align: middle; }
+@media (min-width: 768px) {
+  .border-end-md { border-right: 1px solid #dee2e6; }
+}
 </style>

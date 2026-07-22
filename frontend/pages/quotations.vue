@@ -154,14 +154,14 @@ const currency = (v: string | number) => new Intl.NumberFormat('en-IN', { style:
           </div>
           <div class="modal-body">
             <div class="row g-3 mb-3">
-              <div class="col-6">
+              <div class="col-12 col-sm-6">
                 <label class="form-label">Customer</label>
                 <select v-model="form.party_id" class="form-select">
                   <option value="">Walk-in</option>
                   <option v-for="p in parties" :key="p.party_id" :value="p.party_id">{{ p.name }}</option>
                 </select>
               </div>
-              <div class="col-4">
+              <div class="col-12 col-sm-4">
                 <label class="form-label">Status</label>
                 <select v-model="form.status" class="form-select">
                   <option value="Draft">Draft</option>

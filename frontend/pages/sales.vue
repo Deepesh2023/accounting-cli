@@ -266,11 +266,11 @@ const formatCurrency = (v: string | number) => new Intl.NumberFormat('en-IN', { 
             </ul>
             <button type="button" class="btn-close" @click="showForm = false"></button>
           </div>
-          <div class="modal-body" v-if="activeTab === 'form'">
+            <div class="modal-body">
             <div class="row g-4">
-              <div class="col-md-7">
+              <div class="col-12 col-md-7" :class="activeTab === 'preview' ? 'd-none d-md-block' : ''">
                 <div class="row g-3 mb-3">
-                  <div class="col-6">
+                  <div class="col-12 col-sm-6">
                     <label class="form-label">Customer</label>
                     <div class="input-group">
                       <select v-model="form.party_id" class="form-select">
@@ -280,11 +280,11 @@ const formatCurrency = (v: string | number) => new Intl.NumberFormat('en-IN', { 
                       <button class="btn btn-outline-secondary" @click="showQuickParty = true">+</button>
                     </div>
                   </div>
-                  <div class="col-3">
+                  <div class="col-6 col-sm-3">
                     <label class="form-label">Paid Amount</label>
                     <input v-model.number="form.paid_amount" type="number" step="0.01" class="form-control" />
                   </div>
-                  <div class="col-3 d-flex align-items-end">
+                  <div class="col-6 col-sm-3 d-flex align-items-end">
                     <div class="form-check">
                       <input v-model="form.round_off" type="checkbox" class="form-check-input" id="ro" />
                       <label class="form-check-label" for="ro">Round Off</label>
@@ -301,18 +301,18 @@ const formatCurrency = (v: string | number) => new Intl.NumberFormat('en-IN', { 
                     </thead>
                     <tbody>
                       <tr v-for="(item, i) in form.items" :key="i">
-                        <td style="min-width:160px">
+                        <td style="min-width:140px">
                           <select v-model="item.product_id" class="form-select form-select-sm" @change="onProductSelect(item)">
                             <option value="">Select</option>
                             <option v-for="p in products" :key="p.product_id" :value="p.product_id">{{ p.name }}</option>
                           </select>
                         </td>
-                        <td><input v-model.number="item.quantity" type="number" class="form-control form-control-sm" style="width:70px" @input="calcRow(item)" /></td>
-                        <td><input v-model.number="item.price" type="number" class="form-control form-control-sm" style="width:90px" @input="calcRow(item)" /></td>
-                        <td><input v-model.number="item.discount_perc" type="number" class="form-control form-control-sm" style="width:60px" @input="calcRow(item)" /></td>
-                        <td>{{ formatCurrency(item.discount_amt || 0) }}</td>
-                        <td><input v-model.number="item.tax_perc" type="number" class="form-control form-control-sm" style="width:60px" @input="calcRow(item)" /></td>
-                        <td>{{ formatCurrency(item.row_total || 0) }}</td>
+                        <td><input v-model.number="item.quantity" type="number" class="form-control form-control-sm" style="width:60px" @input="calcRow(item)" /></td>
+                        <td><input v-model.number="item.price" type="number" class="form-control form-control-sm" style="width:80px" @input="calcRow(item)" /></td>
+                        <td><input v-model.number="item.discount_perc" type="number" class="form-control form-control-sm" style="width:55px" @input="calcRow(item)" /></td>
+                        <td class="text-nowrap">{{ formatCurrency(item.discount_amt || 0) }}</td>
+                        <td><input v-model.number="item.tax_perc" type="number" class="form-control form-control-sm" style="width:55px" @input="calcRow(item)" /></td>
+                        <td class="text-nowrap">{{ formatCurrency(item.row_total || 0) }}</td>
                         <td><button class="btn btn-sm btn-outline-danger" @click="removeItem(i)">×</button></td>
                       </tr>
                     </tbody>
@@ -322,18 +322,18 @@ const formatCurrency = (v: string | number) => new Intl.NumberFormat('en-IN', { 
 
                 <hr />
                 <div class="row g-3">
-                  <div class="col-6">
+                  <div class="col-12 col-sm-6">
                     <strong>Grand Total: {{ formatCurrency(grandTotal) }}</strong>
                   </div>
-                  <div class="col-3">
+                  <div class="col-6 col-sm-3">
                     <span>Paid: {{ formatCurrency(form.paid_amount) }}</span>
                   </div>
-                  <div class="col-3">
+                  <div class="col-6 col-sm-3">
                     <span :class="balanceAmount > 0 ? 'text-danger' : 'text-success'">Balance: {{ formatCurrency(balanceAmount) }}</span>
                   </div>
                 </div>
               </div>
-              <div class="col-md-5 border-start" v-html="invoicePreview"></div>
+              <div class="col-12 col-md-5 border-start-md" :class="activeTab === 'form' ? 'd-none d-md-block' : ''" v-html="invoicePreview"></div>
             </div>
 
             <div v-if="showQuickParty" class="mt-3 p-3 border rounded bg-light">
@@ -405,4 +405,7 @@ const formatCurrency = (v: string | number) => new Intl.NumberFormat('en-IN', { 
 .table th { font-weight: 600; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px; }
 .table td { vertical-align: middle; }
 .modal-fullscreen { max-width: 95vw; }
+@media (min-width: 768px) {
+  .border-start-md { border-left: 1px solid #dee2e6; }
+}
 </style>

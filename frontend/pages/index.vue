@@ -9,19 +9,19 @@ definePageMeta({ title: 'Dashboard' })
       <p class="text-muted">Accounting & Inventory Management</p>
     </div>
     <div class="row g-4 mt-2">
-      <div class="col-md-4">
+      <div class="col-12 col-md-4">
         <div class="stat-card bg-primary text-white">
           <h6>TOTAL SALES (ALL TIME)</h6>
           <h2>₹0.00</h2>
         </div>
       </div>
-      <div class="col-md-4">
+      <div class="col-12 col-md-4">
         <div class="stat-card bg-success text-white">
           <h6>TOTAL PURCHASES</h6>
           <h2>₹0.00</h2>
         </div>
       </div>
-      <div class="col-md-4">
+      <div class="col-12 col-md-4">
         <div class="stat-card bg-info text-white">
           <h6>CASH BALANCE</h6>
           <h2>₹0.00</h2>

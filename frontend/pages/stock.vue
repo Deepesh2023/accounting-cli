@@ -95,21 +95,21 @@ const currency = (v: string | number) => new Intl.NumberFormat('en-IN', { style:
               <input v-model="form.name" class="form-control" placeholder="Product name" />
             </div>
             <div class="row g-3">
-              <div class="col-6">
+              <div class="col-12 col-sm-6">
                 <label class="form-label">Selling Price</label>
                 <input v-model.number="form.selling_price" type="number" step="0.01" class="form-control" />
               </div>
-              <div class="col-6">
+              <div class="col-12 col-sm-6">
                 <label class="form-label">Quantity</label>
                 <input v-model.number="form.quantity" type="number" class="form-control" />
               </div>
             </div>
             <div class="row g-3 mt-1">
-              <div class="col-6">
+              <div class="col-12 col-sm-6">
                 <label class="form-label">GST Rate (%)</label>
                 <input v-model.number="form.gst_rate" type="number" step="0.1" class="form-control" />
               </div>
-              <div class="col-6">
+              <div class="col-12 col-sm-6">
                 <label class="form-label">HSN Code</label>
                 <input v-model="form.hsn_code" class="form-control" placeholder="e.g. 8471" />
               </div>

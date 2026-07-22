@@ -48,13 +48,13 @@ function paymentMode(row: any) {
       <h1 class="m-0">Transactions</h1>
     </div>
     <div class="row g-3 mb-4">
-      <div class="col-md-6">
+      <div class="col-12 col-md-6">
         <div class="stat-card bg-info text-white">
           <h6>CASH BALANCE</h6>
           <h2>{{ currency(cashBalance) }}</h2>
         </div>
       </div>
-      <div class="col-md-6">
+      <div class="col-12 col-md-6">
         <div class="stat-card bg-primary text-white">
           <h6>BANK BALANCE</h6>
           <h2>{{ currency(bankBalance) }}</h2>

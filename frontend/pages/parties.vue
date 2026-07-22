@@ -125,11 +125,11 @@ const currency = (v: string | number) => new Intl.NumberFormat('en-IN', { style:
               <input v-model="form.name" class="form-control" />
             </div>
             <div class="row g-3">
-              <div class="col-6">
+              <div class="col-12 col-sm-6">
                 <label class="form-label">Phone</label>
                 <input v-model="form.phone" class="form-control" />
               </div>
-              <div class="col-6">
+              <div class="col-12 col-sm-6">
                 <label class="form-label">State</label>
                 <select v-model="form.state" class="form-select">
                   <option value="" disabled>Select State</option>
@@ -142,11 +142,11 @@ const currency = (v: string | number) => new Intl.NumberFormat('en-IN', { style:
               <textarea v-model="form.address" class="form-control" rows="2"></textarea>
             </div>
             <div class="row g-3">
-              <div class="col-6">
+              <div class="col-12 col-sm-6">
                 <label class="form-label">Opening Balance</label>
                 <input v-model.number="form.balance" type="number" step="0.01" class="form-control" />
               </div>
-              <div class="col-6">
+              <div class="col-12 col-sm-6">
                 <label class="form-label">Type</label>
                 <select v-model="form.party_type" class="form-select">
                   <option value="DEBTOR">Receive (Debtor)</option>

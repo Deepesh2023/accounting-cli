@@ -61,7 +61,7 @@ const currency = (v: string | number) => new Intl.NumberFormat('en-IN', { style:
       <button class="btn btn-primary" @click="openAdd">+ Add Expense</button>
     </div>
     <div class="row g-3 mb-4">
-      <div class="col-md-4">
+      <div class="col-12 col-md-4">
         <div class="stat-card bg-danger text-white">
           <h6>TOTAL EXPENSES</h6>
           <h2>{{ currency(totalExpenses) }}</h2>
@@ -116,14 +116,14 @@ const currency = (v: string | number) => new Intl.NumberFormat('en-IN', { style:
               </select>
             </div>
             <div class="row g-3">
-              <div class="col-6">
+              <div class="col-12 col-sm-6">
                 <label class="form-label">Paid By</label>
                 <select v-model="form.paid_by" class="form-select">
                   <option value="Cash">Cash</option>
                   <option value="Bank">Bank</option>
                 </select>
               </div>
-              <div class="col-6">
+              <div class="col-12 col-sm-6">
                 <label class="form-label">Amount</label>
                 <input v-model.number="form.amount" type="number" step="0.01" class="form-control" />
               </div>

@@ -75,11 +75,11 @@ function onQrUpload(e: Event) {
         <div class="card-header"><h5 class="m-0">Business Information</h5></div>
         <div class="card-body">
           <div class="row g-3">
-            <div class="col-6">
+            <div class="col-12 col-sm-6">
               <label class="form-label">Business Name</label>
               <input v-model="form.name" class="form-control" />
             </div>
-            <div class="col-3">
+            <div class="col-12 col-sm-3">
               <label class="form-label">Business Type</label>
               <select v-model="form.business_type" class="form-select">
                 <option value="">Select</option>
@@ -89,11 +89,11 @@ function onQrUpload(e: Event) {
                 <option value="Service">Service</option>
               </select>
             </div>
-            <div class="col-3">
+            <div class="col-12 col-sm-3">
               <label class="form-label">Category</label>
               <input v-model="form.category" class="form-control" />
             </div>
-            <div class="col-4">
+            <div class="col-12 col-sm-4">
               <label class="form-label">Start Date</label>
               <input v-model="form.beginning_date" type="date" class="form-control" />
             </div>
@@ -105,19 +105,19 @@ function onQrUpload(e: Event) {
         <div class="card-header"><h5 class="m-0">Contact</h5></div>
         <div class="card-body">
           <div class="row g-3">
-            <div class="col-4">
+            <div class="col-12 col-sm-4">
               <label class="form-label">Phone</label>
               <input v-model="form.phone" class="form-control" />
             </div>
-            <div class="col-4">
+            <div class="col-12 col-sm-4">
               <label class="form-label">Email</label>
               <input v-model="form.email" type="email" class="form-control" />
             </div>
-            <div class="col-4">
+            <div class="col-12 col-sm-4">
               <label class="form-label">State</label>
               <input v-model="form.state" class="form-control" />
             </div>
-            <div class="col-4">
+            <div class="col-12 col-sm-4">
               <label class="form-label">Pincode</label>
               <input v-model="form.pincode" class="form-control" />
             </div>
@@ -133,11 +133,11 @@ function onQrUpload(e: Event) {
         <div class="card-header"><h5 class="m-0">Tax & Settings</h5></div>
         <div class="card-body">
           <div class="row g-3">
-            <div class="col-4">
+            <div class="col-12 col-sm-4">
               <label class="form-label">GSTIN</label>
               <input v-model="form.gstin" class="form-control" placeholder="22AAAAA0000A1Z5" />
             </div>
-            <div class="col-4 d-flex align-items-end">
+            <div class="col-12 col-sm-4 d-flex align-items-end">
               <div class="form-check">
                 <input v-model="form.enable_party_netting" type="checkbox" class="form-check-input" id="netting" />
                 <label class="form-check-label" for="netting">Enable Party Netting</label>
@@ -151,14 +151,14 @@ function onQrUpload(e: Event) {
         <div class="card-header"><h5 class="m-0">Uploads</h5></div>
         <div class="card-body">
           <div class="row g-4">
-            <div class="col-6">
+            <div class="col-12 col-sm-6">
               <label class="form-label">Logo</label>
               <input type="file" accept="image/*" class="form-control" @change="onLogoUpload" />
               <div v-if="form.logo_data" class="mt-2">
                 <img :src="form.logo_data" class="img-thumbnail" style="max-height:100px" />
               </div>
             </div>
-            <div class="col-6">
+            <div class="col-12 col-sm-6">
               <label class="form-label">QR Code</label>
               <input type="file" accept="image/*" class="form-control" @change="onQrUpload" />
               <div v-if="form.qr_data" class="mt-2">
