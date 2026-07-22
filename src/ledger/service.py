@@ -3,6 +3,7 @@ from uuid import UUID
 from decimal import Decimal
 from ledger.models import LedgerEntry
 from ledger.repository import LedgerRepository
+from shared.accounts import GST_ACCOUNTS
 
 class LedgerService:
     def __init__(self, repository: LedgerRepository):
@@ -40,9 +41,8 @@ class LedgerService:
 
     def get_gst_summary(self) -> dict:
         """Returns the balance of all GST related accounts."""
-        gst_accounts = ['Input CGST', 'Input SGST', 'Input IGST', 'Output CGST', 'Output SGST', 'Output IGST']
         summary = {}
-        for acc in gst_accounts:
+        for acc in GST_ACCOUNTS:
             summary[acc] = self.get_balance(acc)
         return summary
 
