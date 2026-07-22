@@ -12,5 +12,8 @@ dependencies = [
     "uvicorn>=0.51.0",
 ]
 
+[project.scripts]
+printos = "main:cli_entry"
+
 [tool.pytest.ini_options]
 pythonpath = "src"

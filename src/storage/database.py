@@ -1,9 +1,20 @@
+import os
 from sqlmodel import create_engine, Session, SQLModel
 
-# In a real app, this would come from an environment variable
-DATABASE_URL = "postgresql://user:password@localhost/printos_db"
+DATABASE_URL = os.getenv(
+    "DATABASE_URL",
+    "sqlite:///./printos.db"
+)
 
-engine = create_engine(DATABASE_URL)
+connect_args = {}
+if DATABASE_URL.startswith("sqlite"):
+    connect_args["check_same_thread"] = False
+
+engine = create_engine(
+    DATABASE_URL,
+    echo=os.getenv("DATABASE_ECHO", "false").lower() == "true",
+    connect_args=connect_args,
+)
 
 def get_db():
     with Session(engine) as session:
