@@ -12,6 +12,8 @@ from purchase.repository import PurchaseRepository
 from purchase.service import PurchaseService
 from expenses.repository import ExpenseRepository
 from expenses.service import ExpenseService
+from quotation.repository import QuotationRepository
+from quotation.service import QuotationService
 from ledger.repository import LedgerRepository
 from ledger.service import LedgerService
 from ledger.repository import LedgerRepository
@@ -52,3 +54,8 @@ def get_expense_service(session: Session = Depends(get_session)) -> ExpenseServi
     repo = ExpenseRepository(session)
     ledger_svc = LedgerService(LedgerRepository(session))
     return ExpenseService(repo, ledger_service=ledger_svc)
+
+
+def get_quotation_service(session: Session = Depends(get_session)) -> QuotationService:
+    repo = QuotationRepository(session)
+    return QuotationService(repo)
