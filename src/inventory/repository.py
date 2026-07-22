@@ -38,10 +38,13 @@ class InventoryRepository:
         product = self.get_product(product_id=updated_product.product_id)
         if not product:
             raise ProductNotFoundError("Cannot find product.")
-        
+
         product.name = updated_product.name
         product.selling_price = updated_product.selling_price
         product.quantity = updated_product.quantity
+        product.gst_rate = updated_product.gst_rate
+        product.hsn_code = updated_product.hsn_code
+        product.archived = updated_product.archived
         self.session.commit()
 
     def delete_product(self, product_id: UUID) -> bool:

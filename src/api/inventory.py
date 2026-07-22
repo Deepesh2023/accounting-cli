@@ -4,6 +4,7 @@ from typing import List
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, ConfigDict
 
+from inventory.models import Product
 from inventory.service import InventoryService
 from shared.exceptions import ProductNotFoundError, InvalidProductDataError
 from api.deps import get_inventory_service
@@ -82,7 +83,6 @@ def update_product(
     data: ProductUpdate,
     service: InventoryService = Depends(get_inventory_service),
 ):
-    from inventory.models import Product
     try:
         existing = service.get_product(product_id)
     except ProductNotFoundError:
@@ -95,6 +95,7 @@ def update_product(
         quantity=data.quantity if data.quantity is not None else existing.quantity,
         gst_rate=data.gst_rate if data.gst_rate is not None else existing.gst_rate,
         hsn_code=data.hsn_code if data.hsn_code is not None else existing.hsn_code,
+        archived=existing.archived,
     )
     service.update_product(updated)
     return service.get_product(product_id)

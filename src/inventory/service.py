@@ -14,9 +14,9 @@ class InventoryService:
             if p.archived == show_archived
         ]
 
-    def add_product(self, name: str, selling_price: float | Decimal, quantity: int, gst_rate: float | Decimal = 0, hsn_code: str = "") -> Product:
-        price = Decimal(str(selling_price))
-        rate = Decimal(str(gst_rate))
+    def add_product(self, name: str, selling_price: Decimal, quantity: int, gst_rate: Decimal = Decimal("0"), hsn_code: str = "") -> Product:
+        price = selling_price
+        rate = gst_rate
         if price < 0 or quantity < 0 or rate < 0:
             raise InvalidProductDataError("selling-price/quantity/gst-rate shouldn't be negative")
         

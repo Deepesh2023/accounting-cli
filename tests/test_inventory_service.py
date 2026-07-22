@@ -38,19 +38,19 @@ def test_add_product_success(service, mock_repo):
     with patch('inventory.service.Product') as MockProduct:
         mock_product_inst = MockProduct.return_value
         mock_product_inst.name = "Test Product"
-        
-        product = service.add_product("Test Product", 10.5, 100, gst_rate=18, hsn_code="1234")
+
+        product = service.add_product("Test Product", Decimal("10.50"), 100, gst_rate=Decimal("18"), hsn_code="1234")
 
         assert product.name == "Test Product"
         mock_repo.add_product.assert_called_once_with(mock_product_inst)
 
 def test_add_product_negative_gst(service):
     with pytest.raises(InvalidProductDataError):
-        service.add_product("Bad", 10, 10, gst_rate=-1)
+        service.add_product("Bad", Decimal("10"), 10, gst_rate=Decimal("-1"))
 
 def test_add_product_negative_qty(service):
     with pytest.raises(InvalidProductDataError):
-        service.add_product("Bad", 10, -1)
+        service.add_product("Bad", Decimal("10"), -1)
 
 def test_get_product_success(service, mock_repo):
     p_id = uuid4()
