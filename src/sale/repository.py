@@ -31,6 +31,14 @@ class SaleRepository:
         self.session.commit()
         return True
 
+    def replace_items(self, sale_id: UUID, items: list[SaleItem]):
+        existing = self.get_sale(sale_id)
+        if existing:
+            for item in list(existing.items):
+                self.session.delete(item)
+        self.session.add_all(items)
+        self.session.commit()
+
     def update_sale(self, sale_data: Sale) -> Sale:
         db_sale = self.get_sale(sale_data.sale_id)
         if not db_sale:

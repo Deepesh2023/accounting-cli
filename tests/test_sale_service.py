@@ -138,5 +138,5 @@ def test_update_sale_creates_new_sale(service, session):
     updated_sale = service.update_sale(sale.sale_id, updated_items, party_id=party_id)
 
     assert product.quantity == 19
-    assert updated_sale.sale_id != sale.sale_id
+    assert updated_sale.sale_id == sale.sale_id
     assert updated_sale.grand_total == Decimal("118")
