@@ -8,6 +8,7 @@ from api.sales import router as sales_router
 from api.purchases import router as purchases_router
 from api.expenses import router as expenses_router
 from api.quotations import router as quotations_router
+from api.reports import router as reports_router
 
 
 @asynccontextmanager
@@ -23,3 +24,4 @@ app.include_router(sales_router, prefix="/api/sales", tags=["Sales"])
 app.include_router(purchases_router, prefix="/api/purchases", tags=["Purchases"])
 app.include_router(expenses_router, prefix="/api/expenses", tags=["Expenses"])
 app.include_router(quotations_router, prefix="/api/quotations", tags=["Quotations"])
+app.include_router(reports_router, prefix="/api/reports", tags=["Reports"])
