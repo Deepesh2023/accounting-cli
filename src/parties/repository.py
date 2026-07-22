@@ -50,12 +50,15 @@ class PartyRepository:
         db_party = self.get_party(party_data.party_id)
         if not db_party:
             raise ValueError("Party not found")
-        
-        # Update fields
+
         db_party.name = party_data.name
         db_party.address = party_data.address
         db_party.phone = party_data.phone
-        
+        db_party.party_type = party_data.party_type
+        db_party.balance = party_data.balance
+        db_party.state = party_data.state
+        db_party.gstin = party_data.gstin
+
         self.session.commit()
         self.session.refresh(db_party)
         return db_party

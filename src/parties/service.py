@@ -33,14 +33,16 @@ class PartyService:
 
     def update_party_info(self, party_id: UUID, name: str = None, address: str = None, phone: str = None) -> Party:
         party = self.get_party(party_id)
-        
+
         updated_data = Party(
             party_id=party.party_id,
             name=name if name else party.name,
             party_type=party.party_type,
             balance=party.balance,
             address=address if address else party.address,
-            phone=phone if phone else party.phone
+            phone=phone if phone else party.phone,
+            state=party.state,
+            gstin=party.gstin,
         )
         return self.repository.update_party(updated_data)
 

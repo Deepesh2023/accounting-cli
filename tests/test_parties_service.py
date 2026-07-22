@@ -15,6 +15,8 @@ class PartyMock:
     balance: Decimal
     address: str = None
     phone: str = None
+    state: str = ""
+    gstin: str = None
 
 @pytest.fixture
 def mock_repo():
@@ -60,13 +62,15 @@ def test_list_parties(service, mock_repo):
 
 def test_update_party_info(service, mock_repo):
     p_id = uuid4()
-    party = PartyMock(p_id, "Old Name", PartyType.DEBTOR, Decimal("0"))
+    party = PartyMock(p_id, "Old Name", PartyType.DEBTOR, Decimal("0"), state="Karnataka", gstin="29ABCDE1234F1Z5")
     mock_repo.get_party.return_value = party
     mock_repo.update_party.side_effect = lambda p: p
-    
+
     updated = service.update_party_info(p_id, name="New Name")
-    
+
     assert updated.name == "New Name"
+    assert updated.state == "Karnataka"
+    assert updated.gstin == "29ABCDE1234F1Z5"
     mock_repo.update_party.assert_called_once()
 
 def test_adjust_balance_success(service, mock_repo):
