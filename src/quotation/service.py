@@ -16,6 +16,11 @@ class QuotationService:
         uid = UUID(q_id) if isinstance(q_id, str) else q_id
         return self.repository.get_quotation(uid)
 
+    def update_quotation(self, q_id: UUID | str, quotation: Quotation) -> Quotation:
+        uid = UUID(q_id) if isinstance(q_id, str) else q_id
+        quotation.quotation_id = uid
+        return self.repository.update_quotation(quotation)
+
     def remove_quotation(self, q_id: UUID | str) -> bool:
         uid = UUID(q_id) if isinstance(q_id, str) else q_id
         return self.repository.delete_quotation(uid)

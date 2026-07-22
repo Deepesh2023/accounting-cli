@@ -44,6 +44,11 @@ class PartyService:
         )
         return self.repository.update_party(updated_data)
 
+    def delete_party(self, party_id: UUID) -> None:
+        result = self.repository.delete_party(party_id)
+        if not result:
+            raise ValueError(f"Party with id {party_id} not found")
+
     def adjust_balance(self, party_id: UUID, amount: Decimal) -> Party:
         """
         Adjusts party balance. 

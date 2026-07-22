@@ -87,3 +87,15 @@ def test_search_products(service, mock_repo):
 
     assert service.search_products("Apple") == [p1]
     mock_repo.search_products.assert_called_once_with("Apple")
+
+def test_delete_product_success(service, mock_repo):
+    p_id = uuid4()
+    mock_repo.delete_product.return_value = True
+    result = service.delete_product(p_id)
+    assert result is True
+    mock_repo.delete_product.assert_called_once_with(p_id)
+
+def test_delete_product_not_found(service, mock_repo):
+    mock_repo.delete_product.return_value = False
+    result = service.delete_product(uuid4())
+    assert result is False

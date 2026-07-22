@@ -59,3 +59,11 @@ class PartyRepository:
         self.session.commit()
         self.session.refresh(db_party)
         return db_party
+
+    def delete_party(self, party_id: UUID) -> bool:
+        party = self.get_party(party_id)
+        if not party:
+            return False
+        self.session.delete(party)
+        self.session.commit()
+        return True

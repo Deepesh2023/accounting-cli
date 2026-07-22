@@ -89,3 +89,21 @@ def test_update_product(repo):
     assert retrieved.name == "New Name"
     assert retrieved.selling_price == 2.0
     assert retrieved.quantity == 5
+
+def test_delete_product(repo):
+    # Arrange
+    p_id = uuid4()
+    product = Product(product_id=p_id, name="To Delete", selling_price=1.0, quantity=1)
+    repo.add_product(product)
+    assert repo.get_product(p_id) is not None
+
+    # Act
+    result = repo.delete_product(p_id)
+
+    # Assert
+    assert result is True
+    assert repo.get_product(p_id) is None
+
+def test_delete_product_not_found(repo):
+    result = repo.delete_product(uuid4())
+    assert result is False

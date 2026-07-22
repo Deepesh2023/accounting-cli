@@ -48,3 +48,6 @@ class InventoryService:
 
     def search_products(self, query: str) -> list[Product]:
         return self.repository.search_products(query)
+
+    def delete_product(self, product_id: uuid.UUID) -> bool:
+        return self.repository.delete_product(product_id)

@@ -31,3 +31,6 @@ class InventoryRepositoryProtocol(Protocol):
 
     def search_products(self, query: str) -> List[Product]:
         ...
+
+    def delete_product(self, product_id: UUID) -> bool:
+        ...

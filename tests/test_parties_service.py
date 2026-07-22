@@ -83,3 +83,17 @@ def test_adjust_balance_not_found(service, mock_repo):
     mock_repo.update_balance.return_value = None
     with pytest.raises(ValueError, match="not found"):
         service.adjust_balance(uuid4(), Decimal("50"))
+
+def test_delete_party_success(service, mock_repo):
+    p_id = uuid4()
+    mock_repo.delete_party.return_value = True
+
+    service.delete_party(p_id)
+
+    mock_repo.delete_party.assert_called_once_with(p_id)
+
+def test_delete_party_not_found(service, mock_repo):
+    mock_repo.delete_party.return_value = False
+
+    with pytest.raises(ValueError, match="not found"):
+        service.delete_party(uuid4())

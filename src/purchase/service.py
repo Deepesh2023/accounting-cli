@@ -204,3 +204,25 @@ class PurchaseService:
         if not purchase:
             raise ValueError("Purchase not found")
         return purchase
+
+    def delete_purchase(self, purchase_id: UUID) -> None:
+        purchase = self.get_purchase(purchase_id)
+        for item in purchase.items:
+            product = self.inventory_repository.get_product(item.product_id)
+            if product:
+                product.quantity -= item.quantity
+                self.inventory_repository.update_product(product)
+        if purchase.party_id:
+            self.party_repository.update_balance(purchase.party_id, -purchase.balance_amount)
+        self.ledger_service.clear_transaction(purchase.purchase_id)
+        self.purchase_repository.delete_purchase(purchase_id)
+
+    def update_purchase(self,
+                        purchase_id: UUID,
+                        items_data: list,
+                        party_id: Optional[UUID] = None,
+                        paid_amount: Decimal = Decimal("0"),
+                        round_off: bool = False,
+                        tax_inclusive: bool = False) -> Purchase:
+        self.delete_purchase(purchase_id)
+        return self.record_purchase(items_data, party_id, paid_amount, round_off, tax_inclusive)

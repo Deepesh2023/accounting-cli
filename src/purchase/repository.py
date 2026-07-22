@@ -25,6 +25,8 @@ class PurchaseRepository:
         if not purchase:
             return False
         
+        for item in list(purchase.items):
+            self.session.delete(item)
         self.session.delete(purchase)
         self.session.commit()
         return True

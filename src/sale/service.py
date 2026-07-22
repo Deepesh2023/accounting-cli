@@ -206,3 +206,25 @@ class SaleService:
             raise ValueError("Sale not found")
         return sale
 
+    def delete_sale(self, sale_id: UUID) -> None:
+        sale = self.get_sale(sale_id)
+        for item in sale.items:
+            product = self.inventory_repository.get_product(item.product_id)
+            if product:
+                product.quantity += item.quantity
+                self.inventory_repository.update_product(product)
+        if sale.party_id:
+            self.party_repository.update_balance(sale.party_id, -sale.balance_amount)
+        self.ledger_service.clear_transaction(sale.sale_id)
+        self.sale_repository.delete_sale(sale_id)
+
+    def update_sale(self,
+                    sale_id: UUID,
+                    items_data: list,
+                    party_id: Optional[UUID] = None,
+                    paid_amount: Decimal = Decimal("0"),
+                    round_off: bool = False,
+                    tax_inclusive: bool = False) -> Sale:
+        self.delete_sale(sale_id)
+        return self.record_sale(items_data, party_id, paid_amount, round_off, tax_inclusive)
+

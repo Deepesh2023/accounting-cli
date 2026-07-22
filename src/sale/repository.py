@@ -25,7 +25,8 @@ class SaleRepository:
         if not sale:
             return False
         
-        # Delete items first due to foreign key constraints
+        for item in list(sale.items):
+            self.session.delete(item)
         self.session.delete(sale)
         self.session.commit()
         return True

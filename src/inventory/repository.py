@@ -45,3 +45,11 @@ class InventoryRepository:
         product.quantity = updated_product.quantity
         self.session.commit()
 
+    def delete_product(self, product_id: UUID) -> bool:
+        product = self.get_product(product_id)
+        if not product:
+            return False
+        self.session.delete(product)
+        self.session.commit()
+        return True
+
