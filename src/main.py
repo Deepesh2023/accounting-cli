@@ -1,13 +1,15 @@
-from cli.menu import show_main_menu
-from container import container
+from contextlib import asynccontextmanager
+from fastapi import FastAPI
+from sqlmodel import SQLModel
+from storage.database import engine
+from api.inventory import router as inventory_router
 
 
-def cli_entry():
-    show_main_menu(
-        inventory_service=container.inventory_service, 
-        sale_service=container.sale_service
-    )
+@asynccontextmanager
+async def lifespan(_app: FastAPI):
+    SQLModel.metadata.create_all(engine)
+    yield
 
 
-if __name__ == "__main__":
-    cli_entry()
+app = FastAPI(title="Printos Accounting API", lifespan=lifespan)
+app.include_router(inventory_router, prefix="/api/inventory", tags=["Inventory"])
