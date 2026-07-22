@@ -15,9 +15,10 @@ from expenses.service import ExpenseService
 from quotation.repository import QuotationRepository
 from quotation.service import QuotationService
 from reports.service import ReportService
+from company.repository import CompanyRepository
+from company.service import CompanyService
 from ledger.repository import LedgerRepository
 from ledger.service import LedgerService
-from ledger.repository import LedgerRepository
 
 
 def get_session():
@@ -60,6 +61,16 @@ def get_expense_service(session: Session = Depends(get_session)) -> ExpenseServi
 def get_quotation_service(session: Session = Depends(get_session)) -> QuotationService:
     repo = QuotationRepository(session)
     return QuotationService(repo)
+
+
+def get_company_service(session: Session = Depends(get_session)) -> CompanyService:
+    repo = CompanyRepository(session)
+    return CompanyService(repo)
+
+
+def get_ledger_service(session: Session = Depends(get_session)) -> LedgerService:
+    repo = LedgerRepository(session)
+    return LedgerService(repo)
 
 
 def get_report_service(session: Session = Depends(get_session)) -> ReportService:
