@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { SaleResponse, PurchaseResponse, SaleCreate, SaleItemInput, PartyResponse, ProductResponse } from '~/lib/api/client'
+import type { SaleResponse, SaleCreate, SaleItemInput, PartyResponse, ProductResponse } from '~/lib/api/client'
 
 definePageMeta({ title: 'Sales' })
 
