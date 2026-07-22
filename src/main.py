@@ -3,6 +3,7 @@ from fastapi import FastAPI
 from sqlmodel import SQLModel
 from storage.database import engine
 from api.inventory import router as inventory_router
+from api.parties import router as parties_router
 
 
 @asynccontextmanager
@@ -13,3 +14,4 @@ async def lifespan(_app: FastAPI):
 
 app = FastAPI(title="Printos Accounting API", lifespan=lifespan)
 app.include_router(inventory_router, prefix="/api/inventory", tags=["Inventory"])
+app.include_router(parties_router, prefix="/api/parties", tags=["Parties"])
