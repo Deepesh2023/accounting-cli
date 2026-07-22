@@ -1,0 +1,17 @@
+CASH = "Cash"
+SALES_REVENUE = "Sales Revenue"
+PURCHASES = "Purchases"
+OUTPUT_CGST = "Output CGST"
+OUTPUT_SGST = "Output SGST"
+OUTPUT_IGST = "Output IGST"
+INPUT_CGST = "Input CGST"
+INPUT_SGST = "Input SGST"
+INPUT_IGST = "Input IGST"
+OTHER_INCOME = "Other Income"
+EXPENSES = "Expenses"
+CAPITAL = "Capital"
+
+GST_ACCOUNTS = [
+    INPUT_CGST, INPUT_SGST, INPUT_IGST,
+    OUTPUT_CGST, OUTPUT_SGST, OUTPUT_IGST,
+]
