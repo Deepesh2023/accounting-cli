@@ -3,6 +3,7 @@ from typing import Dict
 from inventory.repository import InventoryRepository
 from parties.repository import PartyRepository
 from ledger.service import LedgerService
+from shared.accounts import SALES_REVENUE, PURCHASES, OTHER_INCOME, EXPENSES, CAPITAL
 
 class ReportService:
     def __init__(self, 
@@ -17,8 +18,8 @@ class ReportService:
         """
         Gross Profit = (Sales + Closing Stock) - Purchases
         """
-        sales = abs(self.ledger_service.get_balance("Sales Revenue"))
-        purchases = abs(self.ledger_service.get_balance("Purchases"))
+        sales = abs(self.ledger_service.get_balance(SALES_REVENUE))
+        purchases = abs(self.ledger_service.get_balance(PURCHASES))
         
         # Closing Stock = Sum of (Qty * Price) for all items
         products = self.inventory_repository.list_products()
@@ -38,8 +39,8 @@ class ReportService:
         """
         Net Profit = (Gross Profit + Incomes) - Expenses
         """
-        incomes = abs(self.ledger_service.get_balance("Other Income"))
-        expenses = abs(self.ledger_service.get_balance("Expenses"))
+        incomes = abs(self.ledger_service.get_balance(OTHER_INCOME))
+        expenses = abs(self.ledger_service.get_balance(EXPENSES))
         
         net_profit = (gross_profit + incomes) - expenses
         
@@ -75,11 +76,7 @@ class ReportService:
         """
         Returns all ledger transactions sorted by date.
         """
-        try:
-            transactions = self.ledger_service.list_all_transactions()
-            return transactions
-        except AttributeError:
-            return []
+        return self.ledger_service.list_all_transactions()
 
     def get_balance_sheet(self) -> Dict:
         """
@@ -101,7 +98,7 @@ class ReportService:
         gross_creditors = sum((abs(p.balance) for p in parties if p.balance < 0), Decimal("0"))
         
         # Capital/Equity usually starts from a specific account
-        capital = abs(self.ledger_service.get_balance("Capital"))
+        capital = abs(self.ledger_service.get_balance(CAPITAL))
         
         # Net Profit from P&L
         trading = self.get_trading_account()
