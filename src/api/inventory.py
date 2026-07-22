@@ -32,6 +32,14 @@ class ProductCreate(BaseModel):
     hsn_code: str = ""
 
 
+class ProductUpdate(BaseModel):
+    name: str | None = None
+    selling_price: Decimal | None = None
+    quantity: int | None = None
+    gst_rate: Decimal | None = None
+    hsn_code: str | None = None
+
+
 @router.get("", response_model=List[ProductResponse])
 def list_products(
     show_archived: bool = False,
@@ -71,7 +79,7 @@ def create_product(
 @router.put("/{product_id}", response_model=ProductResponse)
 def update_product(
     product_id: uuid.UUID,
-    data: ProductCreate,
+    data: ProductUpdate,
     service: InventoryService = Depends(get_inventory_service),
 ):
     from inventory.models import Product
@@ -82,11 +90,11 @@ def update_product(
 
     updated = Product(
         product_id=product_id,
-        name=data.name,
-        selling_price=data.selling_price,
-        quantity=data.quantity,
-        gst_rate=data.gst_rate,
-        hsn_code=data.hsn_code,
+        name=data.name if data.name is not None else existing.name,
+        selling_price=data.selling_price if data.selling_price is not None else existing.selling_price,
+        quantity=data.quantity if data.quantity is not None else existing.quantity,
+        gst_rate=data.gst_rate if data.gst_rate is not None else existing.gst_rate,
+        hsn_code=data.hsn_code if data.hsn_code is not None else existing.hsn_code,
     )
     service.update_product(updated)
     return service.get_product(product_id)

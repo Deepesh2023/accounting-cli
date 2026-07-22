@@ -31,6 +31,13 @@ class ExpenseCreate(BaseModel):
     notes: Optional[str] = None
 
 
+class ExpenseUpdate(BaseModel):
+    category: str | None = None
+    paid_by: str | None = None
+    amount: Decimal | None = None
+    notes: str | None = None
+
+
 @router.get("", response_model=List[ExpenseResponse])
 def list_expenses(
     category: Optional[str] = Query(None),
@@ -68,15 +75,18 @@ def create_expense(
 @router.put("/{expense_id}", response_model=ExpenseResponse)
 def update_expense(
     expense_id: uuid.UUID,
-    data: ExpenseCreate,
+    data: ExpenseUpdate,
     service: ExpenseService = Depends(get_expense_service),
 ):
+    existing = service.get_expense_by_id(expense_id)
+    if not existing:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Expense not found")
     expense = Expense(
         expense_id=expense_id,
-        category=data.category,
-        paid_by=data.paid_by,
-        amount=data.amount,
-        notes=data.notes,
+        category=data.category if data.category is not None else existing.category,
+        paid_by=data.paid_by if data.paid_by is not None else existing.paid_by,
+        amount=data.amount if data.amount is not None else existing.amount,
+        notes=data.notes if data.notes is not None else existing.notes,
     )
     try:
         updated = service.update_expense(expense_id, expense)

@@ -14,7 +14,7 @@ dependencies = [
 ]
 
 [project.scripts]
-printos = "main:app"
+printos = "src.main:app"
 
 [tool.pytest.ini_options]
 pythonpath = "src"

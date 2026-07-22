@@ -37,7 +37,7 @@ def test_record_purchase_gst_intra_state(service, session):
     session.add(party)
     session.commit()
     
-    items_data = [{'product_id': p_id, 'quantity': 1}] # Taxable 1000, GST 180 (90 CGST, 90 SGST)
+    items_data = [{'product_id': p_id, 'quantity': 1, 'price': Decimal('1000')}] # Taxable 1000, GST 180 (90 CGST, 90 SGST)
     
     purchase = service.record_purchase(items_data, party_id=party_id)
     
@@ -65,7 +65,7 @@ def test_record_purchase_gst_inter_state(service, session):
     session.add(party)
     session.commit()
     
-    items_data = [{'product_id': p_id, 'quantity': 1}] # Taxable 1000, GST 180 (180 IGST)
+    items_data = [{'product_id': p_id, 'quantity': 1, 'price': Decimal('1000')}] # Taxable 1000, GST 180 (180 IGST)
     
     purchase = service.record_purchase(items_data, party_id=party_id)
     
@@ -83,7 +83,7 @@ def test_record_purchase_gst_inter_state(service, session):
     assert 'Input SGST' not in accounts
 
 def test_record_purchase_product_not_found(service):
-    items_data = [{'product_id': uuid4(), 'quantity': 1}]
+    items_data = [{'product_id': uuid4(), 'quantity': 1, 'price': Decimal('100')}]
     with pytest.raises(ProductNotFoundError):
         service.record_purchase(items_data)
 
@@ -101,7 +101,7 @@ def test_delete_purchase_reverses_stock_and_balance(service, session):
     session.add(party)
     session.commit()
 
-    items_data = [{'product_id': p_id, 'quantity': 5}]
+    items_data = [{'product_id': p_id, 'quantity': 5, 'price': Decimal('500')}]
     purchase = service.record_purchase(items_data, party_id=party_id, paid_amount=Decimal("1000"))
 
     assert product.quantity == 15
@@ -124,11 +124,11 @@ def test_update_purchase_creates_new_purchase(service, session):
     session.add(party)
     session.commit()
 
-    items_data = [{'product_id': p_id, 'quantity': 10}]
+    items_data = [{'product_id': p_id, 'quantity': 10, 'price': Decimal('200')}]
     purchase = service.record_purchase(items_data, party_id=party_id)
     assert product.quantity == 40
 
-    updated_items = [{'product_id': p_id, 'quantity': 2}]
+    updated_items = [{'product_id': p_id, 'quantity': 2, 'price': Decimal('200')}]
     updated_purchase = service.update_purchase(purchase.purchase_id, updated_items, party_id=party_id)
 
     assert product.quantity == 32

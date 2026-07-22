@@ -94,7 +94,7 @@ class TestListPurchases:
 class TestCreatePurchase:
     def test_with_party(self, client, product, party):
         resp = client.post("/api/purchases", json={
-            "items_data": [{"product_id": str(product.product_id), "quantity": 5}],
+            "items_data": [{"product_id": str(product.product_id), "quantity": 5, "price": "80"}],
             "party_id": str(party.party_id),
             "paid_amount": "200.00",
         })
@@ -106,7 +106,7 @@ class TestCreatePurchase:
 
     def test_without_party(self, client, product):
         resp = client.post("/api/purchases", json={
-            "items_data": [{"product_id": str(product.product_id), "quantity": 2}],
+            "items_data": [{"product_id": str(product.product_id), "quantity": 2, "price": "100"}],
             "paid_amount": "236.00",
         })
         assert resp.status_code == 201
@@ -116,7 +116,7 @@ class TestCreatePurchase:
 
     def test_unknown_product(self, client):
         resp = client.post("/api/purchases", json={
-            "items_data": [{"product_id": str(uuid4()), "quantity": 1}],
+            "items_data": [{"product_id": str(uuid4()), "quantity": 1, "price": "50"}],
         })
         assert resp.status_code == 400
 

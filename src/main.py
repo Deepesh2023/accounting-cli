@@ -1,5 +1,7 @@
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from sqlmodel import SQLModel
 from storage.database import engine
 from api.inventory import router as inventory_router
@@ -20,6 +22,27 @@ async def lifespan(_app: FastAPI):
 
 
 app = FastAPI(title="Printos Accounting API", lifespan=lifespan)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+@app.exception_handler(ValueError)
+async def value_error_handler(request, exc):
+    return JSONResponse(status_code=400, content={"detail": str(exc)})
+
+@app.exception_handler(Exception)
+async def general_error_handler(request, exc):
+    return JSONResponse(status_code=500, content={"detail": "Internal server error"})
+
+@app.get("/")
+def root():
+    return {"status": "ok", "service": "Printos Accounting API"}
+
 app.include_router(inventory_router, prefix="/api/inventory", tags=["Inventory"])
 app.include_router(parties_router, prefix="/api/parties", tags=["Parties"])
 app.include_router(sales_router, prefix="/api/sales", tags=["Sales"])

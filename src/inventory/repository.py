@@ -1,6 +1,5 @@
 from uuid import UUID
-from sqlalchemy.orm import Session
-from sqlalchemy import select, or_
+from sqlmodel import Session, select, or_
 from inventory.models import Product
 from shared.exceptions import ProductNotFoundError
 

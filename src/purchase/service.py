@@ -55,7 +55,8 @@ class PurchaseService:
             if not product:
                 raise ProductNotFoundError(f"Product {data['product_id']} not found")
 
-            gross = product.selling_price * data['quantity']
+            purchase_price = data.get('price', product.selling_price)
+            gross = purchase_price * data['quantity']
             
             # Discount Logic
             disc_amt = Decimal("0")
@@ -98,7 +99,7 @@ class PurchaseService:
                 product_id=product.product_id,
                 name=product.name,
                 quantity=data['quantity'],
-                price=product.selling_price,
+                price=purchase_price,
                 discount_amount=disc_amt,
                 taxable_amount=taxable.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP),
                 tax_amount=tax_amt.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP),

@@ -50,6 +50,7 @@ class PurchaseResponse(BaseModel):
 class PurchaseItemInput(BaseModel):
     product_id: uuid.UUID
     quantity: int
+    price: Decimal
     discount_perc: Optional[Decimal] = None
     discount_amt: Optional[Decimal] = None
     tax_perc: Optional[Decimal] = None
