@@ -16,5 +16,8 @@ dependencies = [
 [project.scripts]
 printos = "src.main:app"
 
+[tool.fastapi]
+entrypoint = "src.main:app"
+
 [tool.pytest.ini_options]
 pythonpath = "src"
