@@ -96,6 +96,21 @@ uv run ruff check src/
 
 ---
 
+## Generate a TypeScript client for the frontend
+
+```bash
+bash scripts/generate-frontend-client.sh
+```
+
+This spins up the server, downloads the OpenAPI spec, and runs
+[`openapi-typescript`](https://npmjs.com/package/openapi-typescript) to
+generate `frontend/src/lib/api/schema.d.ts` with full TypeScript types for
+every endpoint, request body, and response.
+
+If `npx` isn't installed yet, it copies the raw `openapi.json` instead.
+
+---
+
 ## API overview
 
 | Endpoint | Purpose |
