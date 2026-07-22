@@ -1,19 +1,18 @@
 import os
+from sqlalchemy.pool import StaticPool
 from sqlmodel import create_engine, Session, SQLModel
 
-DATABASE_URL = os.getenv(
-    "DATABASE_URL",
-    "sqlite:///./printos.db"
-)
+_DEFAULT = "sqlite://"  # in-memory temp file, shared across connections
 
-connect_args = {}
-if DATABASE_URL.startswith("sqlite"):
-    connect_args["check_same_thread"] = False
+DATABASE_URL = os.getenv("DATABASE_URL", _DEFAULT)
+
+connect_args = {"check_same_thread": False}
 
 engine = create_engine(
     DATABASE_URL,
     echo=os.getenv("DATABASE_ECHO", "false").lower() == "true",
     connect_args=connect_args,
+    poolclass=StaticPool if DATABASE_URL == _DEFAULT else None,
 )
 
 def get_db():
