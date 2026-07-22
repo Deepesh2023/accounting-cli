@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-OUT_DIR="${1:-../frontend/src/lib/api}"
+OUT_DIR="${1:-../frontend/lib/api}"
 OPENAPI_JSON="/tmp/printos-openapi.json"
 
 echo "==> Starting backend to extract OpenAPI schema..."
