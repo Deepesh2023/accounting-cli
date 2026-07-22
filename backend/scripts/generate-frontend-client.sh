@@ -5,7 +5,7 @@ OUT_DIR="${1:-../frontend/lib/api}"
 OPENAPI_JSON="/tmp/printos-openapi.json"
 
 echo "==> Starting backend to extract OpenAPI schema..."
-uv run uvicorn src.main:app --host 127.0.0.1 --port 8179 &
+PYTHONPATH=src uv run uvicorn src.main:app --host 127.0.0.1 --port 8179 &
 SERVER_PID=$!
 
 cleanup() {
