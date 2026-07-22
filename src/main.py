@@ -5,6 +5,7 @@ from storage.database import engine
 from api.inventory import router as inventory_router
 from api.parties import router as parties_router
 from api.sales import router as sales_router
+from api.purchases import router as purchases_router
 
 
 @asynccontextmanager
@@ -17,3 +18,4 @@ app = FastAPI(title="Printos Accounting API", lifespan=lifespan)
 app.include_router(inventory_router, prefix="/api/inventory", tags=["Inventory"])
 app.include_router(parties_router, prefix="/api/parties", tags=["Parties"])
 app.include_router(sales_router, prefix="/api/sales", tags=["Sales"])
+app.include_router(purchases_router, prefix="/api/purchases", tags=["Purchases"])

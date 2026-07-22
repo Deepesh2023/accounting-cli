@@ -8,6 +8,9 @@ from parties.repository import PartyRepository
 from parties.service import PartyService
 from sale.repository import SaleRepository
 from sale.service import SaleService
+from purchase.repository import PurchaseRepository
+from purchase.service import PurchaseService
+from ledger.repository import LedgerRepository
 from ledger.service import LedgerService
 from ledger.repository import LedgerRepository
 
@@ -33,3 +36,11 @@ def get_sale_service(session: Session = Depends(get_session)) -> SaleService:
     party_repo = PartyRepository(session)
     ledger_svc = LedgerService(LedgerRepository(session))
     return SaleService(sale_repo, inv_repo, party_repo, ledger_svc)
+
+
+def get_purchase_service(session: Session = Depends(get_session)) -> PurchaseService:
+    purchase_repo = PurchaseRepository(session)
+    inv_repo = InventoryRepository(session)
+    party_repo = PartyRepository(session)
+    ledger_svc = LedgerService(LedgerRepository(session))
+    return PurchaseService(purchase_repo, inv_repo, party_repo, ledger_svc)

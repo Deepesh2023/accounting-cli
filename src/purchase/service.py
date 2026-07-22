@@ -67,7 +67,12 @@ class PurchaseService:
             taxable = max(Decimal("0"), gross - disc_amt)
             
             # Use product's GST rate if tax_perc not provided
-            tax_perc = Decimal(str(data.get('tax_perc', product.gst_rate)))
+            raw_tax = data.get('tax_perc')
+            if raw_tax is None:
+                raw_tax = product.gst_rate
+            elif not isinstance(raw_tax, Decimal):
+                raw_tax = Decimal(str(raw_tax))
+            tax_perc = raw_tax
             
             # Tax Calculation
             if not tax_inclusive: # Exclusive
