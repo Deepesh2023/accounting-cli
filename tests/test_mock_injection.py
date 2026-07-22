@@ -1,6 +1,7 @@
 import pytest
 from uuid import uuid4
 from datetime import datetime
+from decimal import Decimal
 from typing import List, Optional
 from uuid import UUID
 
@@ -45,26 +46,41 @@ class MockInventoryRepository(InventoryRepositoryProtocol):
     def search_products(self, query: str):
         return list(self._products.values())
 
+
+class MockPartyRepository:
+    def get_party(self, party_id):
+        return None
+
+    def update_balance(self, party_id, amount):
+        pass
+
+
+class MockLedgerService:
+    def record_transaction(self, transaction_id, entries):
+        pass
+
+
 def test_sale_service_record_sale():
     # Arrange
     sale_repo = MockSaleRepository()
     inv_repo = MockInventoryRepository()
-    service = SaleService(sale_repo, inv_repo)
+    party_repo = MockPartyRepository()
+    ledger_svc = MockLedgerService()
+    service = SaleService(sale_repo, inv_repo, party_repo, ledger_svc)
 
     # Setup a product in inventory
     product_id = uuid4()
     from inventory.models import Product
-    product = Product(product_id=product_id, name="Test Prod", selling_price=10.0, quantity=10)
+    product = Product(product_id=product_id, name="Test Prod", selling_price=Decimal("10.0"), quantity=10)
     inv_repo.add_product(product)
-
-    items = [SaleItem(product_id=product_id, name="Test Prod", selling_price=10.0, quantity=2)]
+    
+    items_data = [{"product_id": product_id, "quantity": 2}]
 
     # Act
-    sale = service.record_sale(items=items, customer_name="John Doe")
+    sale = service.record_sale(items_data=items_data)
 
     # Assert
     # 1. Check if sale was recorded
-    assert sale.customer_name == "John Doe"
     assert len(sale_repo.list_sales()) == 1
     
     # 2. Check if inventory was decreased (10 - 2 = 8)

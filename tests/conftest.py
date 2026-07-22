@@ -19,6 +19,10 @@ def engine():
 
 @pytest.fixture
 def session(engine):
-    with Session(engine) as session:
-        yield session
-        session.rollback()
+    connection = engine.connect()
+    transaction = connection.begin()
+    session = Session(bind=connection)
+    yield session
+    session.close()
+    transaction.rollback()
+    connection.close()

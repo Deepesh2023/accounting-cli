@@ -19,13 +19,13 @@ class InventoryRepository:
         return self.session.execute(select(Product)).scalars().all()
 
     def search_products(self, query: str) -> list[Product]:
-        query_lower = query.lower()
-        stmt = select(Product).where(
-            or_(
-                Product.name.ilike(f"%{query_lower}%"),
-                Product.product_id.cast(str) == query_lower
-            )
-        )
+        conditions = [Product.name.ilike(f"%{query}%")]
+        try:
+            uuid_val = UUID(query.strip())
+            conditions.append(Product.product_id == uuid_val)
+        except ValueError:
+            pass
+        stmt = select(Product).where(or_(*conditions))
         return self.session.execute(stmt).scalars().all()
 
     def change_visibility(self, product_id: UUID) -> Product | None:
