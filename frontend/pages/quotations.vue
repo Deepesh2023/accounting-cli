@@ -113,108 +113,101 @@ const currency = (v: string | number) => new Intl.NumberFormat('en-IN', { style:
 
 <template>
   <div>
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="flex justify-between items-center mb-4">
       <h1 class="m-0">Quotations</h1>
-      <button class="btn btn-primary" @click="openAdd">+ New Quotation</button>
+      <UButton color="primary" @click="openAdd">+ New Quotation</UButton>
     </div>
-    <div class="card">
-      <div class="card-body p-0">
-        <div v-if="loading" class="text-center py-4 text-muted">Loading...</div>
-        <div v-else-if="!quotations.length" class="text-center py-4 text-muted">No quotations found.</div>
-        <div v-else class="table-responsive">
-          <table class="table table-hover mb-0">
-            <thead class="table-light">
-              <tr><th>ID</th><th>Date</th><th>Customer</th><th>Amount</th><th>Status</th><th>Actions</th></tr>
+
+    <div class="shadow-sm rounded-lg overflow-hidden border border-gray-200 bg-white">
+      <div v-if="loading" class="text-center py-4 text-gray-500">Loading...</div>
+      <div v-else-if="!quotations.length" class="text-center py-4 text-gray-500">No quotations found.</div>
+      <div v-else class="overflow-x-auto">
+        <table class="w-full">
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="p-3 text-left font-semibold text-sm uppercase tracking-wide">ID</th>
+              <th class="p-3 text-left font-semibold text-sm uppercase tracking-wide">Date</th>
+              <th class="p-3 text-left font-semibold text-sm uppercase tracking-wide">Customer</th>
+              <th class="p-3 text-left font-semibold text-sm uppercase tracking-wide">Amount</th>
+              <th class="p-3 text-left font-semibold text-sm uppercase tracking-wide">Status</th>
+              <th class="p-3 text-left font-semibold text-sm uppercase tracking-wide">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="q in quotations" :key="q.quotation_id" class="hover:bg-gray-50 border-b border-gray-200">
+              <td class="p-3 align-middle"><code>#{{ q.quotation_id?.slice(0, 8) }}</code></td>
+              <td class="p-3 align-middle">{{ q.date?.slice(0, 10) }}</td>
+              <td class="p-3 align-middle">{{ partyName(q.party_id) }}</td>
+              <td class="p-3 align-middle">{{ currency(q.total_amount) }}</td>
+              <td class="p-3 align-middle">
+                <UBadge :color="q.status === 'Accepted' ? 'success' : q.status === 'Rejected' ? 'error' : 'neutral'" variant="solid">
+                  {{ q.status }}
+                </UBadge>
+              </td>
+              <td class="p-3 align-middle whitespace-nowrap space-x-1">
+                <UButton size="sm" variant="ghost" color="primary" @click="openEdit(q)">Edit</UButton>
+                <UButton size="sm" variant="ghost" color="error" @click="confirmDelete(q.quotation_id)">Delete</UButton>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <UModal v-model:open="showModal">
+      <template #title>{{ editing ? 'Edit' : 'New' }} Quotation</template>
+      <div class="space-y-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <USelect v-model="form.party_id" :items="[{label: 'Walk-in', value: ''}, ...parties.map(p => ({ label: p.name, value: p.party_id }))]" placeholder="Customer" />
+          <USelect v-model="form.status" :items="['Draft', 'Sent', 'Accepted', 'Rejected']" placeholder="Status" />
+        </div>
+
+        <div class="overflow-x-auto border border-gray-200 rounded-lg">
+          <table class="w-full">
+            <thead class="bg-gray-50">
+              <tr>
+                <th class="p-2 text-left font-semibold text-sm">Product</th>
+                <th class="p-2 text-left font-semibold text-sm">Qty</th>
+                <th class="p-2 text-left font-semibold text-sm">Unit Price</th>
+                <th class="p-2 text-left font-semibold text-sm">Total</th>
+                <th class="p-2"></th>
+              </tr>
             </thead>
             <tbody>
-              <tr v-for="q in quotations" :key="q.quotation_id">
-                <td><code>#{{ q.quotation_id?.slice(0, 8) }}</code></td>
-                <td>{{ q.date?.slice(0, 10) }}</td>
-                <td>{{ partyName(q.party_id) }}</td>
-                <td>{{ currency(q.total_amount) }}</td>
-                <td><span class="badge" :class="q.status === 'Accepted' ? 'bg-success' : q.status === 'Rejected' ? 'bg-danger' : 'bg-secondary'">{{ q.status }}</span></td>
-                <td>
-                  <button class="btn btn-sm btn-outline-primary me-1" @click="openEdit(q)">Edit</button>
-                  <button class="btn btn-sm btn-outline-danger" @click="confirmDelete(q.quotation_id)">Delete</button>
+              <tr v-for="(item, i) in form.items" :key="i" class="border-b border-gray-200">
+                <td class="p-1 min-w-40">
+                  <select v-model="item.product_id" class="border border-gray-300 rounded text-sm p-1 w-full" @change="onProductSelect(item)">
+                    <option value="">Select</option>
+                    <option v-for="p in products" :key="p.product_id" :value="p.product_id">{{ p.name }}</option>
+                  </select>
+                </td>
+                <td class="p-1">
+                  <input v-model.number="item.quantity" type="number" class="border border-gray-300 rounded text-sm p-1 w-[70px]" @input="calcRow(item)" />
+                </td>
+                <td class="p-1">
+                  <input v-model.number="item.unit_price" type="number" step="0.01" class="border border-gray-300 rounded text-sm p-1 w-[100px]" @input="calcRow(item)" />
+                </td>
+                <td class="p-1 text-sm whitespace-nowrap">{{ currency(item.row_total || 0) }}</td>
+                <td class="p-1">
+                  <UButton size="2xs" color="error" variant="ghost" @click="removeItem(i)">×</UButton>
                 </td>
               </tr>
             </tbody>
           </table>
         </div>
+        <UButton size="sm" variant="outline" color="primary" @click="addItem">+ Add Item</UButton>
+
+        <UTextarea v-model="form.notes" placeholder="Notes" :rows="2" />
+
+        <hr class="border-gray-200" />
+        <div class="text-right font-bold">Grand Total: {{ currency(grandTotal) }}</div>
       </div>
-    </div>
-
-    <div v-if="showModal" class="modal-backdrop fade show" @click="showModal = false"></div>
-    <div v-if="showModal" class="modal fade show d-block" tabindex="-1">
-      <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title">{{ editing ? 'Edit' : 'New' }} Quotation</h5>
-            <button type="button" class="btn-close" @click="showModal = false"></button>
-          </div>
-          <div class="modal-body">
-            <div class="row g-3 mb-3">
-              <div class="col-12 col-sm-6">
-                <label class="form-label">Customer</label>
-                <select v-model="form.party_id" class="form-select">
-                  <option value="">Walk-in</option>
-                  <option v-for="p in parties" :key="p.party_id" :value="p.party_id">{{ p.name }}</option>
-                </select>
-              </div>
-              <div class="col-12 col-sm-4">
-                <label class="form-label">Status</label>
-                <select v-model="form.status" class="form-select">
-                  <option value="Draft">Draft</option>
-                  <option value="Sent">Sent</option>
-                  <option value="Accepted">Accepted</option>
-                  <option value="Rejected">Rejected</option>
-                </select>
-              </div>
-            </div>
-
-            <div class="table-responsive">
-              <table class="table table-sm table-bordered">
-                <thead class="table-light">
-                  <tr><th>Product</th><th>Qty</th><th>Unit Price</th><th>Total</th><th></th></tr>
-                </thead>
-                <tbody>
-                  <tr v-for="(item, i) in form.items" :key="i">
-                    <td style="min-width:160px">
-                      <select v-model="item.product_id" class="form-select form-select-sm" @change="onProductSelect(item)">
-                        <option value="">Select</option>
-                        <option v-for="p in products" :key="p.product_id" :value="p.product_id">{{ p.name }}</option>
-                      </select>
-                    </td>
-                    <td><input v-model.number="item.quantity" type="number" class="form-control form-control-sm" style="width:70px" @input="calcRow(item)" /></td>
-                    <td><input v-model.number="item.unit_price" type="number" step="0.01" class="form-control form-control-sm" style="width:100px" @input="calcRow(item)" /></td>
-                    <td>{{ currency(item.row_total || 0) }}</td>
-                    <td><button class="btn btn-sm btn-outline-danger" @click="removeItem(i)">×</button></td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-            <button class="btn btn-sm btn-outline-primary" @click="addItem">+ Add Item</button>
-
-            <div class="mt-3">
-              <label class="form-label">Notes</label>
-              <textarea v-model="form.notes" class="form-control" rows="2"></textarea>
-            </div>
-
-            <hr />
-            <div class="text-end"><strong>Grand Total: {{ currency(grandTotal) }}</strong></div>
-          </div>
-          <div class="modal-footer">
-            <button class="btn btn-secondary" @click="showModal = false">Cancel</button>
-            <button class="btn btn-primary" @click="save">Save Quotation</button>
-          </div>
+      <template #footer>
+        <div class="flex justify-end gap-3">
+          <UButton color="neutral" variant="ghost" @click="showModal = false">Cancel</UButton>
+          <UButton color="primary" @click="save">Save Quotation</UButton>
         </div>
-      </div>
-    </div>
+      </template>
+    </UModal>
   </div>
 </template>
-
-<style scoped>
-.card { border: none; box-shadow: 0 1px 3px rgba(0,0,0,0.08); border-radius: 8px; }
-.table th { font-weight: 600; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px; }
-.table td { vertical-align: middle; }
-</style>

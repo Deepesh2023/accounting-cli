@@ -54,74 +54,73 @@ const currency = (v: string | number) => new Intl.NumberFormat('en-IN', { style:
 
 <template>
   <div>
-    <div class="d-flex justify-content-between align-items-center mb-4">
-      <h1 class="m-0">Outstanding</h1>
-      <button class="btn btn-outline-primary" @click="loadAll">Refresh</button>
+    <div class="flex justify-between items-center mb-4">
+      <h1 class="text-2xl font-bold">Outstanding</h1>
+      <UButton color="primary" variant="outline" @click="loadAll">Refresh</UButton>
     </div>
-    <div class="card">
-      <div class="card-body p-0">
-        <div v-if="loading" class="text-center py-4 text-muted">Loading...</div>
-        <div v-else-if="!outstanding.length" class="text-center py-4 text-muted">No outstanding items.</div>
-        <div v-else class="table-responsive">
-          <table class="table table-hover mb-0">
-            <thead class="table-light">
-              <tr><th>Ref No</th><th>Date</th><th>Party</th><th>Type</th><th>Total</th><th>Balance Due</th><th>Due Date</th><th>Status</th><th>Actions</th></tr>
-            </thead>
-            <tbody>
-              <tr v-for="(row, i) in outstanding" :key="i">
-                <td><code>#{{ row.ref_no || row.sale_id?.slice(0, 8) || row.purchase_id?.slice(0, 8) }}</code></td>
-                <td>{{ row.date?.slice(0, 10) }}</td>
-                <td>{{ partyName(row.party_id) }}</td>
-                <td>
-                  <span :class="row.type === 'Receivable' || row.balance_amount > 0 ? 'badge bg-info' : 'badge bg-warning'">
-                    {{ row.type || (Number(row.balance_amount) > 0 ? 'Receivable' : 'Payable') }}
-                  </span>
-                </td>
-                <td>{{ currency(row.total || row.grand_total || 0) }}</td>
-                <td class="fw-bold">{{ currency(row.balance_due || row.balance_amount || 0) }}</td>
-                <td>{{ row.due_date?.slice(0, 10) || '-' }}</td>
-                <td>
-                  <span v-if="isOverdue(row)" class="badge bg-danger">Overdue</span>
-                  <span v-else class="badge bg-success">On Time</span>
-                </td>
-                <td>
-                  <button class="btn btn-sm btn-outline-success" @click="openSettle(row)">Settle</button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+    <div class="bg-white shadow-sm rounded-lg border border-gray-200 overflow-hidden">
+      <div v-if="loading" class="text-center py-4 text-gray-500">Loading...</div>
+      <div v-else-if="!outstanding.length" class="text-center py-4 text-gray-500">No outstanding items.</div>
+      <div v-else class="overflow-x-auto">
+        <table class="w-full">
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="text-left px-4 py-3 font-semibold text-xs uppercase tracking-wider">Ref No</th>
+              <th class="text-left px-4 py-3 font-semibold text-xs uppercase tracking-wider">Date</th>
+              <th class="text-left px-4 py-3 font-semibold text-xs uppercase tracking-wider">Party</th>
+              <th class="text-left px-4 py-3 font-semibold text-xs uppercase tracking-wider">Type</th>
+              <th class="text-left px-4 py-3 font-semibold text-xs uppercase tracking-wider">Total</th>
+              <th class="text-left px-4 py-3 font-semibold text-xs uppercase tracking-wider">Balance Due</th>
+              <th class="text-left px-4 py-3 font-semibold text-xs uppercase tracking-wider">Due Date</th>
+              <th class="text-left px-4 py-3 font-semibold text-xs uppercase tracking-wider">Status</th>
+              <th class="text-left px-4 py-3 font-semibold text-xs uppercase tracking-wider">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-200">
+            <tr v-for="(row, i) in outstanding" :key="i" class="hover:bg-gray-50">
+              <td class="px-4 py-3"><code class="text-sm bg-gray-100 px-1 rounded">#{{ row.ref_no || row.sale_id?.slice(0, 8) || row.purchase_id?.slice(0, 8) }}</code></td>
+              <td class="px-4 py-3">{{ row.date?.slice(0, 10) }}</td>
+              <td class="px-4 py-3">{{ partyName(row.party_id) }}</td>
+              <td class="px-4 py-3">
+                <UBadge :color="row.type === 'Receivable' || row.balance_amount > 0 ? 'primary' : 'warning'">
+                  {{ row.type || (Number(row.balance_amount) > 0 ? 'Receivable' : 'Payable') }}
+                </UBadge>
+              </td>
+              <td class="px-4 py-3">{{ currency(row.total || row.grand_total || 0) }}</td>
+              <td class="px-4 py-3 font-bold">{{ currency(row.balance_due || row.balance_amount || 0) }}</td>
+              <td class="px-4 py-3">{{ row.due_date?.slice(0, 10) || '-' }}</td>
+              <td class="px-4 py-3">
+                <UBadge v-if="isOverdue(row)" color="error">Overdue</UBadge>
+                <UBadge v-else color="success">On Time</UBadge>
+              </td>
+              <td class="px-4 py-3">
+                <UButton color="success" variant="outline" size="sm" @click="openSettle(row)">Settle</UButton>
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </div>
 
-    <div v-if="showSettle" class="modal-backdrop fade show" @click="showSettle = false"></div>
-    <div v-if="showSettle" class="modal fade show d-block" tabindex="-1">
-      <div class="modal-dialog modal-sm">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title">Settle Outstanding</h5>
-            <button type="button" class="btn-close" @click="showSettle = false"></button>
-          </div>
-          <div class="modal-body">
-            <p>Party: <strong>{{ partyName(settleTarget?.party_id) }}</strong></p>
-            <p>Balance Due: <strong>{{ currency(settleTarget?.balance_due || settleTarget?.balance_amount || 0) }}</strong></p>
-            <div class="mb-3">
-              <label class="form-label">Settle Amount</label>
-              <input v-model.number="settleAmount" type="number" step="0.01" class="form-control" />
-            </div>
-          </div>
-          <div class="modal-footer">
-            <button class="btn btn-secondary" @click="showSettle = false">Cancel</button>
-            <button class="btn btn-success" @click="confirmSettle">Confirm</button>
-          </div>
-        </div>
+    <UModal v-model:open="showSettle">
+      <template #header>
+        <h3 class="text-lg font-semibold">Settle Outstanding</h3>
+      </template>
+      <p>Party: <strong>{{ partyName(settleTarget?.party_id) }}</strong></p>
+      <p>Balance Due: <strong>{{ currency(settleTarget?.balance_due || settleTarget?.balance_amount || 0) }}</strong></p>
+      <div class="mt-4">
+        <label class="block text-sm font-medium text-gray-700 mb-1">Settle Amount</label>
+        <UInput v-model.number="settleAmount" type="number" step="0.01" />
       </div>
-    </div>
+      <template #footer>
+        <div class="flex justify-end gap-3">
+          <UButton color="neutral" variant="outline" @click="showSettle = false">Cancel</UButton>
+          <UButton color="success" @click="confirmSettle">Confirm</UButton>
+        </div>
+      </template>
+    </UModal>
   </div>
 </template>
 
 <style scoped>
-.card { border: none; box-shadow: 0 1px 3px rgba(0,0,0,0.08); border-radius: 8px; }
-.table th { font-weight: 600; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px; }
-.table td { vertical-align: middle; }
 </style>

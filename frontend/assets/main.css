@@ -4,23 +4,3 @@ body {
   background-color: #f8f9fa;
   color: #212529;
 }
-* { box-sizing: border-box; }
-
-.table-responsive { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-.table-responsive > table { min-width: 700px; }
-
-@media (max-width: 575.98px) {
-  .stat-card h2 { font-size: 1.25rem; }
-  .modal-dialog { margin: 0.5rem; }
-  .modal-fullscreen .modal-content { border-radius: 0; }
-}
-
-@media (max-width: 767.98px) {
-  .row.g-3 > [class*="col-"] { margin-bottom: 0.75rem; }
-  .modal-dialog.modal-fullscreen { margin: 0; height: 100%; max-height: 100%; }
-  .modal-fullscreen .modal-body { padding: 12px !important; }
-}
-
-.form-control-sm, .form-select-sm { font-size: 0.85rem; }
-.card { border: none; box-shadow: 0 1px 3px rgba(0,0,0,0.08); border-radius: 8px; }
-.card-header { background: white; border-bottom: 1px solid #e9ecef; }

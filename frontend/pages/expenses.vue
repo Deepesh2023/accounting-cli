@@ -56,98 +56,87 @@ const currency = (v: string | number) => new Intl.NumberFormat('en-IN', { style:
 
 <template>
   <div>
-    <div class="d-flex justify-content-between align-items-center mb-4">
-      <h1 class="m-0">Expenses</h1>
-      <button class="btn btn-primary" @click="openAdd">+ Add Expense</button>
+    <div class="flex justify-between items-center mb-4">
+      <h1 class="text-2xl font-bold">Expenses</h1>
+      <UButton color="primary" @click="openAdd">+ Add Expense</UButton>
     </div>
-    <div class="row g-3 mb-4">
-      <div class="col-12 col-md-4">
-        <div class="stat-card bg-danger text-white">
-          <h6>TOTAL EXPENSES</h6>
-          <h2>{{ currency(totalExpenses) }}</h2>
-        </div>
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+      <div class="rounded-xl p-5 bg-red-600 text-white shadow-sm">
+        <h6 class="text-xs uppercase tracking-wider opacity-80 mb-2">TOTAL EXPENSES</h6>
+        <h2 class="text-2xl font-bold">{{ currency(totalExpenses) }}</h2>
       </div>
     </div>
-    <div class="card">
-      <div class="card-body p-0">
-        <div v-if="loading" class="text-center py-4 text-muted">Loading...</div>
-        <div v-else-if="!expenses.length" class="text-center py-4 text-muted">No expenses recorded.</div>
-        <div v-else class="table-responsive">
-          <table class="table table-hover mb-0">
-            <thead class="table-light">
-              <tr><th>Date</th><th>Category</th><th>Paid By</th><th>Notes</th><th>Amount</th><th>Actions</th></tr>
-            </thead>
-            <tbody>
-              <tr v-for="e in expenses" :key="e.expense_id">
-                <td>{{ e.date?.slice(0, 10) }}</td>
-                <td><span class="badge bg-secondary">{{ e.category }}</span></td>
-                <td>{{ e.paid_by }}</td>
-                <td>{{ e.notes || '-' }}</td>
-                <td class="text-danger">{{ currency(e.amount) }}</td>
-                <td>
-                  <button class="btn btn-sm btn-outline-primary me-1" @click="openEdit(e)">Edit</button>
-                  <button class="btn btn-sm btn-outline-danger" @click="confirmDelete(e.expense_id)">Delete</button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+    <div class="bg-white shadow-sm rounded-lg border border-gray-200 overflow-hidden">
+      <div v-if="loading" class="text-center py-4 text-gray-500">Loading...</div>
+      <div v-else-if="!expenses.length" class="text-center py-4 text-gray-500">No expenses recorded.</div>
+      <div v-else class="overflow-x-auto">
+        <table class="w-full">
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="text-left px-4 py-3 font-semibold text-xs uppercase tracking-wider">Date</th>
+              <th class="text-left px-4 py-3 font-semibold text-xs uppercase tracking-wider">Category</th>
+              <th class="text-left px-4 py-3 font-semibold text-xs uppercase tracking-wider">Paid By</th>
+              <th class="text-left px-4 py-3 font-semibold text-xs uppercase tracking-wider">Notes</th>
+              <th class="text-left px-4 py-3 font-semibold text-xs uppercase tracking-wider">Amount</th>
+              <th class="text-left px-4 py-3 font-semibold text-xs uppercase tracking-wider">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-200">
+            <tr v-for="e in expenses" :key="e.expense_id" class="hover:bg-gray-50">
+              <td class="px-4 py-3">{{ e.date?.slice(0, 10) }}</td>
+              <td class="px-4 py-3"><UBadge color="neutral">{{ e.category }}</UBadge></td>
+              <td class="px-4 py-3">{{ e.paid_by }}</td>
+              <td class="px-4 py-3">{{ e.notes || '-' }}</td>
+              <td class="px-4 py-3 text-red-600 font-medium">{{ currency(e.amount) }}</td>
+              <td class="px-4 py-3">
+                <div class="flex gap-2">
+                  <UButton color="primary" variant="outline" size="sm" @click="openEdit(e)">Edit</UButton>
+                  <UButton color="error" variant="outline" size="sm" @click="confirmDelete(e.expense_id)">Delete</UButton>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </div>
 
-    <div v-if="showModal" class="modal-backdrop fade show" @click="showModal = false"></div>
-    <div v-if="showModal" class="modal fade show d-block" tabindex="-1">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title">{{ editing ? 'Edit' : 'Add' }} Expense</h5>
-            <button type="button" class="btn-close" @click="showModal = false"></button>
+    <UModal v-model:open="showModal">
+      <template #header>
+        <h3 class="text-lg font-semibold">{{ editing ? 'Edit' : 'Add' }} Expense</h3>
+      </template>
+      <div class="space-y-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Date</label>
+          <UInput v-model="form.date" type="date" />
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Category</label>
+          <USelect v-model="form.category" :items="categories" placeholder="Select category" />
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Paid By</label>
+            <USelect v-model="form.paid_by" :items="['Cash', 'Bank']" />
           </div>
-          <div class="modal-body">
-            <div class="mb-3">
-              <label class="form-label">Date</label>
-              <input v-model="form.date" type="date" class="form-control" />
-            </div>
-            <div class="mb-3">
-              <label class="form-label">Category</label>
-              <select v-model="form.category" class="form-select">
-                <option value="" disabled>Select category</option>
-                <option v-for="c in categories" :key="c" :value="c">{{ c }}</option>
-              </select>
-            </div>
-            <div class="row g-3">
-              <div class="col-12 col-sm-6">
-                <label class="form-label">Paid By</label>
-                <select v-model="form.paid_by" class="form-select">
-                  <option value="Cash">Cash</option>
-                  <option value="Bank">Bank</option>
-                </select>
-              </div>
-              <div class="col-12 col-sm-6">
-                <label class="form-label">Amount</label>
-                <input v-model.number="form.amount" type="number" step="0.01" class="form-control" />
-              </div>
-            </div>
-            <div class="mb-3 mt-3">
-              <label class="form-label">Notes</label>
-              <textarea v-model="form.notes" class="form-control" rows="2"></textarea>
-            </div>
-          </div>
-          <div class="modal-footer">
-            <button class="btn btn-secondary" @click="showModal = false">Cancel</button>
-            <button class="btn btn-primary" @click="save">Save</button>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Amount</label>
+            <UInput v-model.number="form.amount" type="number" step="0.01" />
           </div>
         </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Notes</label>
+          <textarea v-model="form.notes" class="block w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" rows="2"></textarea>
+        </div>
       </div>
-    </div>
+      <template #footer>
+        <div class="flex justify-end gap-3">
+          <UButton color="neutral" variant="outline" @click="showModal = false">Cancel</UButton>
+          <UButton color="primary" @click="save">Save</UButton>
+        </div>
+      </template>
+    </UModal>
   </div>
 </template>
 
 <style scoped>
-.stat-card { border-radius: 12px; padding: 20px 24px; border: none; }
-.stat-card h6 { opacity: 0.8; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; margin: 0 0 8px; }
-.stat-card h2 { margin: 0; font-weight: 700; }
-.card { border: none; box-shadow: 0 1px 3px rgba(0,0,0,0.08); border-radius: 8px; }
-.table th { font-weight: 600; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px; }
-.table td { vertical-align: middle; }
 </style>

@@ -44,60 +44,55 @@ function paymentMode(row: any) {
 
 <template>
   <div>
-    <div class="d-flex justify-content-between align-items-center mb-4">
-      <h1 class="m-0">Transactions</h1>
+    <div class="flex justify-between items-center mb-4">
+      <h1 class="text-2xl font-bold">Transactions</h1>
     </div>
-    <div class="row g-3 mb-4">
-      <div class="col-12 col-md-6">
-        <div class="stat-card bg-info text-white">
-          <h6>CASH BALANCE</h6>
-          <h2>{{ currency(cashBalance) }}</h2>
-        </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+      <div class="rounded-xl p-5 bg-cyan-600 text-white shadow-sm">
+        <h6 class="text-xs uppercase tracking-wider opacity-80 mb-2">CASH BALANCE</h6>
+        <h2 class="text-2xl font-bold">{{ currency(cashBalance) }}</h2>
       </div>
-      <div class="col-12 col-md-6">
-        <div class="stat-card bg-primary text-white">
-          <h6>BANK BALANCE</h6>
-          <h2>{{ currency(bankBalance) }}</h2>
-        </div>
+      <div class="rounded-xl p-5 bg-blue-600 text-white shadow-sm">
+        <h6 class="text-xs uppercase tracking-wider opacity-80 mb-2">BANK BALANCE</h6>
+        <h2 class="text-2xl font-bold">{{ currency(bankBalance) }}</h2>
       </div>
     </div>
-    <div class="card">
-      <div class="card-body p-0">
-        <div v-if="loading" class="text-center py-4 text-muted">Loading...</div>
-        <div v-else-if="!transactions.length" class="text-center py-4 text-muted">No transactions found.</div>
-        <div v-else class="table-responsive">
-          <table class="table table-hover mb-0">
-            <thead class="table-light">
-              <tr><th>#</th><th>Date</th><th>Particulars</th><th>Type</th><th>Payment Mode</th><th>Amount</th></tr>
-            </thead>
-            <tbody>
-              <tr v-for="(t, i) in transactions" :key="t.transaction_id || t.id || i">
-                <td>{{ i + 1 }}</td>
-                <td>{{ t.date?.slice(0, 10) }}</td>
-                <td>{{ t.particulars || t.description || t.notes || '-' }}</td>
-                <td>
-                  <span :class="txnType(t) === 'Debit' ? 'badge bg-danger' : 'badge bg-success'">
-                    {{ txnType(t) }}
-                  </span>
-                </td>
-                <td>{{ paymentMode(t) }}</td>
-                <td :class="txnType(t) === 'Debit' ? 'text-danger' : 'text-success'">
-                  {{ txnType(t) === 'Debit' ? '-' : '+' }}{{ currency(txnAmount(t)) }}
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+    <div class="bg-white shadow-sm rounded-lg border border-gray-200 overflow-hidden">
+      <div v-if="loading" class="text-center py-4 text-gray-500">Loading...</div>
+      <div v-else-if="!transactions.length" class="text-center py-4 text-gray-500">No transactions found.</div>
+      <div v-else class="overflow-x-auto">
+        <table class="w-full">
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="text-left px-4 py-3 font-semibold text-xs uppercase tracking-wider">#</th>
+              <th class="text-left px-4 py-3 font-semibold text-xs uppercase tracking-wider">Date</th>
+              <th class="text-left px-4 py-3 font-semibold text-xs uppercase tracking-wider">Particulars</th>
+              <th class="text-left px-4 py-3 font-semibold text-xs uppercase tracking-wider">Type</th>
+              <th class="text-left px-4 py-3 font-semibold text-xs uppercase tracking-wider">Payment Mode</th>
+              <th class="text-left px-4 py-3 font-semibold text-xs uppercase tracking-wider">Amount</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-200">
+            <tr v-for="(t, i) in transactions" :key="t.transaction_id || t.id || i" class="hover:bg-gray-50">
+              <td class="px-4 py-3">{{ i + 1 }}</td>
+              <td class="px-4 py-3">{{ t.date?.slice(0, 10) }}</td>
+              <td class="px-4 py-3">{{ t.particulars || t.description || t.notes || '-' }}</td>
+              <td class="px-4 py-3">
+                <UBadge :color="txnType(t) === 'Debit' ? 'error' : 'success'">
+                  {{ txnType(t) }}
+                </UBadge>
+              </td>
+              <td class="px-4 py-3">{{ paymentMode(t) }}</td>
+              <td :class="txnType(t) === 'Debit' ? 'px-4 py-3 text-red-600 font-medium' : 'px-4 py-3 text-emerald-600 font-medium'">
+                {{ txnType(t) === 'Debit' ? '-' : '+' }}{{ currency(txnAmount(t)) }}
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </div>
   </div>
 </template>
 
 <style scoped>
-.stat-card { border-radius: 12px; padding: 20px 24px; border: none; }
-.stat-card h6 { opacity: 0.8; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; margin: 0 0 8px; }
-.stat-card h2 { margin: 0; font-weight: 700; }
-.card { border: none; box-shadow: 0 1px 3px rgba(0,0,0,0.08); border-radius: 8px; }
-.table th { font-weight: 600; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px; }
-.table td { vertical-align: middle; }
 </style>
