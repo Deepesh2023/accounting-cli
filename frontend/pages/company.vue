@@ -82,97 +82,137 @@ function onQrUpload(e: Event) {
     <div v-if="store.loading" class="text-center py-4 text-gray-500">Loading...</div>
 
     <template v-else>
-      <UCard class="mb-4">
-        <template #header>
-          <h5 class="font-bold">Business Information</h5>
-        </template>
-        <div class="grid grid-cols-1 sm:grid-cols-12 gap-3">
-          <div class="sm:col-span-6">
-            <label class="block text-sm font-medium text-gray-700 mb-1">Business Name</label>
-            <UInput v-model="form.name" />
-          </div>
-          <div class="sm:col-span-3">
-            <label class="block text-sm font-medium text-gray-700 mb-1">Business Type</label>
-            <USelect v-model="form.business_type" :items="['Retail', 'Wholesale', 'Manufacturing', 'Service']" placeholder="Select" />
-          </div>
-          <div class="sm:col-span-3">
-            <label class="block text-sm font-medium text-gray-700 mb-1">Category</label>
-            <UInput v-model="form.category" />
-          </div>
-          <div class="sm:col-span-4">
-            <label class="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
-            <UInput v-model="form.beginning_date" type="date" />
-          </div>
-        </div>
-      </UCard>
-
-      <UCard class="mb-4">
-        <template #header>
-          <h5 class="font-bold">Contact</h5>
-        </template>
-        <div class="grid grid-cols-1 sm:grid-cols-12 gap-3">
-          <div class="sm:col-span-4">
-            <label class="block text-sm font-medium text-gray-700 mb-1">Phone</label>
-            <UInput v-model="form.phone" />
-          </div>
-          <div class="sm:col-span-4">
-            <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
-            <UInput v-model="form.email" type="email" />
-          </div>
-          <div class="sm:col-span-4">
-            <label class="block text-sm font-medium text-gray-700 mb-1">State</label>
-            <USelect v-model="form.state" :items="stateOptions" placeholder="Select state" />
-          </div>
-          <div class="sm:col-span-4">
-            <label class="block text-sm font-medium text-gray-700 mb-1">Pincode</label>
-            <UInput v-model="form.pincode" />
-          </div>
-          <div class="sm:col-span-12">
-            <label class="block text-sm font-medium text-gray-700 mb-1">Address</label>
-            <textarea v-model="form.address" class="block w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" rows="2"></textarea>
-          </div>
-        </div>
-      </UCard>
-
-      <UCard class="mb-4">
-        <template #header>
-          <h5 class="font-bold">Tax & Settings</h5>
-        </template>
-        <div class="grid grid-cols-1 sm:grid-cols-12 gap-3">
-          <div class="sm:col-span-4">
-            <label class="block text-sm font-medium text-gray-700 mb-1">GSTIN</label>
-            <UInput v-model="form.gstin" placeholder="22AAAAA0000A1Z5" />
-          </div>
-          <div class="sm:col-span-4 flex items-end">
-            <UCheckbox v-model="form.enable_party_netting" label="Enable Party Netting" />
-          </div>
-        </div>
-      </UCard>
-
-      <UCard class="mb-4">
-        <template #header>
-          <h5 class="font-bold">Uploads</h5>
-        </template>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Logo</label>
-            <input type="file" accept="image/*" class="block w-full border border-gray-300 rounded-lg px-3 py-2 text-sm file:mr-3 file:py-1 file:px-3 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-gray-100 file:text-gray-700 hover:file:bg-gray-200" @change="onLogoUpload" />
-            <div v-if="form.logo_data" class="mt-2">
-              <img :src="form.logo_data" class="border border-gray-300 rounded p-1 max-h-[100px]" />
+      <div class="grid grid-cols-1 md:grid-cols-12 gap-6">
+        <div class="md:col-span-3 space-y-6">
+          <UCard>
+            <div class="text-center">
+              <label class="block text-xs uppercase tracking-wider font-bold text-gray-500 mb-3">Company Logo</label>
+              <div class="mx-auto w-40 h-40 rounded-full border-2 border-dashed border-gray-300 bg-gray-50 flex items-center justify-center cursor-pointer hover:border-primary hover:bg-blue-50 transition-all overflow-hidden" @click="document.getElementById('logo-input')?.click()">
+                <div v-if="!form.logo_data" class="text-center">
+                  <UIcon name="i-heroicons-photo" class="text-3xl text-gray-400 mx-auto" />
+                  <span class="text-xs text-gray-400 font-bold block mt-1">ADD LOGO</span>
+                </div>
+                <img v-else :src="form.logo_data" class="w-full h-full object-cover" />
+              </div>
+              <input id="logo-input" type="file" accept="image/*" class="hidden" @change="onLogoUpload" />
+              <p class="text-xs text-gray-400 mt-2">Click to upload your business logo</p>
             </div>
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">QR Code</label>
-            <input type="file" accept="image/*" class="block w-full border border-gray-300 rounded-lg px-3 py-2 text-sm file:mr-3 file:py-1 file:px-3 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-gray-100 file:text-gray-700 hover:file:bg-gray-200" @change="onQrUpload" />
-            <div v-if="form.qr_data" class="mt-2">
-              <img :src="form.qr_data" class="border border-gray-300 rounded p-1 max-h-[100px]" />
+          </UCard>
+          <UCard>
+            <div class="text-center">
+              <label class="block text-xs uppercase tracking-wider font-bold text-gray-500 mb-3">Payment QR Code</label>
+              <div class="mx-auto w-40 h-40 border-2 border-dashed border-gray-300 bg-gray-50 flex items-center justify-center cursor-pointer hover:border-primary hover:bg-blue-50 transition-all overflow-hidden rounded-xl" @click="document.getElementById('qr-input')?.click()">
+                <div v-if="!form.qr_data" class="text-center">
+                  <UIcon name="i-heroicons-qr-code" class="text-3xl text-gray-400 mx-auto" />
+                  <span class="text-xs text-gray-400 font-bold block mt-1">ADD QR</span>
+                </div>
+                <img v-else :src="form.qr_data" class="w-full h-full object-cover" />
+              </div>
+              <input id="qr-input" type="file" accept="image/*" class="hidden" @change="onQrUpload" />
+              <p class="text-xs text-gray-400 mt-2">Upload your UPI or Bank QR code</p>
             </div>
+          </UCard>
+        </div>
+        <div class="md:col-span-9 space-y-4">
+          <UCard>
+            <template #header>
+              <div class="flex items-center gap-2">
+                <UIcon name="i-heroicons-information-circle" class="text-primary" />
+                <span class="font-bold">Basic Information</span>
+              </div>
+            </template>
+            <div class="grid grid-cols-1 sm:grid-cols-12 gap-4">
+              <div class="sm:col-span-8">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Business Name <span class="text-red-500">*</span></label>
+                <UInput v-model="form.name" placeholder="e.g. Nectar Technologies" />
+              </div>
+              <div class="sm:col-span-4">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Business Type</label>
+                <USelect v-model="form.business_type" :items="['Retail', 'Wholesale', 'Manufacturing', 'Service']" placeholder="Select" />
+              </div>
+              <div class="sm:col-span-6">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Business Category</label>
+                <UInput v-model="form.category" placeholder="e.g. IT Services" />
+              </div>
+              <div class="sm:col-span-6">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Account Books Beginning Date</label>
+                <UInput v-model="form.beginning_date" type="date" />
+              </div>
+            </div>
+          </UCard>
+          <UCard>
+            <template #header>
+              <div class="flex items-center gap-2">
+                <UIcon name="i-heroicons-map-pin" class="text-primary" />
+                <span class="font-bold">Contact & Address</span>
+              </div>
+            </template>
+            <div class="grid grid-cols-1 sm:grid-cols-12 gap-4">
+              <div class="sm:col-span-6">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+                <UInput v-model="form.phone" placeholder="+91" />
+              </div>
+              <div class="sm:col-span-6">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Email ID</label>
+                <UInput v-model="form.email" type="email" placeholder="email@example.com" />
+              </div>
+              <div class="sm:col-span-12">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Business Address</label>
+                <textarea v-model="form.address" class="block w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" rows="2" placeholder="Full Address..."></textarea>
+              </div>
+              <div class="sm:col-span-6">
+                <label class="block text-sm font-medium text-gray-700 mb-1">State</label>
+                <USelect v-model="form.state" :items="stateOptions" placeholder="Select state" />
+              </div>
+              <div class="sm:col-span-6">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Pincode</label>
+                <UInput v-model="form.pincode" />
+              </div>
+            </div>
+          </UCard>
+          <UCard>
+            <template #header>
+              <div class="flex items-center gap-2">
+                <UIcon name="i-heroicons-cog-6-tooth" class="text-primary" />
+                <span class="font-bold">Statutory & Preferences</span>
+              </div>
+            </template>
+            <div class="grid grid-cols-1 sm:grid-cols-12 gap-4">
+              <div class="sm:col-span-6">
+                <label class="block text-sm font-medium text-gray-700 mb-1">GSTIN</label>
+                <UInput v-model="form.gstin" placeholder="22AAAAA0000A1Z5" />
+              </div>
+              <div class="sm:col-span-6 flex items-end pb-1">
+                <UCheckbox v-model="form.enable_party_netting" label="Enable Party Netting" />
+              </div>
+            </div>
+          </UCard>
+          <UCard class="mb-4">
+            <template #header>
+              <div class="flex items-center gap-2">
+                <UIcon name="i-heroicons-cloud-arrow-up" class="text-primary" />
+                <span class="font-bold">Data Backup & Restore</span>
+              </div>
+            </template>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div class="p-4 bg-gray-50 rounded-lg text-center border border-green-200 border-opacity-50">
+                <UIcon name="i-heroicons-cloud-arrow-down" class="text-2xl text-green-600 mb-1" />
+                <h6 class="font-bold text-sm">Export Backup</h6>
+                <p class="text-xs text-gray-500 mb-3">Download all your accounting data securely as a JSON file.</p>
+                <UButton color="success" variant="outline" class="w-full" size="sm">Export Data</UButton>
+              </div>
+              <div class="p-4 bg-gray-50 rounded-lg text-center border border-blue-200 border-opacity-50">
+                <UIcon name="i-heroicons-cloud-arrow-up" class="text-2xl text-blue-600 mb-1" />
+                <h6 class="font-bold text-sm">Import Backup</h6>
+                <p class="text-xs text-gray-500 mb-3">Restore your data from a previously downloaded JSON file.</p>
+                <UButton color="primary" variant="outline" class="w-full" size="sm">Import Data</UButton>
+              </div>
+            </div>
+          </UCard>
+          <div class="text-right">
+            <UButton color="primary" size="lg" class="px-8" @click="save" :disabled="store.loading">Save Changes</UButton>
           </div>
         </div>
-      </UCard>
-
-      <div class="text-right mb-4">
-        <UButton color="primary" size="lg" class="px-8" @click="save">Save Profile</UButton>
       </div>
     </template>
   </div>

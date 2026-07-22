@@ -9,6 +9,8 @@ const showModal = ref(false)
 const editing = ref<string | null>(null)
 const form = ref<ProductCreate>({ name: '', selling_price: 0, quantity: 0, gst_rate: 0, hsn_code: '' })
 
+function totalValue(p: ProductResponse) { return Number(p.selling_price) * p.quantity }
+
 onMounted(() => store.fetchAll())
 
 function openAdd() {
@@ -59,9 +61,11 @@ const currency = (v: string | number) => new Intl.NumberFormat('en-IN', { style:
           <thead class="bg-gray-50">
             <tr>
               <th class="text-left px-4 py-3 font-semibold text-xs uppercase tracking-wider">#</th>
+              <th class="text-left px-4 py-3 font-semibold text-xs uppercase tracking-wider">Code</th>
               <th class="text-left px-4 py-3 font-semibold text-xs uppercase tracking-wider">Name</th>
-              <th class="text-left px-4 py-3 font-semibold text-xs uppercase tracking-wider">Price</th>
               <th class="text-left px-4 py-3 font-semibold text-xs uppercase tracking-wider">Qty</th>
+              <th class="text-left px-4 py-3 font-semibold text-xs uppercase tracking-wider">Price</th>
+              <th class="text-left px-4 py-3 font-semibold text-xs uppercase tracking-wider">Total Value</th>
               <th class="text-left px-4 py-3 font-semibold text-xs uppercase tracking-wider">GST%</th>
               <th class="text-left px-4 py-3 font-semibold text-xs uppercase tracking-wider">HSN</th>
               <th class="text-left px-4 py-3 font-semibold text-xs uppercase tracking-wider">Actions</th>
@@ -70,9 +74,11 @@ const currency = (v: string | number) => new Intl.NumberFormat('en-IN', { style:
           <tbody class="divide-y divide-gray-200">
             <tr v-for="(p, i) in store.items" :key="p.product_id" class="hover:bg-gray-50">
               <td class="px-4 py-3">{{ i + 1 }}</td>
+              <td class="px-4 py-3"><code class="text-sm bg-gray-100 px-1 rounded">{{ p.item_code || '-' }}</code></td>
               <td class="px-4 py-3">{{ p.name }}</td>
-              <td class="px-4 py-3">{{ currency(p.selling_price) }}</td>
               <td class="px-4 py-3">{{ p.quantity }}</td>
+              <td class="px-4 py-3">{{ currency(p.selling_price) }}</td>
+              <td class="px-4 py-3">{{ currency(totalValue(p)) }}</td>
               <td class="px-4 py-3">{{ p.gst_rate }}%</td>
               <td class="px-4 py-3"><code class="text-sm bg-gray-100 px-1 rounded">{{ p.hsn_code }}</code></td>
               <td class="px-4 py-3">

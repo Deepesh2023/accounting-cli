@@ -179,6 +179,10 @@ function statusLabel(s: PurchaseResponse) {
   return { text: 'Unpaid', cls: 'bg-danger' }
 }
 
+function modeLabel(s: PurchaseResponse) {
+  return Number(s.balance_amount) <= 0 ? 'Cash' : 'Credit'
+}
+
 const formatCurrency = (v: string | number) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(Number(v))
 </script>
 
@@ -224,6 +228,7 @@ const formatCurrency = (v: string | number) => new Intl.NumberFormat('en-IN', { 
               <th class="p-2 text-left font-semibold text-xs uppercase tracking-wider">Bill No</th>
               <th class="p-2 text-left font-semibold text-xs uppercase tracking-wider">Date</th>
               <th class="p-2 text-left font-semibold text-xs uppercase tracking-wider">Supplier</th>
+              <th class="p-2 text-left font-semibold text-xs uppercase tracking-wider">Mode</th>
               <th class="p-2 text-left font-semibold text-xs uppercase tracking-wider">Status</th>
               <th class="p-2 text-left font-semibold text-xs uppercase tracking-wider">Amount</th>
               <th class="p-2 text-left font-semibold text-xs uppercase tracking-wider">Actions</th>
@@ -234,6 +239,7 @@ const formatCurrency = (v: string | number) => new Intl.NumberFormat('en-IN', { 
               <td class="p-2"><code>#{{ s.purchase_id?.slice(0, 8) }}</code></td>
               <td class="p-2">{{ s.date?.slice(0, 10) }}</td>
               <td class="p-2">{{ partyName(s.party_id) }}</td>
+              <td class="p-2">{{ modeLabel(s) }}</td>
               <td class="p-2">
                 <UBadge :color="statusLabel(s).text === 'Paid' ? 'success' : statusLabel(s).text === 'Partial' ? 'warning' : 'error'" variant="solid">{{ statusLabel(s).text }}</UBadge>
               </td>

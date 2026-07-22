@@ -40,6 +40,7 @@ watch(route, () => { mobileOpen.value = false })
       <div class="p-4 border-b border-gray-700">
       <h4 class="text-white font-bold text-lg text-center">Printos</h4>
       </div>
+      <div class="px-3 pt-4 pb-1 text-xs uppercase tracking-wider text-gray-500 font-semibold">Financial Module</div>
       <nav class="p-2 space-y-1">
         <NuxtLink
           v-for="link in links"
