@@ -103,6 +103,22 @@ export interface Expense {
   notes: string
 }
 
+export interface CompanyData {
+  name: string
+  type: string
+  phone: string
+  category: string
+  gstin: string
+  state: string
+  email: string
+  pincode: string
+  start_date: string
+  address: string
+  netting_enabled: boolean
+  logo: string
+  qr: string
+}
+
 export interface StockItem {
   id: number
   name: string

@@ -1,11 +1,26 @@
 import { createStore } from 'solid-js/store'
-import type { Transaction, Party, StockItem, Quotation, Expense } from './types'
+import type { Transaction, Party, StockItem, Quotation, Expense, CompanyData } from './types'
 
 const [transactions, setTransactions] = createStore<Transaction[]>([])
 const [partyList, setPartyList] = createStore<Party[]>([])
 const [stockList, setStockList] = createStore<StockItem[]>([])
 const [quotationList, setQuotationList] = createStore<Quotation[]>([])
 const [expenseList, setExpenseList] = createStore<Expense[]>([])
+const [companyData, setCompanyData] = createStore<CompanyData>({
+  name: '',
+  type: '',
+  phone: '',
+  category: '',
+  gstin: '',
+  state: '',
+  email: '',
+  pincode: '',
+  start_date: '',
+  address: '',
+  netting_enabled: false,
+  logo: '',
+  qr: '',
+})
 
 const indianStates = [
   'Select State', 'Andaman and Nicobar Islands', 'Andhra Pradesh',
@@ -29,6 +44,8 @@ export {
   setQuotationList,
   expenseList,
   setExpenseList,
+  companyData,
+  setCompanyData,
   indianStates,
 }
 
