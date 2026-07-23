@@ -58,10 +58,10 @@ export interface PurchaseDetails {
 
 export interface Transaction {
   id: number
-  type: 'Sale' | 'Purchase' | 'Expense'
+  type: 'Sale' | 'Purchase' | 'Expense' | 'Income' | 'Capital' | 'Asset'
   date: string
   particulars: string
-  payment_mode: 'Credit' | 'Cash'
+  payment_mode: 'Credit' | 'Cash' | 'Bank'
   amount: number
   sale_details?: SaleDetails
   purchase_details?: PurchaseDetails
