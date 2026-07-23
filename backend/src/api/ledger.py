@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, Query, HTTPException, status
 
-from ledger.service import LedgerService
-from api.deps import get_ledger_service
+from src.ledger.service import LedgerService
+from src.api.deps import get_ledger_service
 
 
 router = APIRouter()

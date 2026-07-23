@@ -4,9 +4,9 @@ from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from pydantic import BaseModel, ConfigDict
 
-from parties.service import PartyService
-from parties.models import PartyType
-from api.deps import get_parties_service
+from src.parties.service import PartyService
+from src.parties.models import PartyType
+from src.api.deps import get_parties_service
 
 
 router = APIRouter()

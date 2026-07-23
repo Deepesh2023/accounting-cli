@@ -1,8 +1,8 @@
 from uuid import uuid4
 from decimal import Decimal
 
-from ledger.repository import LedgerRepository
-from ledger.service import LedgerService
+from src.ledger.repository import LedgerRepository
+from src.ledger.service import LedgerService
 
 
 def _ledger_service(session):

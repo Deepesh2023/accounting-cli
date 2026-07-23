@@ -1,9 +1,9 @@
 from decimal import Decimal
 from typing import Dict
-from inventory.repository import InventoryRepository
-from parties.repository import PartyRepository
-from ledger.service import LedgerService
-from shared.accounts import SALES_REVENUE, PURCHASES, OTHER_INCOME, EXPENSES, CAPITAL
+from src.inventory.repository import InventoryRepository
+from src.parties.repository import PartyRepository
+from src.ledger.service import LedgerService
+from src.shared.accounts import SALES_REVENUE, PURCHASES, OTHER_INCOME, EXPENSES, CAPITAL
 
 class ReportService:
     def __init__(self, 

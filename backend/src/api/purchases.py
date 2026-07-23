@@ -5,9 +5,9 @@ from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, ConfigDict
 
-from purchase.service import PurchaseService
-from shared.exceptions import ProductNotFoundError
-from api.deps import get_purchase_service
+from src.purchase.service import PurchaseService
+from src.shared.exceptions import ProductNotFoundError
+from src.api.deps import get_purchase_service
 
 
 router = APIRouter()

@@ -3,9 +3,9 @@ from uuid import UUID
 from decimal import Decimal
 from typing import Optional
 from datetime import datetime
-from expenses.models import Expense
-from expenses.repository import ExpenseRepository
-from ledger.service import LedgerService
+from src.expenses.models import Expense
+from src.expenses.repository import ExpenseRepository
+from src.ledger.service import LedgerService
 
 class ExpenseService:
     def __init__(self, repository: ExpenseRepository, ledger_service: Optional[LedgerService] = None):

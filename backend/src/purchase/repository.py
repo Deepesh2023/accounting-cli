@@ -1,6 +1,6 @@
 from uuid import UUID
 from sqlmodel import Session, select
-from purchase.models import Purchase, PurchaseItem
+from src.purchase.models import Purchase, PurchaseItem
 from decimal import Decimal
 
 class PurchaseRepository:

@@ -1,7 +1,7 @@
 from uuid import UUID
 from typing import Optional
 from sqlmodel import Session, select
-from expenses.models import Expense
+from src.expenses.models import Expense
 
 class ExpenseRepository:
     def __init__(self, session: Session):

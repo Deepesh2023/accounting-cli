@@ -4,14 +4,14 @@ from sqlalchemy.pool import StaticPool
 from sqlmodel import SQLModel, create_engine, Session
 
 # Import all models to register them on SQLModel.metadata
-import inventory.models  # noqa: F401
-import parties.models  # noqa: F401
-import purchase.models  # noqa: F401
-import quotation.models  # noqa: F401
-import sale.models  # noqa: F401
-import expenses.models  # noqa: F401
-import ledger.models  # noqa: F401
-import company.models  # noqa: F401
+import src.inventory.models  # noqa: F401
+import src.parties.models  # noqa: F401
+import src.purchase.models  # noqa: F401
+import src.quotation.models  # noqa: F401
+import src.sale.models  # noqa: F401
+import src.expenses.models  # noqa: F401
+import src.ledger.models  # noqa: F401
+import src.company.models  # noqa: F401
 
 _TEST_ENGINE = create_engine(
     "sqlite://",
@@ -42,8 +42,8 @@ def session():
 
 @pytest.fixture
 def client():
-    from main import app
-    from api.deps import get_session
+    from src.main import app
+    from src.api.deps import get_session
 
     app.dependency_overrides[get_session] = get_test_session
     yield TestClient(app)

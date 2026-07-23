@@ -1,6 +1,6 @@
 from uuid import UUID
 from sqlmodel import Session, select
-from parties.models import Party, PartyType
+from src.parties.models import Party, PartyType
 from decimal import Decimal
 
 class PartyRepository:

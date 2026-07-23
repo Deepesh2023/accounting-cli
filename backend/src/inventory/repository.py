@@ -1,7 +1,7 @@
 from uuid import UUID
 from sqlmodel import Session, select, or_
-from inventory.models import Product
-from shared.exceptions import ProductNotFoundError
+from src.inventory.models import Product
+from src.shared.exceptions import ProductNotFoundError
 
 class InventoryRepository:
     def __init__(self, session: Session):

@@ -4,8 +4,8 @@ from decimal import Decimal
 from typing import List, Optional
 from sqlmodel import SQLModel, Field, Relationship
 
-from inventory.models import Product
-from parties.models import Party
+from src.inventory.models import Product
+from src.parties.models import Party
 
 class Purchase(SQLModel, table=True, __tablename__="purchase"):
     purchase_id: UUID = Field(primary_key=True)

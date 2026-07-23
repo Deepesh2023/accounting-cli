@@ -1,6 +1,6 @@
 from uuid import UUID
 from sqlmodel import Session, select, func
-from ledger.models import LedgerEntry
+from src.ledger.models import LedgerEntry
 from decimal import Decimal
 
 class LedgerRepository:

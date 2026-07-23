@@ -1,7 +1,7 @@
 from typing import Protocol, List, Optional
 from uuid import UUID
-from sale.models import Sale
-from inventory.models import Product
+from src.sale.models import Sale
+from src.inventory.models import Product
 
 class SaleRepositoryProtocol(Protocol):
     def add_sale(self, sale: Sale) -> None:

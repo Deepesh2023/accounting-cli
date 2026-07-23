@@ -1,6 +1,6 @@
-from inventory.models import Product
-from shared.interfaces import InventoryRepositoryProtocol
-from shared.exceptions import ProductNotFoundError, InvalidProductDataError
+from src.inventory.models import Product
+from src.shared.interfaces import InventoryRepositoryProtocol
+from src.shared.exceptions import ProductNotFoundError, InvalidProductDataError
 import uuid
 from decimal import Decimal
 

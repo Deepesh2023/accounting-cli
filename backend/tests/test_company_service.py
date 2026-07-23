@@ -1,8 +1,8 @@
 import pytest
 from datetime import date
-from company.models import Company
-from company.repository import CompanyRepository
-from company.service import CompanyService
+from src.company.models import Company
+from src.company.repository import CompanyRepository
+from src.company.service import CompanyService
 
 def test_company_lifecycle(session):
     # Arrange

@@ -5,9 +5,9 @@ from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, ConfigDict
 
-from quotation.service import QuotationService
-from quotation.models import Quotation, QuotationItem
-from api.deps import get_quotation_service
+from src.quotation.service import QuotationService
+from src.quotation.models import Quotation, QuotationItem
+from src.api.deps import get_quotation_service
 
 
 router = APIRouter()

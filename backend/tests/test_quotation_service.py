@@ -1,9 +1,9 @@
 import pytest
 from uuid import uuid4
 from decimal import Decimal
-from quotation.models import Quotation, QuotationItem
-from quotation.repository import QuotationRepository
-from quotation.service import QuotationService
+from src.quotation.models import Quotation, QuotationItem
+from src.quotation.repository import QuotationRepository
+from src.quotation.service import QuotationService
 
 def test_quotation_lifecycle(session):
     # Arrange

@@ -4,11 +4,11 @@ from decimal import Decimal
 from unittest.mock import Mock
 from sqlalchemy.orm import Session
 
-from purchase.service import PurchaseService
-from purchase.models import Purchase, PurchaseItem
-from inventory.models import Product
-from parties.models import Party, PartyType
-from shared.exceptions import ProductNotFoundError
+from src.purchase.service import PurchaseService
+from src.purchase.models import Purchase, PurchaseItem
+from src.inventory.models import Product
+from src.parties.models import Party, PartyType
+from src.shared.exceptions import ProductNotFoundError
 
 @pytest.fixture
 def service(session):
@@ -16,9 +16,9 @@ def service(session):
     # and we want to verify the calls without setting up the whole ledger DB
     mock_ledger = Mock()
     
-    from purchase.repository import PurchaseRepository
-    from inventory.repository import InventoryRepository
-    from parties.repository import PartyRepository
+    from src.purchase.repository import PurchaseRepository
+    from src.inventory.repository import InventoryRepository
+    from src.parties.repository import PartyRepository
     
     pur_repo = PurchaseRepository(session)
     inv_repo = InventoryRepository(session)

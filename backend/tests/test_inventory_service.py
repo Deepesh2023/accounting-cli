@@ -4,8 +4,8 @@ from decimal import Decimal
 from unittest.mock import Mock, patch
 from dataclasses import dataclass
 
-from inventory.service import InventoryService
-from shared.exceptions import ProductNotFoundError, InvalidProductDataError
+from src.inventory.service import InventoryService
+from src.shared.exceptions import ProductNotFoundError, InvalidProductDataError
 
 @dataclass
 class ProductMock:

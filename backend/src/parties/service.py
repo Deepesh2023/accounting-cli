@@ -1,8 +1,8 @@
 import uuid
 from uuid import UUID
 from decimal import Decimal
-from parties.models import Party, PartyType
-from parties.repository import PartyRepository
+from src.parties.models import Party, PartyType
+from src.parties.repository import PartyRepository
 
 class PartyService:
     def __init__(self, repository: PartyRepository):

@@ -2,8 +2,8 @@ import pytest
 import os
 from uuid import uuid4
 from datetime import datetime
-from sale.models import Sale, SaleItem
-from sale.repository import SaleRepository
+from src.sale.models import Sale, SaleItem
+from src.sale.repository import SaleRepository
 
 TEST_STORAGE = "test_sales.json"
 

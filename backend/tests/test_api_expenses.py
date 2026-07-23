@@ -2,10 +2,10 @@ import pytest
 from uuid import uuid4
 from decimal import Decimal
 
-from expenses.repository import ExpenseRepository
-from expenses.service import ExpenseService
-from ledger.service import LedgerService
-from ledger.repository import LedgerRepository
+from src.expenses.repository import ExpenseRepository
+from src.expenses.service import ExpenseService
+from src.ledger.service import LedgerService
+from src.ledger.repository import LedgerRepository
 
 
 @pytest.fixture

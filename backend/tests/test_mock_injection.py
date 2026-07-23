@@ -5,9 +5,9 @@ from decimal import Decimal
 from typing import List, Optional
 from uuid import UUID
 
-from sale.models import Sale, SaleItem
-from shared.interfaces import SaleRepositoryProtocol, InventoryRepositoryProtocol
-from sale.service import SaleService
+from src.sale.models import Sale, SaleItem
+from src.shared.interfaces import SaleRepositoryProtocol, InventoryRepositoryProtocol
+from src.sale.service import SaleService
 
 # Mock for Sale Repository
 class MockSaleRepository(SaleRepositoryProtocol):
@@ -70,7 +70,7 @@ def test_sale_service_record_sale():
 
     # Setup a product in inventory
     product_id = uuid4()
-    from inventory.models import Product
+    from src.inventory.models import Product
     product = Product(product_id=product_id, name="Test Prod", selling_price=Decimal("10.0"), quantity=10)
     inv_repo.add_product(product)
     

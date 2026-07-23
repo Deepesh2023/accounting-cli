@@ -4,7 +4,7 @@ from decimal import Decimal
 from unittest.mock import Mock, patch
 from dataclasses import dataclass
 
-from reports.service import ReportService
+from src.reports.service import ReportService
 
 @pytest.fixture
 def mock_inv_repo(): return Mock()

@@ -1,7 +1,7 @@
 from uuid import UUID, uuid4
 from typing import Optional
 from sqlmodel import Session, select
-from quotation.models import Quotation, QuotationItem
+from src.quotation.models import Quotation, QuotationItem
 
 class QuotationRepository:
     def __init__(self, session: Session):

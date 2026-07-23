@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends
 
-from reports.service import ReportService
-from api.deps import get_report_service
+from src.reports.service import ReportService
+from src.api.deps import get_report_service
 
 
 router = APIRouter()

@@ -3,16 +3,16 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from sqlmodel import SQLModel
-from storage.database import engine
-from api.inventory import router as inventory_router
-from api.parties import router as parties_router
-from api.sales import router as sales_router
-from api.purchases import router as purchases_router
-from api.expenses import router as expenses_router
-from api.quotations import router as quotations_router
-from api.reports import router as reports_router
-from api.company import router as company_router
-from api.ledger import router as ledger_router
+from src.storage.database import engine
+from src.api.inventory import router as inventory_router
+from src.api.parties import router as parties_router
+from src.api.sales import router as sales_router
+from src.api.purchases import router as purchases_router
+from src.api.expenses import router as expenses_router
+from src.api.quotations import router as quotations_router
+from src.api.reports import router as reports_router
+from src.api.company import router as company_router
+from src.api.ledger import router as ledger_router
 
 
 @asynccontextmanager

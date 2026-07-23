@@ -5,10 +5,10 @@ from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, ConfigDict
 
-from sale.service import SaleService
-from sale.models import Sale
-from shared.exceptions import ProductNotFoundError
-from api.deps import get_sale_service
+from src.sale.service import SaleService
+from src.sale.models import Sale
+from src.shared.exceptions import ProductNotFoundError
+from src.api.deps import get_sale_service
 
 
 router = APIRouter()

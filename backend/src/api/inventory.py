@@ -4,10 +4,10 @@ from typing import List
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, ConfigDict
 
-from inventory.models import Product
-from inventory.service import InventoryService
-from shared.exceptions import ProductNotFoundError, InvalidProductDataError
-from api.deps import get_inventory_service
+from src.inventory.models import Product
+from src.inventory.service import InventoryService
+from src.shared.exceptions import ProductNotFoundError, InvalidProductDataError
+from src.api.deps import get_inventory_service
 
 
 router = APIRouter()

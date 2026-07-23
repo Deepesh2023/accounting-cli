@@ -1,5 +1,5 @@
-from company.models import Company
-from company.repository import CompanyRepository
+from src.company.models import Company
+from src.company.repository import CompanyRepository
 
 class CompanyService:
     def __init__(self, repository: CompanyRepository):

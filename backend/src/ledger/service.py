@@ -1,9 +1,9 @@
 import uuid
 from uuid import UUID
 from decimal import Decimal
-from ledger.models import LedgerEntry
-from ledger.repository import LedgerRepository
-from shared.accounts import GST_ACCOUNTS
+from src.ledger.models import LedgerEntry
+from src.ledger.repository import LedgerRepository
+from src.shared.accounts import GST_ACCOUNTS
 
 class LedgerService:
     def __init__(self, repository: LedgerRepository):

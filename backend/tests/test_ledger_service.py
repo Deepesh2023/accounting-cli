@@ -3,8 +3,8 @@ from uuid import uuid4, UUID
 from decimal import Decimal
 from unittest.mock import Mock
 
-from ledger.models import LedgerEntry
-from ledger.service import LedgerService
+from src.ledger.models import LedgerEntry
+from src.ledger.service import LedgerService
 
 @pytest.fixture
 def mock_repo():

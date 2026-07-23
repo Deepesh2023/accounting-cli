@@ -3,8 +3,8 @@ from uuid import uuid4
 from decimal import Decimal
 from datetime import datetime
 from unittest.mock import Mock
-from expenses.repository import ExpenseRepository
-from expenses.service import ExpenseService
+from src.expenses.repository import ExpenseRepository
+from src.expenses.service import ExpenseService
 
 def test_expense_lifecycle(session):
     # Arrange

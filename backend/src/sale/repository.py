@@ -1,6 +1,6 @@
 from uuid import UUID
 from sqlmodel import Session, select
-from sale.models import Sale, SaleItem
+from src.sale.models import Sale, SaleItem
 from decimal import Decimal
 
 class SaleRepository:

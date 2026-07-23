@@ -1,5 +1,5 @@
 from sqlmodel import Session, select
-from company.models import Company
+from src.company.models import Company
 
 class CompanyRepository:
     def __init__(self, session: Session):

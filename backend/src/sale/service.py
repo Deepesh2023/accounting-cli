@@ -3,14 +3,14 @@ from uuid import UUID
 from datetime import datetime
 from decimal import Decimal, ROUND_HALF_UP
 
-from sale.models import Sale, SaleItem
-from sale.repository import SaleRepository
-from inventory.repository import InventoryRepository
-from parties.repository import PartyRepository
-from ledger.service import LedgerService
-from shared.exceptions import ProductNotFoundError
-from shared.accounts import CASH, SALES_REVENUE, OUTPUT_CGST, OUTPUT_SGST, OUTPUT_IGST
-from shared.transaction_utils import compute_row, compute_grand_total, party_prefix
+from src.sale.models import Sale, SaleItem
+from src.sale.repository import SaleRepository
+from src.inventory.repository import InventoryRepository
+from src.parties.repository import PartyRepository
+from src.ledger.service import LedgerService
+from src.shared.exceptions import ProductNotFoundError
+from src.shared.accounts import CASH, SALES_REVENUE, OUTPUT_CGST, OUTPUT_SGST, OUTPUT_IGST
+from src.shared.transaction_utils import compute_row, compute_grand_total, party_prefix
 
 COMPANY_STATE = "Karnataka"
 

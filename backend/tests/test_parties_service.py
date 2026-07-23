@@ -4,8 +4,8 @@ from decimal import Decimal
 from unittest.mock import Mock, patch
 from dataclasses import dataclass
 
-from parties.models import Party, PartyType
-from parties.service import PartyService
+from src.parties.models import Party, PartyType
+from src.parties.service import PartyService
 
 @dataclass
 class PartyMock:

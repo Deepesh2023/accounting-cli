@@ -4,9 +4,9 @@ from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, ConfigDict
 
-from company.models import Company
-from company.service import CompanyService
-from api.deps import get_company_service
+from src.company.models import Company
+from src.company.service import CompanyService
+from src.api.deps import get_company_service
 
 
 router = APIRouter()

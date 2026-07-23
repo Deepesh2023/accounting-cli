@@ -1,24 +1,22 @@
 from fastapi import Depends
 from sqlmodel import Session
-from storage.database import engine
-
-from inventory.repository import InventoryRepository
-from inventory.service import InventoryService
-from parties.repository import PartyRepository
-from parties.service import PartyService
-from sale.repository import SaleRepository
-from sale.service import SaleService
-from purchase.repository import PurchaseRepository
-from purchase.service import PurchaseService
-from expenses.repository import ExpenseRepository
-from expenses.service import ExpenseService
-from quotation.repository import QuotationRepository
-from quotation.service import QuotationService
-from reports.service import ReportService
-from company.repository import CompanyRepository
-from company.service import CompanyService
-from ledger.repository import LedgerRepository
-from ledger.service import LedgerService
+from src.inventory.repository import InventoryRepository
+from src.inventory.service import InventoryService
+from src.parties.repository import PartyRepository
+from src.parties.service import PartyService
+from src.sale.repository import SaleRepository
+from src.sale.service import SaleService
+from src.purchase.repository import PurchaseRepository
+from src.purchase.service import PurchaseService
+from src.expenses.repository import ExpenseRepository
+from src.expenses.service import ExpenseService
+from src.quotation.repository import QuotationRepository
+from src.quotation.service import QuotationService
+from src.reports.service import ReportService
+from src.company.repository import CompanyRepository
+from src.company.service import CompanyService
+from src.ledger.repository import LedgerRepository
+from src.ledger.service import LedgerService
 
 
 def get_session():

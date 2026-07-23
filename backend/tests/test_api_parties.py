@@ -2,8 +2,8 @@ import pytest
 from uuid import uuid4
 from decimal import Decimal
 
-from parties.repository import PartyRepository
-from parties.service import PartyService
+from src.parties.repository import PartyRepository
+from src.parties.service import PartyService
 
 
 @pytest.fixture
@@ -18,7 +18,7 @@ class TestListParties:
         assert resp.json() == []
 
     def test_all(self, client, service):
-        from parties.models import PartyType
+        from src.parties.models import PartyType
         service.create_party("A", PartyType.DEBTOR, Decimal("100"))
         service.create_party("B", PartyType.CREDITOR, Decimal("200"))
 
@@ -27,7 +27,7 @@ class TestListParties:
         assert len(data) == 2
 
     def test_filter_by_type(self, client, service):
-        from parties.models import PartyType
+        from src.parties.models import PartyType
         service.create_party("Debtor A", PartyType.DEBTOR, Decimal("1000"))
         service.create_party("Creditor B", PartyType.CREDITOR, Decimal("500"))
 
@@ -63,7 +63,7 @@ class TestGetParty:
         assert resp.status_code == 404
 
     def test_found(self, client, service):
-        from parties.models import PartyType
+        from src.parties.models import PartyType
         p = service.create_party("Test", PartyType.DEBTOR)
         resp = client.get(f"/api/parties/{p.party_id}")
         assert resp.status_code == 200
@@ -72,7 +72,7 @@ class TestGetParty:
 
 class TestUpdateParty:
     def test_updates(self, client, service):
-        from parties.models import PartyType
+        from src.parties.models import PartyType
         p = service.create_party("Old", PartyType.DEBTOR)
         resp = client.put(f"/api/parties/{p.party_id}", json={
             "name": "New Name",
@@ -87,7 +87,7 @@ class TestUpdateParty:
 
 class TestDeleteParty:
     def test_deletes(self, client, service):
-        from parties.models import PartyType
+        from src.parties.models import PartyType
         p = service.create_party("Delete Me", PartyType.DEBTOR)
         resp = client.delete(f"/api/parties/{p.party_id}")
         assert resp.status_code == 204
@@ -99,7 +99,7 @@ class TestDeleteParty:
 
 class TestAdjustBalance:
     def test_adjusts(self, client, service):
-        from parties.models import PartyType
+        from src.parties.models import PartyType
         p = service.create_party("Balance Test", PartyType.DEBTOR, Decimal("500"))
         resp = client.post(f"/api/parties/{p.party_id}/adjust-balance", json={
             "amount": "200",

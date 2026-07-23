@@ -2,9 +2,9 @@ import pytest
 from uuid import uuid4
 from decimal import Decimal
 
-from quotation.repository import QuotationRepository
-from quotation.service import QuotationService
-from quotation.models import Quotation, QuotationItem
+from src.quotation.repository import QuotationRepository
+from src.quotation.service import QuotationService
+from src.quotation.models import Quotation, QuotationItem
 
 
 @pytest.fixture

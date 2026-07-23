@@ -2,14 +2,14 @@ import pytest
 from uuid import uuid4
 from decimal import Decimal
 
-from sale.repository import SaleRepository
-from sale.service import SaleService
-from inventory.repository import InventoryRepository
-from inventory.models import Product
-from parties.repository import PartyRepository
-from parties.models import Party, PartyType
-from ledger.service import LedgerService
-from ledger.repository import LedgerRepository
+from src.sale.repository import SaleRepository
+from src.sale.service import SaleService
+from src.inventory.repository import InventoryRepository
+from src.inventory.models import Product
+from src.parties.repository import PartyRepository
+from src.parties.models import Party, PartyType
+from src.ledger.service import LedgerService
+from src.ledger.repository import LedgerRepository
 
 
 @pytest.fixture

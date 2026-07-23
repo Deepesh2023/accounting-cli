@@ -1,6 +1,6 @@
 from uuid import UUID
-from quotation.models import Quotation, QuotationItem
-from quotation.repository import QuotationRepository
+from src.quotation.models import Quotation, QuotationItem
+from src.quotation.repository import QuotationRepository
 
 class QuotationService:
     def __init__(self, repository: QuotationRepository):

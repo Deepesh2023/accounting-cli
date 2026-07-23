@@ -4,19 +4,19 @@ from decimal import Decimal
 from unittest.mock import Mock
 from sqlalchemy.orm import Session
 
-from sale.service import SaleService
-from sale.models import Sale, SaleItem
-from inventory.models import Product
-from parties.models import Party, PartyType
-from shared.exceptions import ProductNotFoundError
+from src.sale.service import SaleService
+from src.sale.models import Sale, SaleItem
+from src.inventory.models import Product
+from src.parties.models import Party, PartyType
+from src.shared.exceptions import ProductNotFoundError
 
 @pytest.fixture
 def service(session):
     mock_ledger = Mock()
     
-    from sale.repository import SaleRepository
-    from inventory.repository import InventoryRepository
-    from parties.repository import PartyRepository
+    from src.sale.repository import SaleRepository
+    from src.inventory.repository import InventoryRepository
+    from src.parties.repository import PartyRepository
     
     sale_repo = SaleRepository(session)
     inv_repo = InventoryRepository(session)

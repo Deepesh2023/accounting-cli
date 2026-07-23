@@ -2,8 +2,8 @@ import pytest
 from uuid import uuid4
 from decimal import Decimal
 
-from inventory.repository import InventoryRepository
-from inventory.service import InventoryService
+from src.inventory.repository import InventoryRepository
+from src.inventory.service import InventoryService
 
 
 @pytest.fixture

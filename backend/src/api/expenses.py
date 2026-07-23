@@ -5,8 +5,8 @@ from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from pydantic import BaseModel, ConfigDict
 
-from expenses.service import ExpenseService
-from api.deps import get_expense_service
+from src.expenses.service import ExpenseService
+from src.api.deps import get_expense_service
 
 
 router = APIRouter()

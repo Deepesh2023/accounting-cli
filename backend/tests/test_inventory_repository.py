@@ -1,8 +1,8 @@
 import os
 import pytest
 from uuid import uuid4
-from inventory.models import Product
-from inventory.repository import InventoryRepository
+from src.inventory.models import Product
+from src.inventory.repository import InventoryRepository
 
 @pytest.fixture
 def repo(session):
