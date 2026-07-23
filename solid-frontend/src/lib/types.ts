@@ -77,6 +77,15 @@ export interface Party {
   balance: number
 }
 
+export interface Expense {
+  id: number
+  date: string
+  category: string
+  paid_by: string
+  amount: number
+  notes: string
+}
+
 export interface StockItem {
   id: number
   name: string
