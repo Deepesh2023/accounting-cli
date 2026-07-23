@@ -1,6 +1,6 @@
 export const useNavigationStore = defineStore('navigation', () => {
   const currentSection = ref('sales')
-  const mobileOpen = ref(false)
+  const sidebarOpen = ref(true)
 
   const sections = [
     { id: 'sales', label: 'Sales', icon: 'i-heroicons-currency-rupee' },
@@ -19,12 +19,12 @@ export const useNavigationStore = defineStore('navigation', () => {
 
   function navigateTo(id: string) {
     currentSection.value = id
-    mobileOpen.value = false
+    sidebarOpen.value = false
   }
 
-  function toggleMobile() {
-    mobileOpen.value = !mobileOpen.value
+  function toggleSidebar() {
+    sidebarOpen.value = !sidebarOpen.value
   }
 
-  return { currentSection, mobileOpen, sections, sectionTitle, navigateTo, toggleMobile }
+  return { currentSection, sidebarOpen, sections, sectionTitle, navigateTo, toggleSidebar }
 })
