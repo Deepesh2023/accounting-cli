@@ -51,15 +51,11 @@ function Sales() {
 
   return (
     <div class="space-y-6">
-      <div class="flex flex-wrap items-center gap-4">
-        <div class="w-full md:w-1/3">
-          <div
-            class="bg-[#0d6efd] text-white border-0 shadow-md rounded-xl"
-          >
+      <div class="flex items-stretch mt-4">
+        <div class="w-1/3">
+          <div class="bg-[#0d6efd] text-white border-0 shadow-md rounded-xl h-full">
             <div class="p-4">
-              <p
-                class="opacity-75 uppercase font-bold tracking-widest text-[0.8em]"
-              >
+              <p class="opacity-75 uppercase font-bold tracking-widest text-[0.8em]">
                 Total Sales (All Time)
               </p>
               <h2 class="mb-0 font-bold mt-2 text-2xl">
@@ -68,7 +64,7 @@ function Sales() {
             </div>
           </div>
         </div>
-        <div class="w-full md:w-2/3 text-right flex justify-end items-center">
+        <div class="w-2/3 flex justify-end items-center">
           <button class="bg-[#0d6efd] text-white text-lg px-4 py-2.5 rounded-lg shadow font-bold hover:bg-[#0b5ed7] cursor-pointer">
             + Record Sales
           </button>
