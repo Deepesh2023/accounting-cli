@@ -27,6 +27,35 @@ export interface SaleDetails {
   terms: string
 }
 
+export interface PurchaseItem {
+  item_id: string
+  name: string
+  qty: number
+  unit: string
+  price: number
+  disc_perc: number
+  disc_amt: number
+  tax_perc: number
+  tax_amt: number
+  total: number
+}
+
+export interface PurchaseDetails {
+  supplier_id: string
+  bill_no: string
+  phone: string
+  address: string
+  state_of_supply: string
+  due_date: string
+  items: PurchaseItem[]
+  paid_amount: number
+  balance_amount: number
+  payment_status: 'Paid' | 'Partial' | 'Unpaid'
+  is_roundoff: boolean
+  price_type: 'Without Tax' | 'With Tax'
+  terms: string
+}
+
 export interface Transaction {
   id: number
   type: 'Sale' | 'Purchase' | 'Expense'
@@ -35,7 +64,7 @@ export interface Transaction {
   payment_mode: 'Credit' | 'Cash'
   amount: number
   sale_details?: SaleDetails
-  purchase_details?: any
+  purchase_details?: PurchaseDetails
 }
 
 export interface Party {
