@@ -8,12 +8,12 @@ const sectionTitle = computed(() => nav.sections.find(s => s.id === currentSecti
 </script>
 
 <template>
-  <div class="flex h-screen overflow-hidden bg-white dark:bg-gray-950">
-    <USidebar v-model:open="nav.sidebarOpen" variant="sidebar">
+  <div class="flex h-screen overflow-hidden bg-gray-100 dark:bg-gray-950">
+    <USidebar v-model:open="nav.sidebarOpen" variant="sidebar" class="!bg-gray-900 !text-white" :ui="{ root: '!bg-gray-900 !text-white', header: 'border-b border-gray-800', footer: 'border-t border-gray-800' }">
       <template #title>
         <div class="flex items-center gap-2.5">
-          <div class="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-white font-bold text-sm">P</div>
-          <span class="text-lg font-bold">Printos</span>
+          <div class="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white font-bold text-sm">P</div>
+          <span class="text-lg font-bold text-white">Printos</span>
         </div>
       </template>
 
@@ -26,7 +26,7 @@ const sectionTitle = computed(() => nav.sections.find(s => s.id === currentSecti
           :icon="s.icon"
           variant="ghost"
           block
-          :class="[currentSection === s.id ? 'bg-primary text-white' : '', s.id === 'company' ? 'mt-3 border-t border-gray-200 dark:border-gray-700 pt-3' : '']"
+          :class="[currentSection === s.id ? '!bg-blue-600 !text-white' : '!text-gray-300 hover:!bg-gray-800 hover:!text-white', s.id === 'company' ? 'mt-3 border-t border-gray-700 pt-3 !rounded-none' : '']"
         />
       </div>
     </USidebar>
@@ -52,3 +52,9 @@ const sectionTitle = computed(() => nav.sections.find(s => s.id === currentSecti
     </div>
   </div>
 </template>
+
+<style scoped>
+:deep(.sidebar-root) {
+  background-color: #1e293b !important;
+}
+</style>

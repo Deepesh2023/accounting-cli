@@ -3,16 +3,39 @@
 
 @theme static {
   --font-sans: 'Public Sans', sans-serif;
+}
 
-  --color-green-50: #EFFDF5;
-  --color-green-100: #D9FBE8;
-  --color-green-200: #B3F5D1;
-  --color-green-300: #75EDAE;
-  --color-green-400: #00DC82;
-  --color-green-500: #00C16A;
-  --color-green-600: #00A155;
-  --color-green-700: #007F45;
-  --color-green-800: #016538;
-  --color-green-900: #0A5331;
-  --color-green-950: #052E16;
+.action-btn {
+  width: 36px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+  background: #ffffff;
+  color: #4a5568;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  position: relative;
+}
+.action-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  background: #fff;
+  border-color: transparent;
+}
+.action-btn-view:hover { color: #3182ce; }
+.action-btn-edit:hover { color: #38a169; }
+.action-btn-delete:hover { color: #e53e3e; }
+.action-btn-print:hover { color: #6b7280; }
+
+.dark .action-btn {
+  background: #1e293b;
+  border-color: #334155;
+  color: #94a3b8;
+}
+.dark .action-btn:hover {
+  background: #1e293b;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.4);
 }
