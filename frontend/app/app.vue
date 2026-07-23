@@ -25,6 +25,7 @@ const sectionTitle = computed(() => sections.find(s => s.id === currentSection.v
 </script>
 
 <template>
+  <UTooltipProvider>
   <div class="flex h-screen overflow-hidden bg-white dark:bg-gray-950">
     <!-- Desktop sidebar -->
     <aside class="hidden lg:flex flex-col w-64 border-r border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 shrink-0">
@@ -119,4 +120,5 @@ const sectionTitle = computed(() => sections.find(s => s.id === currentSection.v
       </main>
     </div>
   </div>
+  </UTooltipProvider>
 </template>
