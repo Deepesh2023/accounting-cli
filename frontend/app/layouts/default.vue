@@ -26,6 +26,7 @@ const sectionTitle = computed(() => nav.sections.find(s => s.id === currentSecti
           :icon="s.icon"
           variant="ghost"
           block
+          class="!justify-start"
           :class="[currentSection === s.id ? '!bg-blue-600 !text-white' : '!text-gray-300 hover:!bg-gray-800 hover:!text-white', s.id === 'company' ? 'mt-3 border-t border-gray-700 pt-3 !rounded-none' : '']"
         />
       </div>
