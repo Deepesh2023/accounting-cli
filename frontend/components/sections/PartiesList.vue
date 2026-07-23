@@ -51,12 +51,8 @@ function editParty(party: any) {
       </template>
       <template #actions-data="{ row }">
         <div class="flex gap-1">
-          <UTooltip text="Edit">
-            <UButton icon="i-heroicons-pencil-square" color="gray" variant="ghost" size="2xs" @click="editParty(row)" />
-          </UTooltip>
-          <UTooltip text="Delete">
-            <UButton icon="i-heroicons-trash" color="red" variant="ghost" size="2xs" @click="deleteParty(row.id)" />
-          </UTooltip>
+          <UButton icon="i-heroicons-pencil-square" color="gray" variant="ghost" size="2xs" @click="editParty(row)"  tooltip="Edit" />
+          <UButton icon="i-heroicons-trash" color="red" variant="ghost" size="2xs" @click="deleteParty(row.id)"  tooltip="Delete" />
         </div>
       </template>
       <template #empty>

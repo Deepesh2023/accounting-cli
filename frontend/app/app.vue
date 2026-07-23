@@ -25,7 +25,6 @@ const sectionTitle = computed(() => sections.find(s => s.id === currentSection.v
 </script>
 
 <template>
-  <UTooltipProvider>
   <div class="flex h-screen overflow-hidden bg-white dark:bg-gray-950">
     <!-- Desktop sidebar -->
     <aside class="hidden lg:flex flex-col w-64 border-r border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 shrink-0">
@@ -95,14 +94,13 @@ const sectionTitle = computed(() => sections.find(s => s.id === currentSection.v
           <h1 class="text-lg font-semibold text-gray-900 dark:text-white">{{ sectionTitle }}</h1>
         </div>
         <div class="flex items-center gap-2">
-          <UTooltip :text="colorMode.preference === 'dark' ? 'Switch to light' : 'Switch to dark'">
-            <UButton
-              :icon="colorMode.preference === 'dark' ? 'i-heroicons-sun' : 'i-heroicons-moon'"
-              variant="ghost"
-              color="gray"
-              @click="colorMode.preference = colorMode.preference === 'dark' ? 'light' : 'dark'"
-            />
-          </UTooltip>
+          <UButton
+            :icon="colorMode.preference === 'dark' ? 'i-heroicons-sun' : 'i-heroicons-moon'"
+            variant="ghost"
+            color="gray"
+            :tooltip="colorMode.preference === 'dark' ? 'Switch to light' : 'Switch to dark'"
+            @click="colorMode.preference = colorMode.preference === 'dark' ? 'light' : 'dark'"
+          />
         </div>
       </header>
 
@@ -120,5 +118,4 @@ const sectionTitle = computed(() => sections.find(s => s.id === currentSection.v
       </main>
     </div>
   </div>
-  </UTooltipProvider>
 </template>

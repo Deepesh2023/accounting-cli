@@ -94,9 +94,7 @@ function deletePurchase(id: string) {
         </template>
         <template #actions-data="{ row }">
           <div class="flex gap-1">
-            <UTooltip text="Delete">
-              <UButton icon="i-heroicons-trash" color="red" variant="ghost" size="2xs" @click="deletePurchase(row.id)" />
-            </UTooltip>
+            <UButton icon="i-heroicons-trash" color="red" variant="ghost" size="2xs" @click="deletePurchase(row.id)"  tooltip="Delete" />
           </div>
         </template>
         <template #empty>

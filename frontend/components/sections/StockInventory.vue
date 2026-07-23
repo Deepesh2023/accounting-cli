@@ -64,12 +64,8 @@ function editItem(item: any) {
       </template>
       <template #actions-data="{ row }">
         <div class="flex gap-1">
-          <UTooltip text="Edit">
-            <UButton icon="i-heroicons-pencil-square" color="gray" variant="ghost" size="2xs" @click="editItem(row)" />
-          </UTooltip>
-          <UTooltip text="Delete">
-            <UButton icon="i-heroicons-trash" color="red" variant="ghost" size="2xs" @click="deleteItem(row.id)" />
-          </UTooltip>
+          <UButton icon="i-heroicons-pencil-square" color="gray" variant="ghost" size="2xs" @click="editItem(row)"  tooltip="Edit" />
+          <UButton icon="i-heroicons-trash" color="red" variant="ghost" size="2xs" @click="deleteItem(row.id)"  tooltip="Delete" />
         </div>
       </template>
       <template #empty>

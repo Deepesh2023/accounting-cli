@@ -105,15 +105,9 @@ function deleteSale(id: string) {
         </template>
         <template #actions-data="{ row }">
           <div class="flex gap-1">
-            <UTooltip text="View Invoice">
-              <UButton icon="i-heroicons-eye" color="gray" variant="ghost" size="2xs" @click="viewInvoice(row)" />
-            </UTooltip>
-            <UTooltip v-if="row.balanceAmount > 0" text="Record Payment">
-              <UButton icon="i-heroicons-currency-rupee" color="green" variant="ghost" size="2xs" @click="recordPayment(row)" />
-            </UTooltip>
-            <UTooltip text="Delete">
-              <UButton icon="i-heroicons-trash" color="red" variant="ghost" size="2xs" @click="deleteSale(row.id)" />
-            </UTooltip>
+            <UButton icon="i-heroicons-eye" color="gray" variant="ghost" size="2xs" @click="viewInvoice(row)"  tooltip="View Invoice" />
+            <UButton v-if="row.balanceAmount > 0" icon="i-heroicons-currency-rupee" color="green" variant="ghost" size="2xs" tooltip="Record Payment" @click="recordPayment(row)" />
+            <UButton icon="i-heroicons-trash" color="red" variant="ghost" size="2xs" @click="deleteSale(row.id)"  tooltip="Delete" />
           </div>
         </template>
         <template #empty>

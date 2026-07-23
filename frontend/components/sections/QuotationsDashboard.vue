@@ -38,9 +38,7 @@ function deleteQuote(id: string) {
       </template>
       <template #actions-data="{ row }">
         <div class="flex gap-1">
-          <UTooltip text="Delete">
-            <UButton icon="i-heroicons-trash" color="red" variant="ghost" size="2xs" @click="deleteQuote(row.id)" />
-          </UTooltip>
+          <UButton icon="i-heroicons-trash" color="red" variant="ghost" size="2xs" @click="deleteQuote(row.id)"  tooltip="Delete" />
         </div>
       </template>
       <template #empty>
