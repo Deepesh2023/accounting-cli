@@ -13,24 +13,25 @@ const navItems: { to: string; label: string }[] = [
   { to: '/financial-statements', label: 'Financial Statements' },
 ]
 
+const linkClass =
+  'block px-4 py-2 text-sm rounded-[5px] transition-colors cursor-pointer no-underline text-[#adb5bd] hover:text-white hover:bg-[#0d6efd]'
+
 export default function Sidebar() {
   return (
-    <div class="w-[260px] min-h-screen bg-[#212529] text-white flex flex-col p-3">
+    <div class="w-[260px] min-h-screen bg-[#212529] text-white flex flex-col pt-5 px-3 pb-3">
       <h4 class="text-center text-white mb-4">Printos</h4>
-      <ul class="flex flex-col gap-0.5 mb-auto">
+      <ul class="flex flex-col mb-auto">
         <h6 class="px-3 mt-2 mb-3 text-[#adb5bd] uppercase text-[0.75rem] tracking-[0.5px] font-semibold">
           Financial Module
         </h6>
         <For each={navItems}>
           {(item) => (
-            <li>
+            <li class="mb-[5px]">
               <Link
                 to={item.to}
+                class={linkClass}
                 activeProps={{
-                  class: 'w-full text-left px-3 py-2 rounded-md text-sm transition-colors cursor-pointer bg-[#0d6efd] text-white',
-                }}
-                inactiveProps={{
-                  class: 'w-full text-left px-3 py-2 rounded-md text-sm transition-colors cursor-pointer text-[#adb5bd] hover:text-white hover:bg-[#0d6efd]',
+                  style: { color: 'white', 'background-color': '#0d6efd' },
                 }}
               >
                 {item.label}
@@ -38,16 +39,12 @@ export default function Sidebar() {
             </li>
           )}
         </For>
-      </ul>
-      <ul class="border-t border-[#adb5bd]/20 pt-3 mt-3">
-        <li>
+        <li class="mt-3 border-t border-[#adb5bd]/20 pt-3">
           <Link
             to="/company"
+            class={linkClass}
             activeProps={{
-              class: 'w-full text-left px-3 py-2 rounded-md text-sm transition-colors cursor-pointer bg-[#0d6efd] text-white',
-            }}
-            inactiveProps={{
-              class: 'w-full text-left px-3 py-2 rounded-md text-sm transition-colors cursor-pointer text-[#adb5bd] hover:text-white hover:bg-[#0d6efd]',
+              style: { color: 'white', 'background-color': '#0d6efd' },
             }}
           >
             Company Details
