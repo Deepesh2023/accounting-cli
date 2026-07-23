@@ -10,33 +10,167 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as CompanyRouteImport } from './routes/company'
+import { Route as ExpensesRouteImport } from './routes/expenses'
+import { Route as FinancialStatementsRouteImport } from './routes/financial-statements'
+import { Route as OutstandingRouteImport } from './routes/outstanding'
+import { Route as PartiesRouteImport } from './routes/parties'
+import { Route as PurchasesRouteImport } from './routes/purchases'
+import { Route as QuotationRouteImport } from './routes/quotation'
+import { Route as SalesRouteImport } from './routes/sales'
+import { Route as StockRouteImport } from './routes/stock'
+import { Route as TransactionsRouteImport } from './routes/transactions'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CompanyRoute = CompanyRouteImport.update({
+  id: '/company',
+  path: '/company',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ExpensesRoute = ExpensesRouteImport.update({
+  id: '/expenses',
+  path: '/expenses',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FinancialStatementsRoute = FinancialStatementsRouteImport.update({
+  id: '/financial-statements',
+  path: '/financial-statements',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OutstandingRoute = OutstandingRouteImport.update({
+  id: '/outstanding',
+  path: '/outstanding',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PartiesRoute = PartiesRouteImport.update({
+  id: '/parties',
+  path: '/parties',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PurchasesRoute = PurchasesRouteImport.update({
+  id: '/purchases',
+  path: '/purchases',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const QuotationRoute = QuotationRouteImport.update({
+  id: '/quotation',
+  path: '/quotation',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SalesRoute = SalesRouteImport.update({
+  id: '/sales',
+  path: '/sales',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const StockRoute = StockRouteImport.update({
+  id: '/stock',
+  path: '/stock',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TransactionsRoute = TransactionsRouteImport.update({
+  id: '/transactions',
+  path: '/transactions',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/company': typeof CompanyRoute
+  '/expenses': typeof ExpensesRoute
+  '/financial-statements': typeof FinancialStatementsRoute
+  '/outstanding': typeof OutstandingRoute
+  '/parties': typeof PartiesRoute
+  '/purchases': typeof PurchasesRoute
+  '/quotation': typeof QuotationRoute
+  '/sales': typeof SalesRoute
+  '/stock': typeof StockRoute
+  '/transactions': typeof TransactionsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/company': typeof CompanyRoute
+  '/expenses': typeof ExpensesRoute
+  '/financial-statements': typeof FinancialStatementsRoute
+  '/outstanding': typeof OutstandingRoute
+  '/parties': typeof PartiesRoute
+  '/purchases': typeof PurchasesRoute
+  '/quotation': typeof QuotationRoute
+  '/sales': typeof SalesRoute
+  '/stock': typeof StockRoute
+  '/transactions': typeof TransactionsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/company': typeof CompanyRoute
+  '/expenses': typeof ExpensesRoute
+  '/financial-statements': typeof FinancialStatementsRoute
+  '/outstanding': typeof OutstandingRoute
+  '/parties': typeof PartiesRoute
+  '/purchases': typeof PurchasesRoute
+  '/quotation': typeof QuotationRoute
+  '/sales': typeof SalesRoute
+  '/stock': typeof StockRoute
+  '/transactions': typeof TransactionsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/company'
+    | '/expenses'
+    | '/financial-statements'
+    | '/outstanding'
+    | '/parties'
+    | '/purchases'
+    | '/quotation'
+    | '/sales'
+    | '/stock'
+    | '/transactions'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/company'
+    | '/expenses'
+    | '/financial-statements'
+    | '/outstanding'
+    | '/parties'
+    | '/purchases'
+    | '/quotation'
+    | '/sales'
+    | '/stock'
+    | '/transactions'
+  id:
+    | '__root__'
+    | '/'
+    | '/company'
+    | '/expenses'
+    | '/financial-statements'
+    | '/outstanding'
+    | '/parties'
+    | '/purchases'
+    | '/quotation'
+    | '/sales'
+    | '/stock'
+    | '/transactions'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  CompanyRoute: typeof CompanyRoute
+  ExpensesRoute: typeof ExpensesRoute
+  FinancialStatementsRoute: typeof FinancialStatementsRoute
+  OutstandingRoute: typeof OutstandingRoute
+  PartiesRoute: typeof PartiesRoute
+  PurchasesRoute: typeof PurchasesRoute
+  QuotationRoute: typeof QuotationRoute
+  SalesRoute: typeof SalesRoute
+  StockRoute: typeof StockRoute
+  TransactionsRoute: typeof TransactionsRoute
 }
 
 declare module '@tanstack/solid-router' {
@@ -48,11 +182,91 @@ declare module '@tanstack/solid-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/company': {
+      id: '/company'
+      path: '/company'
+      fullPath: '/company'
+      preLoaderRoute: typeof CompanyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/expenses': {
+      id: '/expenses'
+      path: '/expenses'
+      fullPath: '/expenses'
+      preLoaderRoute: typeof ExpensesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/financial-statements': {
+      id: '/financial-statements'
+      path: '/financial-statements'
+      fullPath: '/financial-statements'
+      preLoaderRoute: typeof FinancialStatementsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/outstanding': {
+      id: '/outstanding'
+      path: '/outstanding'
+      fullPath: '/outstanding'
+      preLoaderRoute: typeof OutstandingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/parties': {
+      id: '/parties'
+      path: '/parties'
+      fullPath: '/parties'
+      preLoaderRoute: typeof PartiesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/purchases': {
+      id: '/purchases'
+      path: '/purchases'
+      fullPath: '/purchases'
+      preLoaderRoute: typeof PurchasesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/quotation': {
+      id: '/quotation'
+      path: '/quotation'
+      fullPath: '/quotation'
+      preLoaderRoute: typeof QuotationRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sales': {
+      id: '/sales'
+      path: '/sales'
+      fullPath: '/sales'
+      preLoaderRoute: typeof SalesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/stock': {
+      id: '/stock'
+      path: '/stock'
+      fullPath: '/stock'
+      preLoaderRoute: typeof StockRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/transactions': {
+      id: '/transactions'
+      path: '/transactions'
+      fullPath: '/transactions'
+      preLoaderRoute: typeof TransactionsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  CompanyRoute: CompanyRoute,
+  ExpensesRoute: ExpensesRoute,
+  FinancialStatementsRoute: FinancialStatementsRoute,
+  OutstandingRoute: OutstandingRoute,
+  PartiesRoute: PartiesRoute,
+  PurchasesRoute: PurchasesRoute,
+  QuotationRoute: QuotationRoute,
+  SalesRoute: SalesRoute,
+  StockRoute: StockRoute,
+  TransactionsRoute: TransactionsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

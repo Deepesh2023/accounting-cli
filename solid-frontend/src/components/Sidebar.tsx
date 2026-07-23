@@ -1,36 +1,19 @@
-import { For, createSignal } from 'solid-js'
+import { For } from 'solid-js'
+import { Link } from '@tanstack/solid-router'
 
-export type Section =
-  | 'sales'
-  | 'purchases'
-  | 'outstanding'
-  | 'expenses'
-  | 'quotation'
-  | 'transactions'
-  | 'parties'
-  | 'stock'
-  | 'financial-statements'
-  | 'company'
-
-const [activeSection, setActiveSection] = createSignal<Section>('sales')
-
-export { activeSection, setActiveSection }
-
-const navItems: { id: Section; label: string }[] = [
-  { id: 'sales', label: 'Sales' },
-  { id: 'purchases', label: 'Purchases' },
-  { id: 'outstanding', label: 'Outstanding Report' },
-  { id: 'expenses', label: 'Expenses' },
-  { id: 'quotation', label: 'Quotation' },
-  { id: 'transactions', label: 'Transaction History' },
-  { id: 'parties', label: 'Parties' },
-  { id: 'stock', label: 'Stock' },
-  { id: 'financial-statements', label: 'Financial Statements' },
+const navItems: { to: string; label: string }[] = [
+  { to: '/sales', label: 'Sales' },
+  { to: '/purchases', label: 'Purchases' },
+  { to: '/outstanding', label: 'Outstanding Report' },
+  { to: '/expenses', label: 'Expenses' },
+  { to: '/quotation', label: 'Quotation' },
+  { to: '/transactions', label: 'Transaction History' },
+  { to: '/parties', label: 'Parties' },
+  { to: '/stock', label: 'Stock' },
+  { to: '/financial-statements', label: 'Financial Statements' },
 ]
 
 export default function Sidebar() {
-  const current = activeSection
-
   return (
     <div class="w-[260px] min-h-screen bg-[#212529] text-white flex flex-col p-3">
       <h4 class="text-center text-white mb-4">Printos</h4>
@@ -41,32 +24,34 @@ export default function Sidebar() {
         <For each={navItems}>
           {(item) => (
             <li>
-              <button
-                onClick={() => setActiveSection(item.id)}
-                class={`w-full text-left px-3 py-2 rounded-md text-sm transition-colors cursor-pointer ${
-                  current() === item.id
-                    ? 'bg-[#0d6efd] text-white'
-                    : 'text-[#adb5bd] hover:text-white hover:bg-[#0d6efd]'
-                }`}
+              <Link
+                to={item.to}
+                activeProps={{
+                  class: 'w-full text-left px-3 py-2 rounded-md text-sm transition-colors cursor-pointer bg-[#0d6efd] text-white',
+                }}
+                inactiveProps={{
+                  class: 'w-full text-left px-3 py-2 rounded-md text-sm transition-colors cursor-pointer text-[#adb5bd] hover:text-white hover:bg-[#0d6efd]',
+                }}
               >
                 {item.label}
-              </button>
+              </Link>
             </li>
           )}
         </For>
       </ul>
       <ul class="border-t border-[#adb5bd]/20 pt-3 mt-3">
         <li>
-          <button
-            onClick={() => setActiveSection('company')}
-            class={`w-full text-left px-3 py-2 rounded-md text-sm transition-colors cursor-pointer ${
-              current() === 'company'
-                ? 'bg-[#0d6efd] text-white'
-                : 'text-[#adb5bd] hover:text-white hover:bg-[#0d6efd]'
-            }`}
+          <Link
+            to="/company"
+            activeProps={{
+              class: 'w-full text-left px-3 py-2 rounded-md text-sm transition-colors cursor-pointer bg-[#0d6efd] text-white',
+            }}
+            inactiveProps={{
+              class: 'w-full text-left px-3 py-2 rounded-md text-sm transition-colors cursor-pointer text-[#adb5bd] hover:text-white hover:bg-[#0d6efd]',
+            }}
           >
             Company Details
-          </button>
+          </Link>
         </li>
       </ul>
     </div>
