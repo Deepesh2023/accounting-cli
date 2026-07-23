@@ -16,10 +16,25 @@ wheels/
 gitlog.txt
 cli.zip
 
-# Frontend
+# Frontend (Nuxt)
 frontend/node_modules/
 frontend/.nuxt/
 frontend/.output/
 frontend/dist/
 !frontend/tsconfig.json
 !frontend/*.ts
+
+# Frontend (Solid)
+solid-frontend/node_modules/
+solid-frontend/dist/
+solid-frontend/dist-ssr/
+solid-frontend/.nitro/
+solid-frontend/.tanstack/
+solid-frontend/.wrangler/
+solid-frontend/.output/
+solid-frontend/.vinxi/
+solid-frontend/__unconfig*
+!solid-frontend/package.json
+!solid-frontend/package-lock.json
+!solid-frontend/tsconfig.json
+!solid-frontend/tsr.config.json
