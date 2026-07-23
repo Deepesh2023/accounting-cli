@@ -77,6 +77,23 @@ export interface Party {
   balance: number
 }
 
+export interface QuotationItem {
+  item_id: string
+  qty: number
+  price: number
+  tax: number
+}
+
+export interface Quotation {
+  id: number
+  quote_no: string
+  date: string
+  customer_id: string
+  customer_name: string
+  total: number
+  items: QuotationItem[]
+}
+
 export interface Expense {
   id: number
   date: string

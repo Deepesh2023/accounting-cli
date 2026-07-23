@@ -1,9 +1,10 @@
 import { createStore } from 'solid-js/store'
-import type { Transaction, Party, StockItem, Expense } from './types'
+import type { Transaction, Party, StockItem, Quotation, Expense } from './types'
 
 const [transactions, setTransactions] = createStore<Transaction[]>([])
 const [partyList, setPartyList] = createStore<Party[]>([])
 const [stockList, setStockList] = createStore<StockItem[]>([])
+const [quotationList, setQuotationList] = createStore<Quotation[]>([])
 const [expenseList, setExpenseList] = createStore<Expense[]>([])
 
 const indianStates = [
@@ -24,6 +25,8 @@ export {
   setPartyList,
   stockList,
   setStockList,
+  quotationList,
+  setQuotationList,
   expenseList,
   setExpenseList,
   indianStates,
