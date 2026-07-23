@@ -1,5 +1,4 @@
 export const useNavigationStore = defineStore('navigation', () => {
-  const currentSection = ref('sales')
   const sidebarOpen = ref(true)
 
   const sections = [
@@ -15,16 +14,9 @@ export const useNavigationStore = defineStore('navigation', () => {
     { id: 'company', label: 'Company', icon: 'i-heroicons-building-office-2' },
   ]
 
-  const sectionTitle = computed(() => sections.find(s => s.id === currentSection.value)?.label || currentSection.value)
-
-  function navigateTo(id: string) {
-    currentSection.value = id
-    sidebarOpen.value = false
-  }
-
   function toggleSidebar() {
     sidebarOpen.value = !sidebarOpen.value
   }
 
-  return { currentSection, sidebarOpen, sections, sectionTitle, navigateTo, toggleSidebar }
+  return { sidebarOpen, sections, toggleSidebar }
 })
