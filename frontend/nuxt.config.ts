@@ -3,11 +3,4 @@ export default defineNuxtConfig({
   devtools: { enabled: true },
   modules: ['@nuxt/ui', '@nuxt/icon', '@pinia/nuxt'],
   css: ['~/assets/css/main.css'],
-
-  ui: {
-    colors: {
-      primary: 'blue',
-      neutral: 'slate',
-    },
-  },
 })
