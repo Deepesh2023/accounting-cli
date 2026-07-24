@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as CompanyRouteImport } from './routes/company'
 import { Route as ExpensesRouteImport } from './routes/expenses'
 import { Route as FinancialStatementsRouteImport } from './routes/financial-statements'
+import { Route as NewSaleRouteImport } from './routes/new-sale'
 import { Route as OutstandingRouteImport } from './routes/outstanding'
 import { Route as PartiesRouteImport } from './routes/parties'
 import { Route as PurchasesRouteImport } from './routes/purchases'
@@ -39,6 +40,11 @@ const ExpensesRoute = ExpensesRouteImport.update({
 const FinancialStatementsRoute = FinancialStatementsRouteImport.update({
   id: '/financial-statements',
   path: '/financial-statements',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NewSaleRoute = NewSaleRouteImport.update({
+  id: '/new-sale',
+  path: '/new-sale',
   getParentRoute: () => rootRouteImport,
 } as any)
 const OutstandingRoute = OutstandingRouteImport.update({
@@ -82,6 +88,7 @@ export interface FileRoutesByFullPath {
   '/company': typeof CompanyRoute
   '/expenses': typeof ExpensesRoute
   '/financial-statements': typeof FinancialStatementsRoute
+  '/new-sale': typeof NewSaleRoute
   '/outstanding': typeof OutstandingRoute
   '/parties': typeof PartiesRoute
   '/purchases': typeof PurchasesRoute
@@ -95,6 +102,7 @@ export interface FileRoutesByTo {
   '/company': typeof CompanyRoute
   '/expenses': typeof ExpensesRoute
   '/financial-statements': typeof FinancialStatementsRoute
+  '/new-sale': typeof NewSaleRoute
   '/outstanding': typeof OutstandingRoute
   '/parties': typeof PartiesRoute
   '/purchases': typeof PurchasesRoute
@@ -109,6 +117,7 @@ export interface FileRoutesById {
   '/company': typeof CompanyRoute
   '/expenses': typeof ExpensesRoute
   '/financial-statements': typeof FinancialStatementsRoute
+  '/new-sale': typeof NewSaleRoute
   '/outstanding': typeof OutstandingRoute
   '/parties': typeof PartiesRoute
   '/purchases': typeof PurchasesRoute
@@ -124,6 +133,7 @@ export interface FileRouteTypes {
     | '/company'
     | '/expenses'
     | '/financial-statements'
+    | '/new-sale'
     | '/outstanding'
     | '/parties'
     | '/purchases'
@@ -137,6 +147,7 @@ export interface FileRouteTypes {
     | '/company'
     | '/expenses'
     | '/financial-statements'
+    | '/new-sale'
     | '/outstanding'
     | '/parties'
     | '/purchases'
@@ -150,6 +161,7 @@ export interface FileRouteTypes {
     | '/company'
     | '/expenses'
     | '/financial-statements'
+    | '/new-sale'
     | '/outstanding'
     | '/parties'
     | '/purchases'
@@ -164,6 +176,7 @@ export interface RootRouteChildren {
   CompanyRoute: typeof CompanyRoute
   ExpensesRoute: typeof ExpensesRoute
   FinancialStatementsRoute: typeof FinancialStatementsRoute
+  NewSaleRoute: typeof NewSaleRoute
   OutstandingRoute: typeof OutstandingRoute
   PartiesRoute: typeof PartiesRoute
   PurchasesRoute: typeof PurchasesRoute
@@ -201,6 +214,13 @@ declare module '@tanstack/solid-router' {
       path: '/financial-statements'
       fullPath: '/financial-statements'
       preLoaderRoute: typeof FinancialStatementsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/new-sale': {
+      id: '/new-sale'
+      path: '/new-sale'
+      fullPath: '/new-sale'
+      preLoaderRoute: typeof NewSaleRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/outstanding': {
@@ -260,6 +280,7 @@ const rootRouteChildren: RootRouteChildren = {
   CompanyRoute: CompanyRoute,
   ExpensesRoute: ExpensesRoute,
   FinancialStatementsRoute: FinancialStatementsRoute,
+  NewSaleRoute: NewSaleRoute,
   OutstandingRoute: OutstandingRoute,
   PartiesRoute: PartiesRoute,
   PurchasesRoute: PurchasesRoute,
