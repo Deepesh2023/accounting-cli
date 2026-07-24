@@ -17,10 +17,10 @@ import { Route as OutstandingRouteImport } from './routes/outstanding'
 import { Route as PartiesRouteImport } from './routes/parties'
 import { Route as PurchasesRouteImport } from './routes/purchases'
 import { Route as QuotationRouteImport } from './routes/quotation'
+import { Route as RecordSaleRouteImport } from './routes/record-sale'
 import { Route as SalesRouteImport } from './routes/sales'
 import { Route as StockRouteImport } from './routes/stock'
 import { Route as TransactionsRouteImport } from './routes/transactions'
-import { Route as SalesNewSaleRouteImport } from './routes/sales.new-sale'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -62,6 +62,11 @@ const QuotationRoute = QuotationRouteImport.update({
   path: '/quotation',
   getParentRoute: () => rootRouteImport,
 } as any)
+const RecordSaleRoute = RecordSaleRouteImport.update({
+  id: '/record-sale',
+  path: '/record-sale',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SalesRoute = SalesRouteImport.update({
   id: '/sales',
   path: '/sales',
@@ -77,11 +82,6 @@ const TransactionsRoute = TransactionsRouteImport.update({
   path: '/transactions',
   getParentRoute: () => rootRouteImport,
 } as any)
-const SalesNewSaleRoute = SalesNewSaleRouteImport.update({
-  id: '/new-sale',
-  path: '/new-sale',
-  getParentRoute: () => SalesRoute,
-} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -92,10 +92,10 @@ export interface FileRoutesByFullPath {
   '/parties': typeof PartiesRoute
   '/purchases': typeof PurchasesRoute
   '/quotation': typeof QuotationRoute
-  '/sales': typeof SalesRouteWithChildren
+  '/record-sale': typeof RecordSaleRoute
+  '/sales': typeof SalesRoute
   '/stock': typeof StockRoute
   '/transactions': typeof TransactionsRoute
-  '/sales/new-sale': typeof SalesNewSaleRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -106,10 +106,10 @@ export interface FileRoutesByTo {
   '/parties': typeof PartiesRoute
   '/purchases': typeof PurchasesRoute
   '/quotation': typeof QuotationRoute
-  '/sales': typeof SalesRouteWithChildren
+  '/record-sale': typeof RecordSaleRoute
+  '/sales': typeof SalesRoute
   '/stock': typeof StockRoute
   '/transactions': typeof TransactionsRoute
-  '/sales/new-sale': typeof SalesNewSaleRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -121,10 +121,10 @@ export interface FileRoutesById {
   '/parties': typeof PartiesRoute
   '/purchases': typeof PurchasesRoute
   '/quotation': typeof QuotationRoute
-  '/sales': typeof SalesRouteWithChildren
+  '/record-sale': typeof RecordSaleRoute
+  '/sales': typeof SalesRoute
   '/stock': typeof StockRoute
   '/transactions': typeof TransactionsRoute
-  '/sales/new-sale': typeof SalesNewSaleRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -137,10 +137,10 @@ export interface FileRouteTypes {
     | '/parties'
     | '/purchases'
     | '/quotation'
+    | '/record-sale'
     | '/sales'
     | '/stock'
     | '/transactions'
-    | '/sales/new-sale'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -151,10 +151,10 @@ export interface FileRouteTypes {
     | '/parties'
     | '/purchases'
     | '/quotation'
+    | '/record-sale'
     | '/sales'
     | '/stock'
     | '/transactions'
-    | '/sales/new-sale'
   id:
     | '__root__'
     | '/'
@@ -165,10 +165,10 @@ export interface FileRouteTypes {
     | '/parties'
     | '/purchases'
     | '/quotation'
+    | '/record-sale'
     | '/sales'
     | '/stock'
     | '/transactions'
-    | '/sales/new-sale'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -180,7 +180,8 @@ export interface RootRouteChildren {
   PartiesRoute: typeof PartiesRoute
   PurchasesRoute: typeof PurchasesRoute
   QuotationRoute: typeof QuotationRoute
-  SalesRoute: typeof SalesRouteWithChildren
+  RecordSaleRoute: typeof RecordSaleRoute
+  SalesRoute: typeof SalesRoute
   StockRoute: typeof StockRoute
   TransactionsRoute: typeof TransactionsRoute
 }
@@ -243,6 +244,13 @@ declare module '@tanstack/solid-router' {
       preLoaderRoute: typeof QuotationRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/record-sale': {
+      id: '/record-sale'
+      path: '/record-sale'
+      fullPath: '/record-sale'
+      preLoaderRoute: typeof RecordSaleRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/sales': {
       id: '/sales'
       path: '/sales'
@@ -264,25 +272,8 @@ declare module '@tanstack/solid-router' {
       preLoaderRoute: typeof TransactionsRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/sales/new-sale': {
-      id: '/sales/new-sale'
-      path: '/new-sale'
-      fullPath: '/sales/new-sale'
-      preLoaderRoute: typeof SalesNewSaleRouteImport
-      parentRoute: typeof SalesRoute
-    }
   }
 }
-
-interface SalesRouteChildren {
-  SalesNewSaleRoute: typeof SalesNewSaleRoute
-}
-
-const SalesRouteChildren: SalesRouteChildren = {
-  SalesNewSaleRoute: SalesNewSaleRoute,
-}
-
-const SalesRouteWithChildren = SalesRoute._addFileChildren(SalesRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
@@ -293,7 +284,8 @@ const rootRouteChildren: RootRouteChildren = {
   PartiesRoute: PartiesRoute,
   PurchasesRoute: PurchasesRoute,
   QuotationRoute: QuotationRoute,
-  SalesRoute: SalesRouteWithChildren,
+  RecordSaleRoute: RecordSaleRoute,
+  SalesRoute: SalesRoute,
   StockRoute: StockRoute,
   TransactionsRoute: TransactionsRoute,
 }

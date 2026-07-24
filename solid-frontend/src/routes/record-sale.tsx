@@ -62,7 +62,7 @@ function defaultValues(edit?: number): SaleFormValues {
   }
 }
 
-export const Route = createFileRoute('/sales/new-sale')({
+export const Route = createFileRoute('/record-sale')({
   validateSearch: (search: Record<string, string | undefined>) => ({
     edit: search.edit ? Number(search.edit) : undefined,
   }),
