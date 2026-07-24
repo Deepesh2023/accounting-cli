@@ -37,7 +37,7 @@ function FinancialStatements() {
   const incomes = createMemo(() => getTTypeSum('Income'))
   const assets = createMemo(() => getTTypeSum('Asset'))
   const capital = createMemo(() => getTTypeSum('Capital'))
-  const stockValue = createMemo(() => stockList.reduce((sum, st) => sum + st.qty * st.price, 0))
+  const stockValue = createMemo(() => stockList.reduce((sum, st) => sum + st.quantity * Number(st.selling_price), 0))
   const debtors = createMemo(() => partyList.filter((p) => p.type === 'Receive').reduce((s, p) => s + p.balance, 0))
   const creditors = createMemo(() => partyList.filter((p) => p.type === 'Pay').reduce((s, p) => s + p.balance, 0))
   const cashBal = createMemo(() => getModeBalance('Cash'))

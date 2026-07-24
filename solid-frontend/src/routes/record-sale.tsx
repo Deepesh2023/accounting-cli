@@ -153,9 +153,9 @@ function NewSale() {
   }
 
   function onItemSelect(idx: number, itemId: string) {
-    const st = stockList.find((s) => String(s.id) === String(itemId))
+    const st = stockList.find((s) => s.product_id === itemId)
     const patch: Partial<SaleRow> = { itemId }
-    if (st) patch.price = st.price
+    if (st) patch.price = Number(st.selling_price)
     updateRow(idx, patch)
   }
 
@@ -184,9 +184,9 @@ function NewSale() {
   function handleSave(v: SaleFormValues) {
     for (const row of v.rows) {
       if (!row.itemId) continue
-      const st = stockList.find((s) => String(s.id) === String(row.itemId))
+      const st = stockList.find((s) => s.product_id === row.itemId)
       if (st) {
-        let available = st.qty
+        let available = st.quantity
         if (v.editingId) {
           const oldT = transactions.find((t) => t.id === v.editingId)
           if (oldT?.sale_details) {
@@ -239,10 +239,10 @@ function NewSale() {
           }
         }
         for (const oldItem of sd.items) {
-          const st = stockList.find((s) => String(s.id) === String(oldItem.item_id))
+          const st = stockList.find((s) => s.product_id === oldItem.item_id)
           if (st) {
             const idx = stockList.indexOf(st)
-            if (idx !== -1) setStockList(idx, 'qty', st.qty + oldItem.qty)
+            if (idx !== -1) setStockList(idx, 'quantity', st.quantity + oldItem.qty)
           }
         }
       }
@@ -264,16 +264,16 @@ function NewSale() {
       const row = v.rows[i]
       if (!row.itemId) continue
       const tot = itemTotals()[i]
-      const st = stockList.find((s) => String(s.id) === String(row.itemId))
+      const st = stockList.find((s) => s.product_id === row.itemId)
       if (st) {
         const stkIdx = stockList.indexOf(st)
-        if (stkIdx !== -1) setStockList(stkIdx, 'qty', st.qty - row.qty)
+        if (stkIdx !== -1) setStockList(stkIdx, 'quantity', st.quantity - row.qty)
       }
       itemsData.push({
         item_id: row.itemId,
-        name: stockList.find((s) => String(s.id) === String(row.itemId))?.name || '',
+        name: stockList.find((s) => s.product_id === row.itemId)?.name || '',
         qty: row.qty,
-        unit: stockList.find((s) => String(s.id) === String(row.itemId))?.unit || '',
+        unit: '',
         price: row.price,
         disc_perc: row.discPerc,
         disc_amt: row.discAmt,
@@ -587,8 +587,8 @@ function NewSale() {
                   <tbody>
                     <For each={rows()}>
                       {(row, idx) => {
-                        const st = stockList.find((s) => String(s.id) === String(row.itemId))
-                        const badge = st ? { qty: st.qty, unit: st.unit || '' } : null
+                        const st = stockList.find((s) => s.product_id === row.itemId)
+                        const badge = st ? { qty: st.quantity, unit: '' } : null
                         const tot = itemTotals()[idx()]
                         return (
                           <tr class="border-b border-gray-100 align-top">
@@ -601,9 +601,9 @@ function NewSale() {
                               >
                                 <option value="">Select Item</option>
                                 <For each={sortedStock()}>
-                                  {(s) => (
-                                    <option value={s.id}>
-                                      {s.name} (Stock: {s.qty})
+                                      {(s) => (
+                                    <option value={s.product_id}>
+                                      {s.name} (Stock: {s.quantity})
                                     </option>
                                   )}
                                 </For>
@@ -617,7 +617,7 @@ function NewSale() {
                                         : 'bg-green-100 text-green-700'
                                     }`}
                                   >
-                                    Stock: {badge!.qty} {badge!.unit}
+                                      Stock: {badge!.qty}
                                   </span>
                                 </div>
                               </Show>
@@ -632,7 +632,7 @@ function NewSale() {
                               />
                             </td>
                             <td class="p-1 text-center text-xs pt-2.5 text-gray-500">
-                              {st?.unit || '-'}
+                              -
                             </td>
                             <td class="p-1">
                               <input

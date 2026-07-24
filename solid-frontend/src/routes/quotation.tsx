@@ -268,18 +268,18 @@ function Quotation() {
                                 value={it.item_id}
                                 onChange={(e) => {
                                   const id = e.currentTarget.value
-                                  const st = stockList.find((s) => String(s.id) === String(id))
+                                  const st = stockList.find((s) => s.product_id === id)
                                   updateItem(idx(), {
                                     item_id: id,
-                                    price: st?.price ?? it.price,
+                                    price: Number(st?.selling_price ?? it.price),
                                   })
                                 }}
                               >
                                 <option value="">Select Item</option>
                                 <For each={stockList}>
                                   {(s) => (
-                                    <option value={s.id}>
-                                      {s.name} (Stock: {s.qty})
+                                    <option value={s.product_id}>
+                                      {s.name} (Stock: {s.quantity})
                                     </option>
                                   )}
                                 </For>

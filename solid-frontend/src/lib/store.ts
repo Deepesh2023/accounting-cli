@@ -1,9 +1,10 @@
 import { createStore } from 'solid-js/store'
-import type { Transaction, Party, StockItem, Quotation, Expense, CompanyData, LedgerEntry } from './types'
+import type { Transaction, Party, Quotation, Expense, CompanyData, LedgerEntry } from './types'
+import type { components } from './api/schema'
 
 const [transactions, setTransactions] = createStore<Transaction[]>([])
 const [partyList, setPartyList] = createStore<Party[]>([])
-const [stockList, setStockList] = createStore<StockItem[]>([])
+const [stockList, setStockList] = createStore<components['schemas']['ProductResponse'][]>([])
 const [quotationList, setQuotationList] = createStore<Quotation[]>([])
 const [expenseList, setExpenseList] = createStore<Expense[]>([])
 const [ledgerList, setLedgerList] = createStore<Record<string, LedgerEntry[]>>({})

@@ -1,63 +1,78 @@
 import { createSignal, For, Show } from 'solid-js'
 import { createFileRoute } from '@tanstack/solid-router'
-import type { StockItem } from '../lib/types'
-import { stockList, setStockList, formatMoney, getNextId } from '../lib/store'
+import { createForm } from '@tanstack/solid-form'
+import { stockList, setStockList, formatMoney } from '../lib/store'
+import type { components } from '../lib/api/schema'
+
+type ProductResponse = components['schemas']['ProductResponse']
+type ProductCreate = components['schemas']['ProductCreate']
 
 export const Route = createFileRoute('/stock')({ component: Stock })
 
 function Stock() {
   const [showModal, setShowModal] = createSignal(false)
-  const [editingId, setEditingId] = createSignal<number | null>(null)
-  const [form, setForm] = createSignal({
-    name: '',
-    item_code: '',
-    qty: 0,
-    unit: '',
-    price: 0,
-  })
+  const [editingId, setEditingId] = createSignal<string | null>(null)
+
+  const form = createForm(() => ({
+    defaultValues: {
+      name: '',
+      selling_price: 0,
+      quantity: 0,
+      gst_rate: 0,
+      hsn_code: '',
+    } as ProductCreate,
+  }))
 
   function openNew() {
     setEditingId(null)
-    setForm({ name: '', item_code: '', qty: 0, unit: '', price: 0 })
+    form.reset()
     setShowModal(true)
   }
 
-  function openEdit(id: number) {
-    const s = stockList.find((x) => x.id === id)
+  function openEdit(id: string) {
+    const s = stockList.find((x) => x.product_id === id)
     if (!s) return
     setEditingId(id)
-    setForm({ name: s.name, item_code: s.item_code, qty: s.qty, unit: s.unit, price: s.price })
+    form.setFieldValue('name', s.name)
+    form.setFieldValue('selling_price', Number(s.selling_price))
+    form.setFieldValue('quantity', s.quantity)
+    form.setFieldValue('gst_rate', Number(s.gst_rate))
+    form.setFieldValue('hsn_code', s.hsn_code)
     setShowModal(true)
   }
 
   function handleSave() {
-    const f = form()
-    if (!f.name.trim()) return
+    const vals = form.state.values
+    if (!vals.name.trim()) return
     if (editingId()) {
-      setStockList((s) => s.id === editingId(), 'name', f.name.trim())
-      setStockList((s) => s.id === editingId(), 'item_code', f.item_code)
-      setStockList((s) => s.id === editingId(), 'qty', f.qty)
-      setStockList((s) => s.id === editingId(), 'unit', f.unit)
-      setStockList((s) => s.id === editingId(), 'price', f.price)
+      setStockList(
+        (s) => s.product_id === editingId(),
+        'name', vals.name.trim(),
+        'selling_price', String(vals.selling_price),
+        'quantity', vals.quantity,
+        'gst_rate', String(vals.gst_rate),
+        'hsn_code', vals.hsn_code,
+      )
     } else {
       setStockList(stockList.length, {
-        id: getNextId(),
-        name: f.name.trim(),
-        item_code: f.item_code,
-        qty: f.qty,
-        unit: f.unit,
-        price: f.price,
+        product_id: crypto.randomUUID(),
+        name: vals.name.trim(),
+        selling_price: String(vals.selling_price),
+        quantity: vals.quantity,
+        gst_rate: String(vals.gst_rate),
+        hsn_code: vals.hsn_code,
+        archived: false,
       })
     }
     setShowModal(false)
   }
 
-  function handleDelete(id: number) {
+  function handleDelete(id: string) {
     if (!confirm('Delete this item?')) return
-    setStockList(stockList.filter((s) => s.id !== id))
+    setStockList(stockList.filter((s) => s.product_id !== id))
   }
 
-  const totalValue = (s: StockItem) => s.qty * s.price
+  const totalValue = (s: ProductResponse) => s.quantity * Number(s.selling_price)
 
   return (
     <div class="space-y-6">
@@ -79,11 +94,11 @@ function Stock() {
             <thead class="bg-gray-100 text-gray-600 uppercase text-xs">
               <tr>
                 <th class="py-3 pl-4 text-left" style="width:50px">#</th>
-                <th class="py-3 text-left">Item Code</th>
                 <th class="py-3 text-left">Name</th>
-                <th class="py-3 text-right">Qty</th>
-                <th class="py-3 text-left">Unit</th>
-                <th class="py-3 text-right">Price (₹)</th>
+                <th class="py-3 text-right">Quantity</th>
+                <th class="py-3 text-right">Selling Price (₹)</th>
+                <th class="py-3 text-right">GST Rate (%)</th>
+                <th class="py-3 text-left">HSN Code</th>
                 <th class="py-3 text-right">Total Value (₹)</th>
                 <th class="py-3 pr-4 text-center" style="width:120px">Actions</th>
               </tr>
@@ -93,21 +108,21 @@ function Stock() {
                 {(s, i) => (
                   <tr class="border-b border-gray-200 hover:bg-gray-50">
                     <td class="py-3 pl-4">{i() + 1}</td>
-                    <td class="py-3">{s.item_code || '-'}</td>
                     <td class="py-3 font-medium">{s.name}</td>
-                    <td class="py-3 text-right">{s.qty}</td>
-                    <td class="py-3">{s.unit || '-'}</td>
-                    <td class="py-3 text-right">₹{formatMoney(s.price)}</td>
+                    <td class="py-3 text-right">{s.quantity}</td>
+                    <td class="py-3 text-right">₹{formatMoney(Number(s.selling_price))}</td>
+                    <td class="py-3 text-right">{s.gst_rate}%</td>
+                    <td class="py-3">{s.hsn_code || '-'}</td>
                     <td class="py-3 text-right font-bold">₹{formatMoney(totalValue(s))}</td>
                     <td class="py-3 pr-4 text-center">
                       <button
-                        onClick={() => openEdit(s.id)}
+                        onClick={() => openEdit(s.product_id)}
                         class="text-blue-600 hover:text-blue-800 underline text-xs mr-2"
                       >
                         Edit
                       </button>
                       <button
-                        onClick={() => handleDelete(s.id)}
+                        onClick={() => handleDelete(s.product_id)}
                         class="text-red-600 hover:text-red-800 underline text-xs"
                       >
                         Delete
@@ -137,61 +152,82 @@ function Stock() {
               <h5 class="mb-0 font-bold text-gray-700">{editingId() !== null ? 'Edit Stock' : 'Stock Details'}</h5>
             </div>
             <div class="p-4">
-              <div class="mb-3">
-                <label class="block text-sm font-medium text-gray-700 mb-1">Name</label>
-                <input
-                  type="text"
-                  value={form().name}
-                  onInput={(e) => setForm((prev) => ({ ...prev, name: e.currentTarget.value }))}
-                  class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-blue-500"
-                  required
-                />
-              </div>
-              <div class="mb-3">
-                <label class="block text-sm font-medium text-gray-700 mb-1">Item Code</label>
-                <input
-                  type="text"
-                  value={form().item_code}
-                  onInput={(e) => setForm((prev) => ({ ...prev, item_code: e.currentTarget.value }))}
-                  class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-blue-500"
-                  placeholder="Optional"
-                />
-              </div>
+              <form.Field name="name">
+                {(field) => (
+                  <div class="mb-3">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Name</label>
+                    <input
+                      type="text"
+                      value={field.state.value}
+                      onInput={(e) => field.handleChange(e.currentTarget.value)}
+                      class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-blue-500"
+                      required
+                    />
+                  </div>
+                )}
+              </form.Field>
               <div class="flex gap-3">
-                <div class="w-1/3 mb-3">
-                  <label class="block text-sm font-medium text-gray-700 mb-1">Qty</label>
-                  <input
-                    type="number"
-                    min="0"
-                    value={form().qty}
-                    onInput={(e) => setForm((prev) => ({ ...prev, qty: parseFloat(e.currentTarget.value) || 0 }))}
-                    class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-blue-500"
-                    required
-                  />
-                </div>
-                <div class="w-1/3 mb-3">
-                  <label class="block text-sm font-medium text-gray-700 mb-1">Unit</label>
-                  <input
-                    type="text"
-                    value={form().unit}
-                    onInput={(e) => setForm((prev) => ({ ...prev, unit: e.currentTarget.value }))}
-                    class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-blue-500"
-                    placeholder="Optional"
-                  />
-                </div>
-                <div class="w-1/3 mb-3">
-                  <label class="block text-sm font-medium text-gray-700 mb-1">Price</label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    value={form().price}
-                    onInput={(e) => setForm((prev) => ({ ...prev, price: parseFloat(e.currentTarget.value) || 0 }))}
-                    class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-blue-500"
-                    required
-                  />
-                </div>
+                <form.Field name="selling_price">
+                  {(field) => (
+                    <div class="w-1/3 mb-3">
+                      <label class="block text-sm font-medium text-gray-700 mb-1">Selling Price</label>
+                      <input
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        value={field.state.value}
+                        onInput={(e) => field.handleChange(parseFloat(e.currentTarget.value) || 0)}
+                        class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-blue-500"
+                        required
+                      />
+                    </div>
+                  )}
+                </form.Field>
+                <form.Field name="quantity">
+                  {(field) => (
+                    <div class="w-1/3 mb-3">
+                      <label class="block text-sm font-medium text-gray-700 mb-1">Quantity</label>
+                      <input
+                        type="number"
+                        min="0"
+                        value={field.state.value}
+                        onInput={(e) => field.handleChange(parseInt(e.currentTarget.value) || 0)}
+                        class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-blue-500"
+                        required
+                      />
+                    </div>
+                  )}
+                </form.Field>
+                <form.Field name="gst_rate">
+                  {(field) => (
+                    <div class="w-1/3 mb-3">
+                      <label class="block text-sm font-medium text-gray-700 mb-1">GST Rate (%)</label>
+                      <input
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        value={field.state.value}
+                        onInput={(e) => field.handleChange(parseFloat(e.currentTarget.value) || 0)}
+                        class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-blue-500"
+                      />
+                    </div>
+                  )}
+                </form.Field>
               </div>
+              <form.Field name="hsn_code">
+                {(field) => (
+                  <div class="mb-3">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">HSN Code</label>
+                    <input
+                      type="text"
+                      value={field.state.value}
+                      onInput={(e) => field.handleChange(e.currentTarget.value)}
+                      class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-blue-500"
+                      placeholder="Optional"
+                    />
+                  </div>
+                )}
+              </form.Field>
               <div class="text-right mt-3 flex gap-2 justify-end">
                 <button
                   onClick={() => setShowModal(false)}
