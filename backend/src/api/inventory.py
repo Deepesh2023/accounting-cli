@@ -39,6 +39,7 @@ class ProductUpdate(BaseModel):
     quantity: int | None = None
     gst_rate: Decimal | None = None
     hsn_code: str | None = None
+    archived: bool | None = None
 
 
 @router.get("", response_model=List[ProductResponse])
@@ -88,6 +89,17 @@ def update_product(
     except ProductNotFoundError:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Product not found")
     return result
+
+
+@router.patch("/{product_id}/visibility", response_model=ProductResponse)
+def toggle_visibility(
+    product_id: uuid.UUID,
+    service: InventoryService = Depends(get_inventory_service),
+):
+    try:
+        return service.change_visibility(product_id)
+    except ProductNotFoundError:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Product not found")
 
 
 @router.delete("/{product_id}", status_code=status.HTTP_204_NO_CONTENT)

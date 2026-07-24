@@ -52,7 +52,7 @@ class InventoryService:
             quantity=data.quantity if data.quantity is not None else existing.quantity,
             gst_rate=data.gst_rate if data.gst_rate is not None else existing.gst_rate,
             hsn_code=data.hsn_code if data.hsn_code is not None else existing.hsn_code,
-            archived=existing.archived,
+            archived=data.archived if data.archived is not None else existing.archived,
         )
         self.repository.update_product(updated)
         return self.repository.get_product(product_id)
