@@ -58,6 +58,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/inventory/{product_id}/visibility": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Toggle Visibility */
+        patch: operations["toggle_visibility_api_inventory__product_id__visibility_patch"];
+        trace?: never;
+    };
     "/api/parties": {
         parameters: {
             query?: never;
@@ -688,6 +705,8 @@ export interface components {
             gst_rate?: number | string | null;
             /** Hsn Code */
             hsn_code?: string | null;
+            /** Archived */
+            archived?: boolean | null;
         };
         /** PurchaseCreate */
         PurchaseCreate: {
@@ -1183,6 +1202,37 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    toggle_visibility_api_inventory__product_id__visibility_patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                product_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProductResponse"];
+                };
             };
             /** @description Validation Error */
             422: {
