@@ -5,7 +5,7 @@ type ProductResponse = components['schemas']['ProductResponse']
 type ProductCreate = components['schemas']['ProductCreate']
 type ProductUpdate = components['schemas']['ProductUpdate']
 
-const API_BASE = process.env.API_URL ?? 'http://localhost:8179'
+const API_BASE = process.env.API_URL ?? 'http://localhost:8000'
 
 export const getStock = createServerFn({ method: 'GET' })
   .handler(async () => {

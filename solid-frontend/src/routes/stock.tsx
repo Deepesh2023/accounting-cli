@@ -1,7 +1,7 @@
-import { createSignal, For, Show } from 'solid-js'
+import { createSignal, createEffect, For, Show } from 'solid-js'
 import { createFileRoute } from '@tanstack/solid-router'
 import { createForm } from '@tanstack/solid-form'
-import { formatMoney, stockList, setStockList, persistState } from '../lib/store'
+import { formatMoney, setStockList, persistState } from '../lib/store'
 import { useStock, useCreateStock, useUpdateStock, useDeleteStock } from '../lib/api/useStock'
 import type { components } from '../lib/api/schema'
 
@@ -13,11 +13,20 @@ export const Route = createFileRoute('/stock')({ component: Stock })
 function Stock() {
   const [showModal, setShowModal] = createSignal(false)
   const [editingId, setEditingId] = createSignal<string | null>(null)
+  const [errorMsg, setErrorMsg] = createSignal<string | null>(null)
 
   const stockQuery = useStock()
   const createStock = useCreateStock()
   const updateStock = useUpdateStock()
   const deleteStock = useDeleteStock()
+
+  createEffect(() => {
+    const data = stockQuery.data
+    if (data) {
+      setStockList(data)
+      persistState()
+    }
+  })
 
   const form = createForm(() => ({
     defaultValues: {
@@ -31,6 +40,7 @@ function Stock() {
 
   function openNew() {
     setEditingId(null)
+    setErrorMsg(null)
     form.reset()
     setShowModal(true)
   }
@@ -39,6 +49,7 @@ function Stock() {
     const s = stockQuery.data?.find((x) => x.product_id === id)
     if (!s) return
     setEditingId(id)
+    setErrorMsg(null)
     form.setFieldValue('name', s.name)
     form.setFieldValue('selling_price', Number(s.selling_price))
     form.setFieldValue('quantity', s.quantity)
@@ -50,6 +61,7 @@ function Stock() {
   function handleSave() {
     const vals = form.state.values
     if (!vals.name.trim()) return
+    setErrorMsg(null)
     if (editingId()) {
       updateStock.mutateAsync({
         name: vals.name.trim(),
@@ -58,10 +70,10 @@ function Stock() {
         gst_rate: vals.gst_rate,
         hsn_code: vals.hsn_code,
         product_id: editingId()!,
-      }).then((res) => {
-        const idx = stockList.findIndex((s) => s.product_id === editingId())
-        if (idx !== -1) setStockList(idx, res)
-        persistState()
+      }).then(() => {
+        setShowModal(false)
+      }).catch((err) => {
+        setErrorMsg(err.message || 'Failed to update stock')
       })
     } else {
       createStock.mutateAsync({
@@ -70,23 +82,24 @@ function Stock() {
         quantity: vals.quantity,
         gst_rate: vals.gst_rate,
         hsn_code: vals.hsn_code,
-      }).then((res) => {
-        setStockList(stockList.length, res)
-        persistState()
+      }).then(() => {
+        setShowModal(false)
+      }).catch((err) => {
+        setErrorMsg(err.message || 'Failed to create stock')
       })
     }
-    setShowModal(false)
   }
 
   function handleDelete(id: string) {
     if (!confirm('Delete this item?')) return
-    deleteStock.mutateAsync(id).then(() => {
-      setStockList(stockList.filter((s) => s.product_id !== id))
-      persistState()
+    setErrorMsg(null)
+    deleteStock.mutateAsync(id).catch((err) => {
+      setErrorMsg(err.message || 'Failed to delete stock')
     })
   }
 
   const totalValue = (s: ProductResponse) => s.quantity * Number(s.selling_price)
+  const isPending = () => createStock.isPending || updateStock.isPending || deleteStock.isPending
 
   return (
     <div class="space-y-6">
@@ -106,6 +119,11 @@ function Stock() {
         <Show when={stockQuery.isError}>
           <div class="px-4 py-8 text-center text-red-600">
             Failed to load stock: {stockQuery.error?.message}
+          </div>
+        </Show>
+        <Show when={errorMsg()}>
+          <div class="px-4 py-2 text-sm text-red-700 bg-red-50 border border-red-200 rounded mx-3 mb-2">
+            {errorMsg()}
           </div>
         </Show>
         <Show when={stockQuery.isSuccess}>
@@ -134,7 +152,7 @@ function Stock() {
                       <td class="py-3 font-medium">{s.name}</td>
                       <td class="py-3 text-right">{s.quantity}</td>
                       <td class="py-3 text-right">₹{formatMoney(Number(s.selling_price))}</td>
-                      <td class="py-3 text-right">{s.gst_rate}%</td>
+                      <td class="py-3 text-right">{Number(s.gst_rate)}%</td>
                       <td class="py-3">{s.hsn_code || '-'}</td>
                       <td class="py-3 text-right font-bold">₹{formatMoney(totalValue(s))}</td>
                       <td class="py-3 pr-4 text-center">
@@ -173,9 +191,14 @@ function Stock() {
         <div class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40" onClick={() => setShowModal(false)}>
           <div class="bg-white rounded-lg shadow-xl w-full max-w-md mx-4" onClick={(e) => e.stopPropagation()}>
             <div class="px-4 py-3 border-b border-gray-200">
-              <h5 class="mb-0 font-bold text-gray-700">{editingId() !== null ? 'Edit Stock' : 'Stock Details'}</h5>
+              <h5 class="mb-0 font-bold text-gray-700">{editingId() !== null ? 'Edit Stock' : 'New Stock'}</h5>
             </div>
             <div class="p-4">
+              <Show when={errorMsg()}>
+                <div class="mb-3 text-sm text-red-700 bg-red-50 border border-red-200 rounded px-3 py-2">
+                  {errorMsg()}
+                </div>
+              </Show>
               <form.Field name="name">
                 {(field) => {
                   const f = field()
@@ -271,14 +294,16 @@ function Stock() {
                 <button
                   onClick={() => setShowModal(false)}
                   class="px-4 py-2 text-sm border border-gray-300 rounded hover:bg-gray-50 transition-colors"
+                  disabled={isPending()}
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleSave}
-                  class="px-4 py-2 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+                  class="px-4 py-2 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors disabled:opacity-50"
+                  disabled={isPending()}
                 >
-                  {editingId() !== null ? 'Update Item' : 'Save Item'}
+                  {isPending() ? 'Saving...' : editingId() !== null ? 'Update Item' : 'Save Item'}
                 </button>
               </div>
             </div>
