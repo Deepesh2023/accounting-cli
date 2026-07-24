@@ -28,6 +28,11 @@ frontend/dist/
 solid-frontend/node_modules/
 solid-frontend/dist/
 solid-frontend/dist-ssr/
+
+# Environment files
+.env
+.env.local
+.env.*.local
 solid-frontend/.nitro/
 solid-frontend/.tanstack/
 solid-frontend/.wrangler/
