@@ -65,6 +65,41 @@ export function generateInvoiceNo(): string {
   return 'INV-' + String(salesCount + 1).padStart(4, '0')
 }
 
+const STORAGE_PREFIX = 'solid_'
+
+function loadStateFromLocalStorage() {
+  try {
+    const trans = localStorage.getItem(STORAGE_PREFIX + 'transactions')
+    if (trans) setTransactions(JSON.parse(trans))
+    const parties = localStorage.getItem(STORAGE_PREFIX + 'partyList')
+    if (parties) setPartyList(JSON.parse(parties))
+    const stock = localStorage.getItem(STORAGE_PREFIX + 'stockList')
+    if (stock) setStockList(JSON.parse(stock))
+    const expenses = localStorage.getItem(STORAGE_PREFIX + 'expenseList')
+    if (expenses) setExpenseList(JSON.parse(expenses))
+    const quotes = localStorage.getItem(STORAGE_PREFIX + 'quotationList')
+    if (quotes) setQuotationList(JSON.parse(quotes))
+    const ledger = localStorage.getItem(STORAGE_PREFIX + 'ledgerList')
+    if (ledger) setLedgerList(JSON.parse(ledger))
+    const company = localStorage.getItem(STORAGE_PREFIX + 'companyData')
+    if (company) setCompanyData(JSON.parse(company))
+  } catch (e) {
+    console.error('Failed to load state from localStorage', e)
+  }
+}
+
+loadStateFromLocalStorage()
+
+export function persistState() {
+  localStorage.setItem(STORAGE_PREFIX + 'transactions', JSON.stringify(transactions))
+  localStorage.setItem(STORAGE_PREFIX + 'partyList', JSON.stringify(partyList))
+  localStorage.setItem(STORAGE_PREFIX + 'stockList', JSON.stringify(stockList))
+  localStorage.setItem(STORAGE_PREFIX + 'expenseList', JSON.stringify(expenseList))
+  localStorage.setItem(STORAGE_PREFIX + 'quotationList', JSON.stringify(quotationList))
+  localStorage.setItem(STORAGE_PREFIX + 'ledgerList', JSON.stringify(ledgerList))
+  localStorage.setItem(STORAGE_PREFIX + 'companyData', JSON.stringify(companyData))
+}
+
 let nextId = 1001
 export function getNextId(): number {
   return nextId++
