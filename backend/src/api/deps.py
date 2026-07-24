@@ -1,5 +1,6 @@
 from fastapi import Depends
 from sqlmodel import Session
+from src.storage.database import engine
 from src.inventory.repository import InventoryRepository
 from src.inventory.service import InventoryService
 from src.parties.repository import PartyRepository
