@@ -886,7 +886,7 @@ function NewSale() {
                   <tbody>
                     <For each={rows().filter((r) => r.itemId)}>
                       {(row, idx) => {
-                        const st = stockList.find((s) => String(s.id) === String(row.itemId))
+                        const st = stockList.find((s) => s.product_id === row.itemId)
                         const itemName = st?.name || ''
                         const realIdx = rows().indexOf(row)
                         const tot = itemTotals()[realIdx]

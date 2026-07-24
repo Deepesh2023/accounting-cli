@@ -1,8 +1,14 @@
 import { QueryClient } from '@tanstack/solid-query'
+import { createContext, useContext } from 'solid-js'
+
+export const queryClient = new QueryClient()
 
 export function getContext() {
-  const queryClient = new QueryClient()
-  return {
-    queryClient,
-  }
+  return { queryClient }
+}
+
+const QueryClientContext = createContext<QueryClient>(queryClient)
+
+export function useQueryClient() {
+  return useContext(QueryClientContext)
 }
