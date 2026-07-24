@@ -1,7 +1,7 @@
 import { createSignal, For, Show } from 'solid-js'
 import { createFileRoute } from '@tanstack/solid-router'
 import { createForm } from '@tanstack/solid-form'
-import { formatMoney, stockList, setStockList } from '../lib/store'
+import { formatMoney, stockList, setStockList, persistState } from '../lib/store'
 import { useStock, useCreateStock, useUpdateStock, useDeleteStock } from '../lib/api/useStock'
 import type { components } from '../lib/api/schema'
 
@@ -61,6 +61,7 @@ function Stock() {
       }).then((res) => {
         const idx = stockList.findIndex((s) => s.product_id === editingId())
         if (idx !== -1) setStockList(idx, res)
+        persistState()
       })
     } else {
       createStock.mutateAsync({
@@ -71,6 +72,7 @@ function Stock() {
         hsn_code: vals.hsn_code,
       }).then((res) => {
         setStockList(stockList.length, res)
+        persistState()
       })
     }
     setShowModal(false)
@@ -80,6 +82,7 @@ function Stock() {
     if (!confirm('Delete this item?')) return
     deleteStock.mutateAsync(id).then(() => {
       setStockList(stockList.filter((s) => s.product_id !== id))
+      persistState()
     })
   }
 
