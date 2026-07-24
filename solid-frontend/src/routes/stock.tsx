@@ -3,6 +3,8 @@ import { createFileRoute } from '@tanstack/solid-router'
 import { createForm } from '@tanstack/solid-form'
 import { formatMoney, setStockList, persistState } from '../lib/store'
 import { useStock, useCreateStock, useUpdateStock, useDeleteStock } from '../lib/api/useStock'
+import { Icon } from '../components/Icon'
+import { mdiPencil, mdiDeleteOutline } from '@mdi/js'
 import type { components } from '../lib/api/schema'
 
 type ProductResponse = components['schemas']['ProductResponse']
@@ -158,14 +160,18 @@ function Stock() {
                       <td class="py-3 pr-4 text-center">
                         <button
                           onClick={() => openEdit(s.product_id)}
-                          class="text-blue-600 hover:text-blue-800 underline text-xs mr-2"
+                          class="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 text-xs mr-3"
+                          title="Edit"
                         >
+                          <Icon path={mdiPencil} size={16} />
                           Edit
                         </button>
                         <button
                           onClick={() => handleDelete(s.product_id)}
-                          class="text-red-600 hover:text-red-800 underline text-xs"
+                          class="inline-flex items-center gap-1 text-red-600 hover:text-red-800 text-xs"
+                          title="Delete"
                         >
+                          <Icon path={mdiDeleteOutline} size={16} />
                           Delete
                         </button>
                       </td>
