@@ -9,10 +9,10 @@ class InventoryService:
         self.repository = repository
 
     def list_products(self, show_archived: bool = False) -> list[Product]:
-        return [
-            p for p in self.repository.list_products() 
-            if p.archived == show_archived
-        ]
+        products = self.repository.list_products()
+        if not show_archived:
+            products = [p for p in products if not p.archived]
+        return products
 
     def add_product(self, name: str, selling_price: Decimal, quantity: int, gst_rate: Decimal = Decimal("0"), hsn_code: str = "") -> Product:
         price = selling_price

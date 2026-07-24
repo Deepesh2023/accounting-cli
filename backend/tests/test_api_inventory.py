@@ -29,15 +29,19 @@ class TestListProducts:
 
     def test_filters_archived(self, client, service):
         p1 = service.add_product("Active", Decimal("10"), 5)
+        p2 = service.add_product("Visible", Decimal("20"), 3)
         service.change_visibility(p1.product_id)
 
         resp = client.get("/api/inventory?show_archived=true")
         data = resp.json()
-        assert len(data) == 1
-        assert data[0]["name"] == "Active"
+        assert len(data) == 2
+        names = {d["name"] for d in data}
+        assert names == {"Active", "Visible"}
 
         resp = client.get("/api/inventory?show_archived=false")
-        assert len(resp.json()) == 0
+        data = resp.json()
+        assert len(data) == 1
+        assert data[0]["name"] == "Visible"
 
 
 class TestGetProduct:

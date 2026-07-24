@@ -31,7 +31,7 @@ def test_list_products(service, mock_repo):
     mock_repo.list_products.return_value = [p1, p2]
 
     assert service.list_products(show_archived=False) == [p1]
-    assert service.list_products(show_archived=True) == [p2]
+    assert service.list_products(show_archived=True) == [p1, p2]
 
 def test_add_product_success(service, mock_repo):
     import inventory.service
