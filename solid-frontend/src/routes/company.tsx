@@ -1,12 +1,25 @@
-import { For } from 'solid-js'
+import { For, createSignal } from 'solid-js'
 import { createFileRoute } from '@tanstack/solid-router'
 import { companyData, setCompanyData, indianStates } from '../lib/store'
 
 export const Route = createFileRoute('/company')({ component: Company })
 
 function Company() {
+  const [newRate, setNewRate] = createSignal('')
+
   function setField(field: string, value: string | boolean) {
     setCompanyData(field as any, value)
+  }
+
+  function addGstRate() {
+    const v = parseFloat(newRate())
+    if (isNaN(v) || v < 0 || companyData.gst_rates.includes(v)) return
+    setCompanyData('gst_rates', [...companyData.gst_rates, v].sort((a, b) => a - b))
+    setNewRate('')
+  }
+
+  function removeGstRate(rate: number) {
+    setCompanyData('gst_rates', companyData.gst_rates.filter((r) => r !== rate))
   }
 
   function handleLogo(input: HTMLInputElement) {
@@ -286,6 +299,49 @@ function Company() {
                     </div>
                   </div>
                 </div>
+              </div>
+            </div>
+
+            {/* GST Rate Presets */}
+            <div class="mb-6">
+              <h6 class="text-sm font-bold text-gray-600 mb-3 flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" /></svg>
+                GST Rate Presets
+              </h6>
+              <div class="flex flex-wrap gap-2 mb-2">
+                <For each={companyData.gst_rates}>
+                  {(rate) => (
+                    <span class="inline-flex items-center gap-1 bg-blue-100 text-blue-800 text-sm font-medium px-3 py-1 rounded-full">
+                      {rate}%
+                      <button
+                        onClick={() => removeGstRate(rate)}
+                        class="text-blue-600 hover:text-blue-800 leading-none"
+                        title="Remove"
+                      >
+                        &times;
+                      </button>
+                    </span>
+                  )}
+                </For>
+              </div>
+              <div class="flex gap-2 items-center">
+                <input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  value={newRate()}
+                  onInput={(e) => setNewRate(e.currentTarget.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && addGstRate()}
+                  class="w-24 border border-gray-300 rounded px-3 py-1.5 text-sm focus:outline-none focus:border-blue-500"
+                  placeholder="Rate"
+                />
+                <button
+                  onClick={addGstRate}
+                  class="px-3 py-1.5 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+                >
+                  Add
+                </button>
+                <span class="text-xs text-gray-500">Press Enter or click Add</span>
               </div>
             </div>
 

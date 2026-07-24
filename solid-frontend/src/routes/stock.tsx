@@ -1,7 +1,7 @@
 import { createSignal, createEffect, For, Show } from 'solid-js'
 import { createFileRoute } from '@tanstack/solid-router'
 import { createForm } from '@tanstack/solid-form'
-import { formatMoney, setStockList, persistState } from '../lib/store'
+import { formatMoney, setStockList, persistState, companyData } from '../lib/store'
 import { useStock, useCreateStock, useUpdateStock, useDeleteStock } from '../lib/api/useStock'
 import { Icon } from '../components/Icon'
 import { mdiPencil, mdiDeleteOutline } from '@mdi/js'
@@ -261,14 +261,20 @@ function Stock() {
                     return (
                       <div class="w-1/3 mb-3">
                         <label class="block text-sm font-medium text-gray-700 mb-1">GST Rate (%)</label>
-                        <input
-                          type="number"
-                          step="0.01"
-                          min="0"
+                        <select
                           value={f.state.value}
-                          onInput={(e) => f.handleChange(parseFloat(e.currentTarget.value) || 0)}
+                          onChange={(e) => f.handleChange(parseFloat(e.currentTarget.value) || 0)}
                           class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-blue-500"
-                        />
+                        >
+                          <option value={0}>Select rate</option>
+                          <For each={companyData.gst_rates}>
+                            {(rate) => (
+                              <option value={rate} selected={f.state.value === rate}>
+                                {rate}%
+                              </option>
+                            )}
+                          </For>
+                        </select>
                       </div>
                     )
                   }}
