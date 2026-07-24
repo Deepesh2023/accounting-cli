@@ -1,16 +1,19 @@
-import { createMemo, For, Show, onMount, createEffect } from 'solid-js'
+import { createMemo, createEffect, For, Show, onMount } from 'solid-js'
 import { createFileRoute, Link, useNavigate } from '@tanstack/solid-router'
 import { createForm } from '@tanstack/solid-form'
 import {
   transactions, setTransactions,
-  partyList, setPartyList,
-  stockList, setStockList,
+  partyList,
+  stockList,
   companyData,
   formatMoney, generateInvoiceNo,
-  updateLedger, deleteLedgerByRef, persistState,
+  persistState,
   indianStates,
 } from '../lib/store'
-import type { SaleItem } from '../lib/types'
+import { useSale, useCreateSale, useUpdateSale } from '../lib/api/useSales'
+import type { components } from '../lib/api/schema'
+
+type SaleItemInput = components['schemas']['SaleItemInput']
 
 interface SaleRow {
   key: number
@@ -40,10 +43,10 @@ type SaleFormValues = {
   terms: string
   priceType: 'Without Tax' | 'With Tax'
   rows: SaleRow[]
-  editingId: number | undefined
+  editingId: string | undefined
 }
 
-function defaultValues(edit?: number): SaleFormValues {
+function defaultValues(edit?: string): SaleFormValues {
   return {
     mode: 'Credit',
     customerId: '',
@@ -64,7 +67,7 @@ function defaultValues(edit?: number): SaleFormValues {
 
 export const Route = createFileRoute('/record-sale')({
   validateSearch: (search: Record<string, string | undefined>) => ({
-    edit: search.edit ? Number(search.edit) : undefined,
+    edit: search.edit || undefined,
   }),
   component: NewSale,
 })
@@ -72,6 +75,8 @@ export const Route = createFileRoute('/record-sale')({
 function NewSale() {
   const navigate = useNavigate()
   const search = Route.useSearch()
+  const createSale = useCreateSale()
+  const updateSale = useUpdateSale()
 
   const form = createForm(() => ({
     defaultValues: defaultValues(search().edit),
@@ -181,135 +186,47 @@ function NewSale() {
     }
   }
 
-  function handleSave(v: SaleFormValues) {
-    for (const row of v.rows) {
-      if (!row.itemId) continue
-      const st = stockList.find((s) => s.product_id === row.itemId)
-      if (st) {
-        let available = st.quantity
-        if (v.editingId) {
-          const oldT = transactions.find((t) => t.id === v.editingId)
-          if (oldT?.sale_details) {
-            const oldItem = oldT.sale_details.items.find((it) => it.item_id === row.itemId)
-            if (oldItem) available += oldItem.qty
-          }
-        }
-        if (available < row.qty) {
-          alert(`Insufficient stock for ${st.name}. Available: ${available}`)
-          return
-        }
-      }
-    }
+  function fmtSaleId(id: string) {
+    return 'INV-' + id.replace(/-/g, '').slice(0, 4).toUpperCase()
+  }
 
-    if (grandTotal() <= 0) {
-      alert('Total amount cannot be zero.')
-      return
-    }
-
-    if (v.mode === 'Credit' && !v.customerId) {
-      alert('Credit sale requires a customer to be selected.')
-      return
-    }
-
-    const total = grandTotal()
+  function saleResponseToTransaction(
+    s: components['schemas']['SaleResponse'],
+    custName: string,
+    v: SaleFormValues,
+  ): import('../lib/types').Transaction {
+    const total = Number(s.grand_total)
     const paidAmt = v.mode === 'Cash' ? total : v.paid
     const bal = v.mode === 'Cash' ? 0 : Math.max(0, total - paidAmt)
     const paymentStatus = bal === 0 ? 'Paid' : paidAmt > 0 ? 'Partial' : 'Unpaid'
-    const custName = customer()?.name || 'Walk-in'
-
-    if (v.editingId) {
-      const oldT = transactions.find((t) => t.id === v.editingId)
-      if (oldT?.sale_details) {
-        const sd = oldT.sale_details
-        if (oldT.payment_mode === 'Credit' && sd.customer_id) {
-          const oldParty = partyList.find((p) => String(p.id) === String(sd.customer_id))
-          if (oldParty) {
-            let signedBal = (oldParty.type === 'Receive' ? 1 : -1) * oldParty.balance
-            signedBal -= sd.balance_amount
-            setPartyList(
-              (p) => String(p.id) === String(oldParty.id),
-              'balance',
-              Math.abs(signedBal),
-            )
-            setPartyList(
-              (p) => String(p.id) === String(oldParty.id),
-              'type',
-              signedBal >= 0 ? 'Receive' : 'Pay',
-            )
-          }
-        }
-        for (const oldItem of sd.items) {
-          const st = stockList.find((s) => s.product_id === oldItem.item_id)
-          if (st) {
-            const idx = stockList.indexOf(st)
-            if (idx !== -1) setStockList(idx, 'quantity', st.quantity + oldItem.qty)
-          }
-        }
-      }
-      deleteLedgerByRef(v.editingId)
-      setTransactions((prev) => prev.filter((t) => t.id !== v.editingId))
-    }
-
-    if (v.customerId) {
-      const p = partyList.find((x) => String(x.id) === String(v.customerId))
-      if (p) {
-        const idx = partyList.indexOf(p)
-        setPartyList(idx, 'phone', v.phone)
-        setPartyList(idx, 'address', v.address)
-      }
-    }
-
-    const itemsData: SaleItem[] = []
-    for (let i = 0; i < v.rows.length; i++) {
-      const row = v.rows[i]
-      if (!row.itemId) continue
-      const tot = itemTotals()[i]
-      const st = stockList.find((s) => s.product_id === row.itemId)
-      if (st) {
-        const stkIdx = stockList.indexOf(st)
-        if (stkIdx !== -1) setStockList(stkIdx, 'quantity', st.quantity - row.qty)
-      }
-      itemsData.push({
-        item_id: row.itemId,
-        name: stockList.find((s) => s.product_id === row.itemId)?.name || '',
-        qty: row.qty,
-        unit: '',
-        price: row.price,
-        disc_perc: row.discPerc,
-        disc_amt: row.discAmt,
-        tax_perc: row.taxPerc,
-        tax_amt: tot.taxAmt,
-        total: tot.rowTotal,
-      })
-    }
-
-    if (v.customerId && v.mode === 'Credit') {
-      const p = partyList.find((x) => String(x.id) === String(v.customerId))
-      if (p) {
-        const pIdx = partyList.indexOf(p)
-        let signedBal = (p.type === 'Receive' ? 1 : -1) * p.balance
-        signedBal += bal
-        setPartyList(pIdx, 'balance', Math.abs(signedBal))
-        setPartyList(pIdx, 'type', signedBal >= 0 ? 'Receive' : 'Pay')
-      }
-    }
-
-    const id = v.editingId || Date.now()
-    const t = {
-      id,
+    const saleId = Number(s.sale_id.replace(/-/g, '').slice(0, 8))
+    const invNo = v.invNo || fmtSaleId(s.sale_id)
+    return {
+      id: saleId,
       date: v.date,
-      particulars: `${v.invNo} - Sale to ${custName}`,
+      particulars: `${invNo} - Sale to ${custName}`,
       type: 'Sale' as const,
       payment_mode: (v.mode === 'Credit' ? 'Credit' : 'Cash') as 'Credit' | 'Cash',
       amount: total,
       sale_details: {
         customer_id: v.customerId || '',
-        invoice_no: v.invNo,
+        invoice_no: invNo,
         phone: v.phone,
         address: v.address,
         state_of_supply: v.custState,
         due_date: v.dueDate,
-        items: itemsData,
+        items: s.items.map((it) => ({
+          item_id: it.product_id,
+          name: it.name,
+          qty: it.quantity,
+          unit: '',
+          price: Number(it.price),
+          disc_perc: 0,
+          disc_amt: Number(it.discount_amount),
+          tax_perc: Math.round(Number(it.tax_amount) / Math.max(Number(it.taxable_amount), 1) * 100 * 2) / 2,
+          tax_amt: Number(it.tax_amount),
+          total: Number(it.row_total),
+        })),
         paid_amount: paidAmt,
         balance_amount: bal,
         payment_status: paymentStatus as 'Paid' | 'Partial' | 'Unpaid',
@@ -318,32 +235,14 @@ function NewSale() {
         terms: v.terms,
       },
     }
-
-    setTransactions(transactions.length, t)
-
-    if (v.mode === 'Credit' && v.customerId) {
-      updateLedger(v.date, v.customerId, 'DR', total, id, 'Sales: ' + v.invNo)
-      updateLedger(v.date, 'Sales', 'CR', total, id, 'Sales to ' + custName)
-      if (paidAmt > 0) {
-        updateLedger(v.date, 'Cash', 'DR', paidAmt, id, 'Receipt against ' + v.invNo)
-        updateLedger(v.date, v.customerId, 'CR', paidAmt, id, 'Payment Receipt')
-      }
-    } else {
-      updateLedger(v.date, 'Cash', 'DR', total, id, 'Cash Sales: ' + v.invNo)
-      updateLedger(v.date, 'Sales', 'CR', total, id, 'Cash Sales')
-    }
-
-    persistState()
-    navigate({ to: '/sales' })
   }
 
-  onMount(() => {
-    const editId = search().edit
-    if (!editId) return
-    const t = transactions.find((x) => x.id === editId)
-    if (!t?.sale_details) return
-    const d = t.sale_details
-    form.setFieldValue('editingId', editId)
+  function populateFromSaleDetails(
+    d: import('../lib/types').SaleDetails,
+    t: import('../lib/types').Transaction,
+    eid: string,
+  ) {
+    form.setFieldValue('editingId', eid)
     form.setFieldValue('mode', t.payment_mode === 'Credit' ? 'Credit' : 'Cash')
     form.setFieldValue('customerId', d.customer_id || '')
     form.setFieldValue('phone', d.phone || '')
@@ -367,6 +266,97 @@ function NewSale() {
           discPerc: it.disc_perc,
           discAmt: it.disc_amt,
           taxPerc: it.tax_perc,
+        })),
+      )
+    }
+  }
+
+  async function handleSave(v: SaleFormValues) {
+    if (grandTotal() <= 0) {
+      alert('Total amount cannot be zero.')
+      return
+    }
+    if (v.mode === 'Credit' && !v.customerId) {
+      alert('Credit sale requires a customer to be selected.')
+      return
+    }
+
+    const total = grandTotal()
+    const paidAmt = v.mode === 'Cash' ? total : v.paid
+    const custName = customer()?.name || 'Walk-in'
+
+    const items_data: SaleItemInput[] = v.rows
+      .filter((r) => r.itemId)
+      .map((r) => ({
+        product_id: r.itemId,
+        quantity: r.qty,
+        discount_perc: r.discPerc || null,
+        discount_amt: r.discAmt || null,
+        tax_perc: r.taxPerc || null,
+      }))
+
+    const body = {
+      items_data,
+      party_id: v.customerId || null,
+      paid_amount: paidAmt,
+      round_off: v.roundOff,
+      tax_inclusive: v.priceType === 'With Tax',
+    }
+
+    const navigateToSales = () => navigate({ to: '/sales' })
+
+    if (v.editingId) {
+      const res = await updateSale.mutateAsync({ ...body, sale_id: v.editingId })
+      const idx = transactions.findIndex((t) => String(t.id) === v.editingId)
+      const t = saleResponseToTransaction(res, custName, v)
+      if (idx !== -1) setTransactions(idx, t)
+      else setTransactions(transactions.length, t)
+    } else {
+      const res = await createSale.mutateAsync(body)
+      const t = saleResponseToTransaction(res, custName, v)
+      setTransactions(transactions.length, t)
+    }
+    persistState()
+    navigateToSales()
+  }
+
+  const editId = () => search().edit as string | undefined
+  const saleQuery = useSale(editId() || undefined)
+
+  onMount(() => {
+    const eid = editId()
+    if (!eid) return
+    const local = transactions.find((t) => String(t.id) === eid)
+    if (local?.sale_details) {
+      populateFromSaleDetails(local.sale_details, local, eid)
+    }
+  })
+
+  createEffect(() => {
+    const s = saleQuery.data
+    const eid = editId()
+    if (!s || !eid) return
+    const total = Number(s.grand_total)
+    const mode = Number(s.paid_amount) >= total ? 'Cash' : 'Credit'
+    form.setFieldValue('editingId', eid)
+    form.setFieldValue('mode', mode)
+    form.setFieldValue('customerId', s.party_id || '')
+    form.setFieldValue('date', s.date.split('T')[0])
+    form.setFieldValue('dueDate', s.due_date?.split('T')[0] || '')
+    form.setFieldValue('roundOff', s.round_off)
+    form.setFieldValue('paid', Number(s.paid_amount))
+    form.setFieldValue('invNo', fmtSaleId(s.sale_id))
+    if (s.items.length > 0) {
+      form.setFieldValue(
+        'rows',
+        s.items.map((it) => ({
+          key: Date.now() + Math.random(),
+          itemId: it.product_id,
+          qty: it.quantity,
+          price: Number(it.price),
+          discPerc: 0,
+          discAmt: Number(it.discount_amount),
+          taxPerc: Math.round(Number(it.tax_amount) / Math.max(Number(it.taxable_amount), 1) * 100 * 2) / 2,
         })),
       )
     }
