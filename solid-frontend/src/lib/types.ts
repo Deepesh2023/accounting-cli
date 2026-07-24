@@ -119,6 +119,14 @@ export interface CompanyData {
   qr: string
 }
 
+export interface LedgerEntry {
+  date: string
+  type: 'DR' | 'CR'
+  amount: number
+  ref: number
+  narration: string
+}
+
 export interface StockItem {
   id: number
   name: string

@@ -1,11 +1,12 @@
 import { createStore } from 'solid-js/store'
-import type { Transaction, Party, StockItem, Quotation, Expense, CompanyData } from './types'
+import type { Transaction, Party, StockItem, Quotation, Expense, CompanyData, LedgerEntry } from './types'
 
 const [transactions, setTransactions] = createStore<Transaction[]>([])
 const [partyList, setPartyList] = createStore<Party[]>([])
 const [stockList, setStockList] = createStore<StockItem[]>([])
 const [quotationList, setQuotationList] = createStore<Quotation[]>([])
 const [expenseList, setExpenseList] = createStore<Expense[]>([])
+const [ledgerList, setLedgerList] = createStore<Record<string, LedgerEntry[]>>({})
 const [companyData, setCompanyData] = createStore<CompanyData>({
   name: '',
   type: '',
@@ -44,6 +45,8 @@ export {
   setQuotationList,
   expenseList,
   setExpenseList,
+  ledgerList,
+  setLedgerList,
   companyData,
   setCompanyData,
   indianStates,
@@ -65,4 +68,23 @@ export function generateInvoiceNo(): string {
 let nextId = 1001
 export function getNextId(): number {
   return nextId++
+}
+
+export function updateLedger(
+  date: string,
+  account: string,
+  type: 'DR' | 'CR',
+  amount: number,
+  ref: number,
+  narration: string,
+) {
+  const entry: LedgerEntry = { date, type, amount, ref, narration }
+  const existing = ledgerList[account] ?? []
+  setLedgerList(account, [...existing, entry])
+}
+
+export function deleteLedgerByRef(ref: number) {
+  for (const account of Object.keys(ledgerList)) {
+    setLedgerList(account, (entries) => entries.filter((e) => e.ref !== ref))
+  }
 }
