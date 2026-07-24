@@ -22,6 +22,7 @@ const [companyData, setCompanyData] = createStore<CompanyData>({
   netting_enabled: false,
   logo: '',
   qr: '',
+  gst_rates: [0, 5, 12, 18, 28],
 })
 
 const indianStates = [

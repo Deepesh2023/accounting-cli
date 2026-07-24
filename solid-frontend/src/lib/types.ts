@@ -117,6 +117,7 @@ export interface CompanyData {
   netting_enabled: boolean
   logo: string
   qr: string
+  gst_rates: number[]
 }
 
 export interface LedgerEntry {
