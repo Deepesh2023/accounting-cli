@@ -34,8 +34,7 @@ def test_list_products(service, mock_repo):
     assert service.list_products(show_archived=True) == [p1, p2]
 
 def test_add_product_success(service, mock_repo):
-    import inventory.service
-    with patch('inventory.service.Product') as MockProduct:
+    with patch('src.inventory.service.Product') as MockProduct:
         mock_product_inst = MockProduct.return_value
         mock_product_inst.name = "Test Product"
 
@@ -80,7 +79,7 @@ def test_update_product(service, mock_repo):
     p_id = uuid4()
     existing = ProductMock(product_id=p_id, name="Old", selling_price=Decimal("5"), quantity=1)
     mock_repo.get_product.return_value = existing
-    result = service.update_product(p_id, ProductMock(name="New", selling_price=Decimal("10"), quantity=5))
+    result = service.update_product(p_id, ProductMock(product_id=p_id, name="New", selling_price=Decimal("10"), quantity=5))
     mock_repo.update_product.assert_called_once()
     updated = mock_repo.update_product.call_args[0][0]
     assert updated.name == "New"

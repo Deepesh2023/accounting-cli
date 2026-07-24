@@ -22,7 +22,7 @@ class PartyRepository:
             stmt = stmt.where(Party.party_type == party_type)
         return self.session.execute(stmt).scalars().all()
 
-    def update_balance(self, party_id: UUID, amount: Decimal) -> Party | None:
+    def update_balance(self, party_id: UUID, amount: Decimal, commit: bool = True) -> Party | None:
         """
         Updates the running balance and handles the "Flip" logic.
         If a Debtor's balance becomes negative, they become a Creditor and vice versa.
@@ -38,12 +38,9 @@ class PartyRepository:
             party.party_type = PartyType.DEBTOR
         elif party.balance < 0 and party.party_type == PartyType.DEBTOR:
             party.party_type = PartyType.CREDITOR
-            # Store balance as absolute for the new type if needed, 
-            # but usually, we keep the sign for internal math.
-            # The report implies the type reflects the current state.
 
-        self.session.commit()
-        self.session.refresh(party)
+        if commit:
+            self.session.commit()
         return party
 
     def update_party(self, party_data: Party) -> Party:

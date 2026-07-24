@@ -9,7 +9,7 @@ class LedgerService:
     def __init__(self, repository: LedgerRepository):
         self.repository = repository
 
-    def record_transaction(self, transaction_id: UUID, entries: list[dict]):
+    def record_transaction(self, transaction_id: UUID, entries: list[dict], commit: bool = True):
         """
         Expects a list of entries: [{'account': str, 'debit': Decimal, 'credit': Decimal, 'desc': str}]
         """
@@ -31,7 +31,7 @@ class LedgerService:
             for e in entries
         ]
         
-        self.repository.add_entries(ledger_entries)
+        self.repository.add_entries(ledger_entries, commit=commit)
 
     def get_balance(self, account_name: str) -> Decimal:
         return self.repository.get_account_balance(account_name)
@@ -54,5 +54,5 @@ class LedgerService:
 
         return self.repository.list_all_entries()
 
-    def clear_transaction(self, transaction_id: UUID):
-        self.repository.delete_entries_by_transaction(transaction_id)
+    def clear_transaction(self, transaction_id: UUID, commit: bool = True):
+        self.repository.delete_entries_by_transaction(transaction_id, commit=commit)

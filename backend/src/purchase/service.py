@@ -87,8 +87,9 @@ class PurchaseService:
     def _update_inventory(self, purchase_items: list[PurchaseItem], delta: int):
         for item in purchase_items:
             product = self.inventory_repository.get_product(item.product_id)
+            if product is None:
+                raise ProductNotFoundError(f"Product {item.product_id} not found")
             product.quantity += item.quantity * delta
-            self.inventory_repository.update_product(product)
 
     def _build_ledger_entries(self, purchase_id: UUID, party, paid_amount: Decimal, balance: Decimal,
                               total_taxable: Decimal, total_cgst: Decimal, total_sgst: Decimal,
@@ -146,12 +147,11 @@ class PurchaseService:
         for item in purchase_items:
             item.purchase_id = purchase.purchase_id
 
-        self.purchase_repository.add_purchase(purchase)
+        self.purchase_repository.add_purchase(purchase, commit=False)
 
         entries = self._build_ledger_entries(purchase.purchase_id, party, paid_amount, balance,
                                               total_taxable, total_cgst, total_sgst, total_igst)
         self.ledger_service.record_transaction(purchase.purchase_id, entries)
-
         return purchase
 
     def record_payment(self, purchase_id: UUID, amount: Decimal) -> Purchase:
@@ -163,9 +163,9 @@ class PurchaseService:
         purchase.balance_amount -= amount
 
         if purchase.party_id:
-            self.party_repository.update_balance(purchase.party_id, purchase.balance_amount)
+            self.party_repository.update_balance(purchase.party_id, purchase.balance_amount, commit=False)
 
-        self.purchase_repository.update_purchase(purchase)
+        self.purchase_repository.update_purchase(purchase, commit=False)
 
         party = self.party_repository.get_party(purchase.party_id) if purchase.party_id else None
         entries = [
@@ -175,7 +175,6 @@ class PurchaseService:
              'desc': f"Payment made for Purchase {purchase_id}"},
         ]
         self.ledger_service.record_transaction(uuid.uuid4(), entries)
-
         return purchase
 
     def list_purchases(self) -> list[Purchase]:
@@ -191,8 +190,8 @@ class PurchaseService:
         purchase = self.get_purchase(purchase_id)
         self._update_inventory(purchase.items, -1)
         if purchase.party_id:
-            self.party_repository.update_balance(purchase.party_id, -purchase.balance_amount)
-        self.ledger_service.clear_transaction(purchase.purchase_id)
+            self.party_repository.update_balance(purchase.party_id, -purchase.balance_amount, commit=False)
+        self.ledger_service.clear_transaction(purchase.purchase_id, commit=False)
         self.purchase_repository.delete_purchase(purchase_id)
 
     def update_purchase(self,
@@ -206,8 +205,8 @@ class PurchaseService:
 
         self._update_inventory(existing.items, -1)
         if existing.party_id:
-            self.party_repository.update_balance(existing.party_id, -existing.balance_amount)
-        self.ledger_service.clear_transaction(purchase_id)
+            self.party_repository.update_balance(existing.party_id, -existing.balance_amount, commit=False)
+        self.ledger_service.clear_transaction(purchase_id, commit=False)
 
         party, is_interstate = self._resolve_party_and_state(party_id)
         purchase_items, total_taxable, total_tax, total_cgst, total_sgst, total_igst = self._process_items(
@@ -218,11 +217,11 @@ class PurchaseService:
 
         self._update_inventory(purchase_items, 1)
         if party_id:
-            self.party_repository.update_balance(party_id, balance)
+            self.party_repository.update_balance(party_id, balance, commit=False)
 
         for item in purchase_items:
             item.purchase_id = purchase_id
-        self.purchase_repository.replace_items(purchase_id, purchase_items)
+        self.purchase_repository.replace_items(purchase_id, purchase_items, commit=False)
 
         existing.party_id = party_id
         existing.total_taxable = total_taxable
@@ -231,10 +230,9 @@ class PurchaseService:
         existing.paid_amount = paid_amount
         existing.balance_amount = balance
         existing.round_off = round_off
-        self.purchase_repository.update_purchase(existing)
+        self.purchase_repository.update_purchase(existing, commit=False)
 
         entries = self._build_ledger_entries(purchase_id, party, paid_amount, balance,
                                               total_taxable, total_cgst, total_sgst, total_igst)
         self.ledger_service.record_transaction(purchase_id, entries)
-
         return self.purchase_repository.get_purchase(purchase_id)

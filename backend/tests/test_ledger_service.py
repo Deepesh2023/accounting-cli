@@ -75,4 +75,4 @@ def test_clear_transaction(service, mock_repo):
 
     tx_id = uuid4()
     service.clear_transaction(tx_id)
-    mock_repo.delete_entries_by_transaction.assert_called_once_with(tx_id)
+    mock_repo.delete_entries_by_transaction.assert_called_once_with(tx_id, commit=True)

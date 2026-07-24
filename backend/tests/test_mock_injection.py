@@ -14,7 +14,7 @@ class MockSaleRepository(SaleRepositoryProtocol):
     def __init__(self):
         self._sales = {}
 
-    def add_sale(self, sale: Sale) -> None:
+    def add_sale(self, sale: Sale, commit: bool = True) -> None:
         self._sales[sale.sale_id] = sale
 
     def list_sales(self) -> List[Sale]:
@@ -51,12 +51,12 @@ class MockPartyRepository:
     def get_party(self, party_id):
         return None
 
-    def update_balance(self, party_id, amount):
+    def update_balance(self, party_id, amount, commit=True):
         pass
 
 
 class MockLedgerService:
-    def record_transaction(self, transaction_id, entries):
+    def record_transaction(self, transaction_id, entries, commit=True):
         pass
 
 

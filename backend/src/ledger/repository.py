@@ -13,9 +13,10 @@ class LedgerRepository:
         self.session.refresh(entry)
         return entry
 
-    def add_entries(self, entries: list[LedgerEntry]):
+    def add_entries(self, entries: list[LedgerEntry], commit: bool = True):
         self.session.add_all(entries)
-        self.session.commit()
+        if commit:
+            self.session.commit()
 
     def get_entries_for_account(self, account_name: str) -> list[LedgerEntry]:
         stmt = select(LedgerEntry).where(LedgerEntry.account_name == account_name)
@@ -40,9 +41,10 @@ class LedgerRepository:
     def list_all_entries(self) -> list[LedgerEntry]:
         return self.session.exec(select(LedgerEntry)).all()
 
-    def delete_entries_by_transaction(self, transaction_id: UUID):
+    def delete_entries_by_transaction(self, transaction_id: UUID, commit: bool = True):
         stmt = select(LedgerEntry).where(LedgerEntry.transaction_id == transaction_id)
         entries = self.session.execute(stmt).scalars().all()
         for entry in entries:
             self.session.delete(entry)
-        self.session.commit()
+        if commit:
+            self.session.commit()

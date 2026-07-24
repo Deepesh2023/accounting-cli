@@ -7,10 +7,11 @@ class SaleRepository:
     def __init__(self, session: Session):
         self.session = session
 
-    def add_sale(self, sale: Sale) -> Sale:
+    def add_sale(self, sale: Sale, commit: bool = True) -> Sale:
         self.session.add(sale)
-        self.session.commit()
-        self.session.refresh(sale)
+        if commit:
+            self.session.commit()
+            self.session.refresh(sale)
         return sale
 
     def get_sale(self, sale_id: UUID) -> Sale | None:
@@ -20,7 +21,7 @@ class SaleRepository:
         stmt = select(Sale)
         return self.session.execute(stmt).scalars().all()
 
-    def delete_sale(self, sale_id: UUID) -> bool:
+    def delete_sale(self, sale_id: UUID, commit: bool = True) -> bool:
         sale = self.get_sale(sale_id)
         if not sale:
             return False
@@ -28,18 +29,20 @@ class SaleRepository:
         for item in list(sale.items):
             self.session.delete(item)
         self.session.delete(sale)
-        self.session.commit()
+        if commit:
+            self.session.commit()
         return True
 
-    def replace_items(self, sale_id: UUID, items: list[SaleItem]):
+    def replace_items(self, sale_id: UUID, items: list[SaleItem], commit: bool = True):
         existing = self.get_sale(sale_id)
         if existing:
             for item in list(existing.items):
                 self.session.delete(item)
         self.session.add_all(items)
-        self.session.commit()
+        if commit:
+            self.session.commit()
 
-    def update_sale(self, sale_data: Sale) -> Sale:
+    def update_sale(self, sale_data: Sale, commit: bool = True) -> Sale:
         db_sale = self.get_sale(sale_data.sale_id)
         if not db_sale:
             raise ValueError("Sale not found")
@@ -53,6 +56,7 @@ class SaleRepository:
         db_sale.balance_amount = sale_data.balance_amount
         db_sale.round_off = sale_data.round_off
         
-        self.session.commit()
-        self.session.refresh(db_sale)
+        if commit:
+            self.session.commit()
+            self.session.refresh(db_sale)
         return db_sale

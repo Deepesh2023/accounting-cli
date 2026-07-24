@@ -88,8 +88,9 @@ class SaleService:
     def _update_inventory(self, sale_items: list[SaleItem], delta: int):
         for item in sale_items:
             product = self.inventory_repository.get_product(item.product_id)
+            if product is None:
+                raise ProductNotFoundError(f"Product {item.product_id} not found")
             product.quantity += item.quantity * delta
-            self.inventory_repository.update_product(product)
 
     def _build_ledger_entries(self, sale_id: UUID, party, paid_amount: Decimal, balance: Decimal,
                               total_taxable: Decimal, total_cgst: Decimal, total_sgst: Decimal,
@@ -147,12 +148,11 @@ class SaleService:
         for item in sale_items:
             item.sale_id = sale.sale_id
 
-        self.sale_repository.add_sale(sale)
+        self.sale_repository.add_sale(sale, commit=False)
 
         entries = self._build_ledger_entries(sale.sale_id, party, paid_amount, balance,
                                               total_taxable, total_cgst, total_sgst, total_igst)
         self.ledger_service.record_transaction(sale.sale_id, entries)
-
         return sale
 
     def record_payment(self, sale_id: UUID, amount: Decimal) -> Sale:
@@ -164,9 +164,9 @@ class SaleService:
         sale.balance_amount -= amount
 
         if sale.party_id:
-            self.party_repository.update_balance(sale.party_id, sale.balance_amount)
+            self.party_repository.update_balance(sale.party_id, sale.balance_amount, commit=False)
 
-        self.sale_repository.update_sale(sale)
+        self.sale_repository.update_sale(sale, commit=False)
 
         party = self.party_repository.get_party(sale.party_id) if sale.party_id else None
         entries = [
@@ -176,7 +176,6 @@ class SaleService:
              'desc': f"Payment received for Sale {sale_id}"},
         ]
         self.ledger_service.record_transaction(uuid.uuid4(), entries)
-
         return sale
 
     def list_sales(self) -> list[Sale]:
@@ -192,8 +191,8 @@ class SaleService:
         sale = self.get_sale(sale_id)
         self._update_inventory(sale.items, 1)
         if sale.party_id:
-            self.party_repository.update_balance(sale.party_id, -sale.balance_amount)
-        self.ledger_service.clear_transaction(sale.sale_id)
+            self.party_repository.update_balance(sale.party_id, -sale.balance_amount, commit=False)
+        self.ledger_service.clear_transaction(sale.sale_id, commit=False)
         self.sale_repository.delete_sale(sale_id)
 
     def update_sale(self,
@@ -207,8 +206,8 @@ class SaleService:
 
         self._update_inventory(existing.items, 1)
         if existing.party_id:
-            self.party_repository.update_balance(existing.party_id, -existing.balance_amount)
-        self.ledger_service.clear_transaction(sale_id)
+            self.party_repository.update_balance(existing.party_id, -existing.balance_amount, commit=False)
+        self.ledger_service.clear_transaction(sale_id, commit=False)
 
         party, is_interstate = self._resolve_party_and_state(party_id)
         sale_items, total_taxable, total_tax, total_cgst, total_sgst, total_igst = self._process_items(
@@ -219,11 +218,11 @@ class SaleService:
 
         self._update_inventory(sale_items, -1)
         if party_id:
-            self.party_repository.update_balance(party_id, balance)
+            self.party_repository.update_balance(party_id, balance, commit=False)
 
         for item in sale_items:
             item.sale_id = sale_id
-        self.sale_repository.replace_items(sale_id, sale_items)
+        self.sale_repository.replace_items(sale_id, sale_items, commit=False)
 
         existing.party_id = party_id
         existing.total_taxable = total_taxable
@@ -232,10 +231,9 @@ class SaleService:
         existing.paid_amount = paid_amount
         existing.balance_amount = balance
         existing.round_off = round_off
-        self.sale_repository.update_sale(existing)
+        self.sale_repository.update_sale(existing, commit=False)
 
         entries = self._build_ledger_entries(sale_id, party, paid_amount, balance,
                                               total_taxable, total_cgst, total_sgst, total_igst)
         self.ledger_service.record_transaction(sale_id, entries)
-
         return self.sale_repository.get_sale(sale_id)

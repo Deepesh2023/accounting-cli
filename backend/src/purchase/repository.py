@@ -7,10 +7,11 @@ class PurchaseRepository:
     def __init__(self, session: Session):
         self.session = session
 
-    def add_purchase(self, purchase: Purchase) -> Purchase:
+    def add_purchase(self, purchase: Purchase, commit: bool = True) -> Purchase:
         self.session.add(purchase)
-        self.session.commit()
-        self.session.refresh(purchase)
+        if commit:
+            self.session.commit()
+            self.session.refresh(purchase)
         return purchase
 
     def get_purchase(self, purchase_id: UUID) -> Purchase | None:
@@ -20,7 +21,7 @@ class PurchaseRepository:
         stmt = select(Purchase)
         return self.session.execute(stmt).scalars().all()
 
-    def delete_purchase(self, purchase_id: UUID) -> bool:
+    def delete_purchase(self, purchase_id: UUID, commit: bool = True) -> bool:
         purchase = self.get_purchase(purchase_id)
         if not purchase:
             return False
@@ -28,18 +29,20 @@ class PurchaseRepository:
         for item in list(purchase.items):
             self.session.delete(item)
         self.session.delete(purchase)
-        self.session.commit()
+        if commit:
+            self.session.commit()
         return True
 
-    def replace_items(self, purchase_id: UUID, items: list[PurchaseItem]):
+    def replace_items(self, purchase_id: UUID, items: list[PurchaseItem], commit: bool = True):
         existing = self.get_purchase(purchase_id)
         if existing:
             for item in list(existing.items):
                 self.session.delete(item)
         self.session.add_all(items)
-        self.session.commit()
+        if commit:
+            self.session.commit()
 
-    def update_purchase(self, purchase_data: Purchase) -> Purchase:
+    def update_purchase(self, purchase_data: Purchase, commit: bool = True) -> Purchase:
         db_purchase = self.get_purchase(purchase_data.purchase_id)
         if not db_purchase:
             raise ValueError("Purchase not found")
@@ -52,6 +55,7 @@ class PurchaseRepository:
         db_purchase.balance_amount = purchase_data.balance_amount
         db_purchase.round_off = purchase_data.round_off
         
-        self.session.commit()
-        self.session.refresh(db_purchase)
+        if commit:
+            self.session.commit()
+            self.session.refresh(db_purchase)
         return db_purchase
