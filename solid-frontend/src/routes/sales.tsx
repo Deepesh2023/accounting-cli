@@ -66,7 +66,7 @@ function Sales() {
         </div>
         <div class="w-2/3 flex justify-end items-center">
           <Link
-            to="/new-sale"
+            to="/sales/new-sale"
             search={{ edit: undefined }}
             class="inline-block bg-[#0d6efd] text-white text-lg px-4 py-2.5 rounded-lg shadow font-bold hover:bg-[#0b5ed7] cursor-pointer"
           >
@@ -210,7 +210,7 @@ function Sales() {
                             </svg>
                           </button>
                           <Link
-                            to="/new-sale"
+                            to="/sales/new-sale"
                             search={{ edit: sale.id }}
                             class="w-9 h-9 inline-flex items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-600 hover:-translate-y-[3px] hover:shadow-lg hover:border-transparent transition-all cursor-pointer group"
                           >

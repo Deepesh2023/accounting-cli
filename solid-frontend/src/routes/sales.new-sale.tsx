@@ -1,5 +1,6 @@
-import { createSignal, createMemo, For, Show, onMount } from 'solid-js'
+import { createMemo, For, Show, onMount, createEffect } from 'solid-js'
 import { createFileRoute, Link, useNavigate } from '@tanstack/solid-router'
+import { createForm } from '@tanstack/solid-form'
 import {
   transactions, setTransactions,
   partyList, setPartyList,
@@ -25,7 +26,43 @@ function emptyRow(): SaleRow {
   return { key: Date.now() + Math.random(), itemId: '', qty: 1, price: 0, discPerc: 0, discAmt: 0, taxPerc: 0 }
 }
 
-export const Route = createFileRoute('/new-sale')({
+type SaleFormValues = {
+  mode: 'Credit' | 'Cash'
+  customerId: string
+  phone: string
+  address: string
+  custState: string
+  invNo: string
+  date: string
+  dueDate: string
+  roundOff: boolean
+  paid: number
+  terms: string
+  priceType: 'Without Tax' | 'With Tax'
+  rows: SaleRow[]
+  editingId: number | undefined
+}
+
+function defaultValues(edit?: number): SaleFormValues {
+  return {
+    mode: 'Credit',
+    customerId: '',
+    phone: '',
+    address: '',
+    custState: '',
+    invNo: generateInvoiceNo(),
+    date: new Date().toISOString().split('T')[0],
+    dueDate: '',
+    roundOff: false,
+    paid: 0,
+    terms: 'Goods once sold will not be taken back.',
+    priceType: 'Without Tax',
+    rows: [emptyRow()],
+    editingId: edit,
+  }
+}
+
+export const Route = createFileRoute('/sales/new-sale')({
   validateSearch: (search: Record<string, string | undefined>) => ({
     edit: search.edit ? Number(search.edit) : undefined,
   }),
@@ -36,43 +73,19 @@ function NewSale() {
   const navigate = useNavigate()
   const search = Route.useSearch()
 
-  const [mode, setMode] = createSignal<'Credit' | 'Cash'>('Credit')
-  const [customerId, setCustomerId] = createSignal('')
-  const [phone, setPhone] = createSignal('')
-  const [address, setAddress] = createSignal('')
-  const [custState, setCustState] = createSignal('')
-  const [invNo, setInvNo] = createSignal(generateInvoiceNo())
-  const [date, setDate] = createSignal(new Date().toISOString().split('T')[0])
-  const [dueDate, setDueDate] = createSignal('')
-  const [roundOff, setRoundOff] = createSignal(false)
-  const [paid, setPaid] = createSignal(0)
-  const [terms, setTerms] = createSignal('Goods once sold will not be taken back.')
-  const [rows, setRows] = createSignal<SaleRow[]>([emptyRow()])
-  const [editingId, setEditingId] = createSignal<number | null>(null)
-  const [priceType, setPriceType] = createSignal<'Without Tax' | 'With Tax'>('Without Tax')
-  const [saving, setSaving] = createSignal(false)
+  const form = createForm(() => ({
+    defaultValues: defaultValues(search().edit),
+    onSubmit: ({ value }: { value: SaleFormValues }) => {
+      handleSave(value)
+    },
+  }))
 
-  const customer = createMemo(() => partyList.find((p) => String(p.id) === String(customerId())))
-
-  function selectCustomer(id: string) {
-    setCustomerId(id)
-    const p = partyList.find((x) => String(x.id) === String(id))
-    if (p) {
-      if (!editingId()) {
-        setPhone(p.phone || '')
-        setAddress(p.address || '')
-        setCustState(p.state || '')
-      }
-    } else {
-      if (!editingId()) {
-        setPhone('')
-        setAddress('')
-        setCustState('')
-      }
-    }
-  }
+  const values = () => form.store.state.values
+  const rows = () => values().rows
 
   const sortedStock = createMemo(() => [...stockList].sort((a, b) => a.name.localeCompare(b.name)))
+
+  const customer = createMemo(() => partyList.find((p) => String(p.id) === String(values().customerId)))
 
   const itemTotals = createMemo(() =>
     rows().map((row) => {
@@ -81,7 +94,7 @@ function NewSale() {
       const taxable = Math.max(0, gross - discAmt)
       let taxAmt: number
       let baseTaxable = taxable
-      if (priceType() === 'With Tax') {
+      if (values().priceType === 'With Tax') {
         const base = taxable / (1 + row.taxPerc / 100)
         taxAmt = taxable - base
         baseTaxable = base
@@ -94,41 +107,55 @@ function NewSale() {
 
   const grandTotal = createMemo(() => {
     let total = itemTotals().reduce((sum, it) => sum + it.rowTotal, 0)
-    if (roundOff()) total = Math.round(total)
+    if (values().roundOff) total = Math.round(total)
     return total
   })
 
   const balance = createMemo(() => {
-    if (mode() === 'Cash') return 0
-    return Math.max(0, grandTotal() - paid())
+    if (values().mode === 'Cash') return 0
+    return Math.max(0, grandTotal() - values().paid)
   })
 
   const isInterstate = createMemo(() => {
     const coState = companyData.state
-    const cs = custState()
+    const cs = values().custState
     return !!(coState && cs && coState !== cs)
   })
 
+  function selectCustomer(id: string) {
+    form.setFieldValue('customerId', id)
+  }
+
+  createEffect(() => {
+    const id = values().customerId
+    const editId = values().editingId
+    if (!id) return
+    const p = partyList.find((x) => String(x.id) === String(id))
+    if (p && !editId) {
+      if (p.phone) form.setFieldValue('phone', p.phone)
+      if (p.address) form.setFieldValue('address', p.address)
+      if (p.state) form.setFieldValue('custState', p.state)
+    }
+  })
+
   function addRow() {
-    setRows([...rows(), emptyRow()])
+    form.setFieldValue('rows', [...rows(), emptyRow()])
   }
 
   function removeRow(idx: number) {
     const r = rows()
     if (r.length <= 1) return
-    setRows(r.filter((_, i) => i !== idx))
+    form.setFieldValue('rows', r.filter((_, i) => i !== idx))
   }
 
   function updateRow(idx: number, patch: Partial<SaleRow>) {
-    setRows(rows().map((r, i) => (i === idx ? { ...r, ...patch } : r)))
+    form.setFieldValue('rows', rows().map((r, i) => (i === idx ? { ...r, ...patch } : r)))
   }
 
   function onItemSelect(idx: number, itemId: string) {
     const st = stockList.find((s) => String(s.id) === String(itemId))
     const patch: Partial<SaleRow> = { itemId }
-    if (st) {
-      patch.price = st.price
-    }
+    if (st) patch.price = st.price
     updateRow(idx, patch)
   }
 
@@ -146,31 +173,22 @@ function NewSale() {
     updateRow(idx, { discAmt: amt, discPerc })
   }
 
-  function setPaidAmount(val: number) {
-    if (mode() === 'Credit') {
-      setPaid(val)
-    }
-  }
-
   function setModeWithReset(m: 'Credit' | 'Cash') {
-    setMode(m)
+    form.setFieldValue('mode', m)
     if (m === 'Cash') {
-      setPaid(grandTotal())
-      setDueDate('')
+      form.setFieldValue('paid', grandTotal())
+      form.setFieldValue('dueDate', '')
     }
   }
 
-  function handleSave() {
-    if (saving()) return
-    setSaving(true)
-
-    for (const row of rows()) {
+  function handleSave(v: SaleFormValues) {
+    for (const row of v.rows) {
       if (!row.itemId) continue
       const st = stockList.find((s) => String(s.id) === String(row.itemId))
       if (st) {
         let available = st.qty
-        if (editingId()) {
-          const oldT = transactions.find((t) => t.id === editingId())
+        if (v.editingId) {
+          const oldT = transactions.find((t) => t.id === v.editingId)
           if (oldT?.sale_details) {
             const oldItem = oldT.sale_details.items.find((it) => it.item_id === row.itemId)
             if (oldItem) available += oldItem.qty
@@ -178,7 +196,6 @@ function NewSale() {
         }
         if (available < row.qty) {
           alert(`Insufficient stock for ${st.name}. Available: ${available}`)
-          setSaving(false)
           return
         }
       }
@@ -186,27 +203,23 @@ function NewSale() {
 
     if (grandTotal() <= 0) {
       alert('Total amount cannot be zero.')
-      setSaving(false)
       return
     }
 
-    if (mode() === 'Credit' && !customerId()) {
+    if (v.mode === 'Credit' && !v.customerId) {
       alert('Credit sale requires a customer to be selected.')
-      setSaving(false)
       return
     }
 
     const total = grandTotal()
-    const paidAmt = mode() === 'Cash' ? total : paid()
-    const bal = mode() === 'Cash' ? 0 : Math.max(0, total - paidAmt)
+    const paidAmt = v.mode === 'Cash' ? total : v.paid
+    const bal = v.mode === 'Cash' ? 0 : Math.max(0, total - paidAmt)
     const paymentStatus = bal === 0 ? 'Paid' : paidAmt > 0 ? 'Partial' : 'Unpaid'
-    const custId = customerId()
     const custName = customer()?.name || 'Walk-in'
 
-    const editId = editingId()
-    if (editId) {
-      const oldT = transactions.find((t) => t.id === editId)
-      if (oldT && oldT.sale_details) {
+    if (v.editingId) {
+      const oldT = transactions.find((t) => t.id === v.editingId)
+      if (oldT?.sale_details) {
         const sd = oldT.sale_details
         if (oldT.payment_mode === 'Credit' && sd.customer_id) {
           const oldParty = partyList.find((p) => String(p.id) === String(sd.customer_id))
@@ -233,22 +246,22 @@ function NewSale() {
           }
         }
       }
-      deleteLedgerByRef(editId)
-      setTransactions((prev) => prev.filter((t) => t.id !== editId))
+      deleteLedgerByRef(v.editingId)
+      setTransactions((prev) => prev.filter((t) => t.id !== v.editingId))
     }
 
-    if (custId) {
-      const p = partyList.find((x) => String(x.id) === String(custId))
+    if (v.customerId) {
+      const p = partyList.find((x) => String(x.id) === String(v.customerId))
       if (p) {
         const idx = partyList.indexOf(p)
-        setPartyList(idx, 'phone', phone())
-        setPartyList(idx, 'address', address())
+        setPartyList(idx, 'phone', v.phone)
+        setPartyList(idx, 'address', v.address)
       }
     }
 
     const itemsData: SaleItem[] = []
-    for (let i = 0; i < rows().length; i++) {
-      const row = rows()[i]
+    for (let i = 0; i < v.rows.length; i++) {
+      const row = v.rows[i]
       if (!row.itemId) continue
       const tot = itemTotals()[i]
       const st = stockList.find((s) => String(s.id) === String(row.itemId))
@@ -270,8 +283,8 @@ function NewSale() {
       })
     }
 
-    if (custId && mode() === 'Credit') {
-      const p = partyList.find((x) => String(x.id) === String(custId))
+    if (v.customerId && v.mode === 'Credit') {
+      const p = partyList.find((x) => String(x.id) === String(v.customerId))
       if (p) {
         const pIdx = partyList.indexOf(p)
         let signedBal = (p.type === 'Receive' ? 1 : -1) * p.balance
@@ -281,43 +294,43 @@ function NewSale() {
       }
     }
 
-    const id = editingId() || Date.now()
+    const id = v.editingId || Date.now()
     const t = {
       id,
-      date: date(),
-      particulars: `${invNo()} - Sale to ${custName}`,
+      date: v.date,
+      particulars: `${v.invNo} - Sale to ${custName}`,
       type: 'Sale' as const,
-      payment_mode: mode() === 'Credit' ? 'Credit' as const : 'Cash' as const,
+      payment_mode: (v.mode === 'Credit' ? 'Credit' : 'Cash') as 'Credit' | 'Cash',
       amount: total,
       sale_details: {
-        customer_id: custId || '',
-        invoice_no: invNo(),
-        phone: phone(),
-        address: address(),
-        state_of_supply: custState(),
-        due_date: dueDate(),
+        customer_id: v.customerId || '',
+        invoice_no: v.invNo,
+        phone: v.phone,
+        address: v.address,
+        state_of_supply: v.custState,
+        due_date: v.dueDate,
         items: itemsData,
         paid_amount: paidAmt,
         balance_amount: bal,
         payment_status: paymentStatus as 'Paid' | 'Partial' | 'Unpaid',
-        is_roundoff: roundOff(),
-        price_type: priceType(),
-        terms: terms(),
+        is_roundoff: v.roundOff,
+        price_type: v.priceType,
+        terms: v.terms,
       },
     }
 
     setTransactions(transactions.length, t)
 
-    if (mode() === 'Credit' && custId) {
-      updateLedger(date(), custId, 'DR', total, id, 'Sales: ' + invNo())
-      updateLedger(date(), 'Sales', 'CR', total, id, 'Sales to ' + custName)
+    if (v.mode === 'Credit' && v.customerId) {
+      updateLedger(v.date, v.customerId, 'DR', total, id, 'Sales: ' + v.invNo)
+      updateLedger(v.date, 'Sales', 'CR', total, id, 'Sales to ' + custName)
       if (paidAmt > 0) {
-        updateLedger(date(), 'Cash', 'DR', paidAmt, id, 'Receipt against ' + invNo())
-        updateLedger(date(), custId, 'CR', paidAmt, id, 'Payment Receipt')
+        updateLedger(v.date, 'Cash', 'DR', paidAmt, id, 'Receipt against ' + v.invNo)
+        updateLedger(v.date, v.customerId, 'CR', paidAmt, id, 'Payment Receipt')
       }
     } else {
-      updateLedger(date(), 'Cash', 'DR', total, id, 'Cash Sales: ' + invNo())
-      updateLedger(date(), 'Sales', 'CR', total, id, 'Cash Sales')
+      updateLedger(v.date, 'Cash', 'DR', total, id, 'Cash Sales: ' + v.invNo)
+      updateLedger(v.date, 'Sales', 'CR', total, id, 'Cash Sales')
     }
 
     persistState()
@@ -326,37 +339,36 @@ function NewSale() {
 
   onMount(() => {
     const editId = search().edit
-    if (editId) {
-      const t = transactions.find((x) => x.id === editId)
-      if (t?.sale_details) {
-        const d = t.sale_details
-        setEditingId(editId)
-        setMode(t.payment_mode === 'Credit' ? 'Credit' : 'Cash')
-        selectCustomer(d.customer_id || '')
-        setPhone(d.phone || '')
-        setAddress(d.address || '')
-        setCustState(d.state_of_supply || '')
-        setInvNo(d.invoice_no)
-        setDate(t.date)
-        setDueDate(d.due_date || '')
-        setRoundOff(!!d.is_roundoff)
-        setPaid(d.paid_amount || 0)
-        setTerms(d.terms || '')
-        setPriceType((d.price_type as 'Without Tax' | 'With Tax') || 'Without Tax')
-        if (d.items.length > 0) {
-          setRows(
-            d.items.map((it) => ({
-              key: Date.now() + Math.random(),
-              itemId: it.item_id,
-              qty: it.qty,
-              price: it.price,
-              discPerc: it.disc_perc,
-              discAmt: it.disc_amt,
-              taxPerc: it.tax_perc,
-            })),
-          )
-        }
-      }
+    if (!editId) return
+    const t = transactions.find((x) => x.id === editId)
+    if (!t?.sale_details) return
+    const d = t.sale_details
+    form.setFieldValue('editingId', editId)
+    form.setFieldValue('mode', t.payment_mode === 'Credit' ? 'Credit' : 'Cash')
+    form.setFieldValue('customerId', d.customer_id || '')
+    form.setFieldValue('phone', d.phone || '')
+    form.setFieldValue('address', d.address || '')
+    form.setFieldValue('custState', d.state_of_supply || '')
+    form.setFieldValue('invNo', d.invoice_no)
+    form.setFieldValue('date', t.date)
+    form.setFieldValue('dueDate', d.due_date || '')
+    form.setFieldValue('roundOff', !!d.is_roundoff)
+    form.setFieldValue('paid', d.paid_amount || 0)
+    form.setFieldValue('terms', d.terms || '')
+    form.setFieldValue('priceType', (d.price_type as 'Without Tax' | 'With Tax') || 'Without Tax')
+    if (d.items.length > 0) {
+      form.setFieldValue(
+        'rows',
+        d.items.map((it) => ({
+          key: Date.now() + Math.random(),
+          itemId: it.item_id,
+          qty: it.qty,
+          price: it.price,
+          discPerc: it.disc_perc,
+          discAmt: it.disc_amt,
+          taxPerc: it.tax_perc,
+        })),
+      )
     }
   })
 
@@ -371,7 +383,7 @@ function NewSale() {
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
           </svg>
         </Link>
-        <h4 class="font-bold mb-0">{editingId() ? 'Edit Sale' : 'New Sale'}</h4>
+        <h4 class="font-bold mb-0">{values().editingId ? 'Edit Sale' : 'New Sale'}</h4>
       </div>
 
       <div class="flex gap-6">
@@ -380,46 +392,53 @@ function NewSale() {
             <div class="flex items-center justify-between mb-4">
               <div class="flex gap-2">
                 <button
-                  class={`px-4 py-1.5 rounded-lg text-sm font-bold transition-colors cursor-pointer ${mode() === 'Credit' ? 'bg-gray-700 text-white' : 'bg-gray-100 text-gray-600'}`}
+                  type="button"
+                  class={`px-4 py-1.5 rounded-lg text-sm font-bold transition-colors cursor-pointer ${values().mode === 'Credit' ? 'bg-gray-700 text-white' : 'bg-gray-100 text-gray-600'}`}
                   onClick={() => setModeWithReset('Credit')}
                 >
                   Credit
                 </button>
                 <button
-                  class={`px-4 py-1.5 rounded-lg text-sm font-bold transition-colors cursor-pointer ${mode() === 'Cash' ? 'bg-green-600 text-white' : 'bg-gray-100 text-gray-600'}`}
+                  type="button"
+                  class={`px-4 py-1.5 rounded-lg text-sm font-bold transition-colors cursor-pointer ${values().mode === 'Cash' ? 'bg-green-600 text-white' : 'bg-gray-100 text-gray-600'}`}
                   onClick={() => setModeWithReset('Cash')}
                 >
                   Cash
                 </button>
               </div>
-              <div class="flex items-center gap-2">
-                <label class="text-xs text-gray-500 font-bold">Price Type</label>
-                <select
-                  class="border border-gray-300 rounded px-2 py-1 text-sm"
-                  value={priceType()}
-                  onChange={(e) => setPriceType(e.currentTarget.value as 'Without Tax' | 'With Tax')}
-                >
-                  <option value="Without Tax">Without Tax</option>
-                  <option value="With Tax">With Tax</option>
-                </select>
-              </div>
+              <form.Field name="priceType">
+                {(field) => {
+                  const f = field()
+                  return (
+                    <div class="flex items-center gap-2">
+                      <label class="text-xs text-gray-500 font-bold">Price Type</label>
+                      <select
+                        class="border border-gray-300 rounded px-2 py-1 text-sm"
+                        value={f.state.value}
+                        onChange={(e) => f.handleChange(e.currentTarget.value as 'Without Tax' | 'With Tax')}
+                      >
+                        <option value="Without Tax">Without Tax</option>
+                        <option value="With Tax">With Tax</option>
+                      </select>
+                    </div>
+                  )
+                }}
+              </form.Field>
             </div>
 
             <div class="grid grid-cols-2 gap-3 mb-4">
               <div>
                 <label class="block text-xs text-gray-500 font-bold mb-1">Customer</label>
-                <div class="flex gap-1">
-                  <select
-                    class="flex-1 border border-gray-300 rounded px-2 py-1.5 text-sm"
-                    value={customerId()}
-                    onChange={(e) => selectCustomer(e.currentTarget.value)}
-                  >
-                    <option value="">Walk-in Customer</option>
-                    <For each={partyList}>
-                      {(p) => <option value={p.id}>{p.name}</option>}
-                    </For>
-                  </select>
-                </div>
+                <select
+                  class="w-full border border-gray-300 rounded px-2 py-1.5 text-sm"
+                  value={values().customerId}
+                  onChange={(e) => selectCustomer(e.currentTarget.value)}
+                >
+                  <option value="">Walk-in Customer</option>
+                  <For each={partyList}>
+                    {(p) => <option value={p.id}>{p.name}</option>}
+                  </For>
+                </select>
                 <Show when={customer()}>
                   <div class="mt-1 text-xs">
                     {customer()!.type === 'Receive' ? (
@@ -431,66 +450,110 @@ function NewSale() {
                 </Show>
               </div>
               <div class="grid grid-cols-2 gap-2">
-                <div>
-                  <label class="block text-xs text-gray-500 font-bold mb-1">Invoice No</label>
-                  <input
-                    type="text"
-                    class="w-full border border-gray-300 rounded px-2 py-1.5 text-sm font-bold"
-                    value={invNo()}
-                    onInput={(e) => setInvNo(e.currentTarget.value)}
-                  />
-                </div>
-                <div>
-                  <label class="block text-xs text-gray-500 font-bold mb-1">Date</label>
-                  <input
-                    type="date"
-                    class="w-full border border-gray-300 rounded px-2 py-1.5 text-sm"
-                    value={date()}
-                    onInput={(e) => setDate(e.currentTarget.value)}
-                  />
-                </div>
+                <form.Field name="invNo">
+                  {(field) => {
+                    const f = field()
+                    return (
+                      <div>
+                        <label class="block text-xs text-gray-500 font-bold mb-1">Invoice No</label>
+                        <input
+                          type="text"
+                          class="w-full border border-gray-300 rounded px-2 py-1.5 text-sm font-bold"
+                          value={f.state.value}
+                          onInput={(e) => f.handleChange(e.currentTarget.value)}
+                        />
+                      </div>
+                    )
+                  }}
+                </form.Field>
+                <form.Field name="date">
+                  {(field) => {
+                    const f = field()
+                    return (
+                      <div>
+                        <label class="block text-xs text-gray-500 font-bold mb-1">Date</label>
+                        <input
+                          type="date"
+                          class="w-full border border-gray-300 rounded px-2 py-1.5 text-sm"
+                          value={f.state.value}
+                          onInput={(e) => f.handleChange(e.currentTarget.value)}
+                        />
+                      </div>
+                    )
+                  }}
+                </form.Field>
               </div>
-              <div>
-                <label class="block text-xs text-gray-500 font-bold mb-1">Phone</label>
-                <input
-                  type="text"
-                  class="w-full border border-gray-300 rounded px-2 py-1.5 text-sm"
-                  value={phone()}
-                  onInput={(e) => setPhone(e.currentTarget.value)}
-                />
-              </div>
-              <div>
-                <label class="block text-xs text-gray-500 font-bold mb-1">State of Supply</label>
-                <select
-                  class="w-full border border-gray-300 rounded px-2 py-1.5 text-sm"
-                  value={custState()}
-                  onChange={(e) => setCustState(e.currentTarget.value)}
-                >
-                  <option value="">Select State</option>
-                  <For each={indianStates.filter((s) => s !== 'Select State')}>
-                    {(s) => <option value={s}>{s}</option>}
-                  </For>
-                </select>
-              </div>
+              <form.Field name="phone">
+                {(field) => {
+                  const f = field()
+                  return (
+                    <div>
+                      <label class="block text-xs text-gray-500 font-bold mb-1">Phone</label>
+                      <input
+                        type="text"
+                        class="w-full border border-gray-300 rounded px-2 py-1.5 text-sm"
+                        value={f.state.value}
+                        onInput={(e) => f.handleChange(e.currentTarget.value)}
+                      />
+                    </div>
+                  )
+                }}
+              </form.Field>
+              <form.Field name="custState">
+                {(field) => {
+                  const f = field()
+                  return (
+                    <div>
+                      <label class="block text-xs text-gray-500 font-bold mb-1">State of Supply</label>
+                      <select
+                        class="w-full border border-gray-300 rounded px-2 py-1.5 text-sm"
+                        value={f.state.value}
+                        onChange={(e) => f.handleChange(e.currentTarget.value)}
+                      >
+                        <option value="">Select State</option>
+                        <For each={indianStates.filter((s) => s !== 'Select State')}>
+                          {(s) => <option value={s}>{s}</option>}
+                        </For>
+                      </select>
+                    </div>
+                  )
+                }}
+              </form.Field>
               <div class="col-span-2">
-                <label class="block text-xs text-gray-500 font-bold mb-1">Address</label>
-                <input
-                  type="text"
-                  class="w-full border border-gray-300 rounded px-2 py-1.5 text-sm"
-                  value={address()}
-                  onInput={(e) => setAddress(e.currentTarget.value)}
-                />
+                <form.Field name="address">
+                  {(field) => {
+                    const f = field()
+                    return (
+                      <div>
+                        <label class="block text-xs text-gray-500 font-bold mb-1">Address</label>
+                        <input
+                          type="text"
+                          class="w-full border border-gray-300 rounded px-2 py-1.5 text-sm"
+                          value={f.state.value}
+                          onInput={(e) => f.handleChange(e.currentTarget.value)}
+                        />
+                      </div>
+                    )
+                  }}
+                </form.Field>
               </div>
-              <Show when={mode() === 'Credit'}>
-                <div>
-                  <label class="block text-xs text-gray-500 font-bold mb-1">Due Date</label>
-                  <input
-                    type="date"
-                    class="w-full border border-gray-300 rounded px-2 py-1.5 text-sm"
-                    value={dueDate()}
-                    onInput={(e) => setDueDate(e.currentTarget.value)}
-                  />
-                </div>
+              <Show when={values().mode === 'Credit'}>
+                <form.Field name="dueDate">
+                  {(field) => {
+                    const f = field()
+                    return (
+                      <div>
+                        <label class="block text-xs text-gray-500 font-bold mb-1">Due Date</label>
+                        <input
+                          type="date"
+                          class="w-full border border-gray-300 rounded px-2 py-1.5 text-sm"
+                          value={f.state.value}
+                          onInput={(e) => f.handleChange(e.currentTarget.value)}
+                        />
+                      </div>
+                    )
+                  }}
+                </form.Field>
               </Show>
             </div>
 
@@ -498,6 +561,7 @@ function NewSale() {
               <div class="flex items-center justify-between mb-2">
                 <h6 class="font-bold text-sm mb-0">Invoice Items</h6>
                 <button
+                  type="button"
                   onClick={addRow}
                   class="border border-blue-600 text-blue-600 text-xs px-3 py-1 rounded font-bold hover:bg-blue-600 hover:text-white transition-colors cursor-pointer"
                 >
@@ -615,6 +679,7 @@ function NewSale() {
                             </td>
                             <td class="p-1 text-center pt-2">
                               <button
+                                type="button"
                                 onClick={() => removeRow(idx())}
                                 class="text-red-500 hover:text-red-700 cursor-pointer text-xs"
                               >
@@ -645,35 +710,49 @@ function NewSale() {
           <div class="bg-white rounded-xl shadow-sm border-0 p-4">
             <div class="flex justify-between items-center">
               <div class="space-y-2">
-                <label class="flex items-center gap-2 text-sm cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={roundOff()}
-                    onChange={(e) => setRoundOff(e.currentTarget.checked)}
-                    class="accent-blue-600"
-                  />
-                  <span class="text-gray-700">Round off to nearest integer</span>
-                </label>
+                <form.Field name="roundOff">
+                  {(field) => {
+                    const f = field()
+                    return (
+                      <label class="flex items-center gap-2 text-sm cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={f.state.value}
+                          onChange={(e) => f.handleChange(e.currentTarget.checked)}
+                          class="accent-blue-600"
+                        />
+                        <span class="text-gray-700">Round off to nearest integer</span>
+                      </label>
+                    )
+                  }}
+                </form.Field>
               </div>
               <div class="text-right">
                 <div class="flex items-center gap-4">
-                  <Show when={mode() === 'Credit'}>
-                    <div>
-                      <label class="block text-xs text-gray-500 font-bold mb-1">Paid Amount (₹)</label>
-                      <input
-                        type="number"
-                        class="w-32 border border-gray-300 rounded px-2 py-1.5 text-sm text-right"
-                        value={paid()}
-                        step="0.01"
-                        onInput={(e) => setPaidAmount(parseFloat(e.currentTarget.value) || 0)}
-                      />
-                    </div>
+                  <Show when={values().mode === 'Credit'}>
+                    <form.Field name="paid">
+                      {(field) => {
+                        const f = field()
+                        return (
+                          <div>
+                            <label class="block text-xs text-gray-500 font-bold mb-1">Paid Amount (₹)</label>
+                            <input
+                              type="number"
+                              class="w-32 border border-gray-300 rounded px-2 py-1.5 text-sm text-right"
+                              value={f.state.value}
+                              step="0.01"
+                              onInput={(e) => f.handleChange(parseFloat(e.currentTarget.value) || 0)}
+                            />
+                          </div>
+                        )
+                      }}
+                    </form.Field>
                   </Show>
                   <div>
                     <label class="block text-xs text-gray-500 font-bold mb-1">Grand Total</label>
                     <h3 class="mb-0 font-bold text-blue-600 text-2xl">₹{formatMoney(grandTotal())}</h3>
                   </div>
-                  <Show when={mode() === 'Credit'}>
+                  <Show when={values().mode === 'Credit'}>
                     <div>
                       <label class="block text-xs text-gray-500 font-bold mb-1">Balance</label>
                       <h4 class={`mb-0 font-bold text-lg ${balance() > 0 ? 'text-red-500' : 'text-green-600'}`}>
@@ -687,13 +766,22 @@ function NewSale() {
           </div>
 
           <div class="bg-white rounded-xl shadow-sm border-0 p-4">
-            <label class="block text-xs text-gray-500 font-bold mb-1 uppercase">Terms & Conditions</label>
-            <textarea
-              class="w-full border border-gray-300 rounded px-3 py-2 text-sm"
-              rows="2"
-              value={terms()}
-              onInput={(e) => setTerms(e.currentTarget.value)}
-            />
+            <form.Field name="terms">
+              {(field) => {
+                const f = field()
+                return (
+                  <>
+                    <label class="block text-xs text-gray-500 font-bold mb-1 uppercase">Terms & Conditions</label>
+                    <textarea
+                      class="w-full border border-gray-300 rounded px-3 py-2 text-sm"
+                      rows="2"
+                      value={f.state.value}
+                      onInput={(e) => f.handleChange(e.currentTarget.value)}
+                    />
+                  </>
+                )
+              }}
+            </form.Field>
             <div class="flex justify-end gap-3 mt-3">
               <Link
                 to="/sales"
@@ -702,11 +790,11 @@ function NewSale() {
                 Cancel
               </Link>
               <button
-                onClick={handleSave}
-                disabled={saving()}
-                class="px-6 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-bold disabled:opacity-50 cursor-pointer"
+                type="button"
+                onClick={() => form.handleSubmit()}
+                class="px-6 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-bold cursor-pointer"
               >
-                {saving() ? 'Saving...' : editingId() ? 'Update Sale' : 'Save Sale'}
+                {values().editingId ? 'Update Sale' : 'Save Sale'}
               </button>
             </div>
           </div>
@@ -724,7 +812,7 @@ function NewSale() {
                 }
               >
                 <div class="border-bottom pb-4 mb-4" style="border-bottom: 1px solid #e5e7eb;">
-                  <div class="d-flex justify-between align-items-start" style="display: flex; justify-content: space-between; align-items: flex-start;">
+                  <div style="display: flex; justify-content: space-between; align-items: flex-start;">
                     <div style="display: flex; gap: 0.75rem;">
                       <Show when={companyData.logo}>
                         <div>
@@ -732,25 +820,25 @@ function NewSale() {
                         </div>
                       </Show>
                       <div>
-                        <h2 class="fw-bold mb-0 text-primary" style="font-weight: 700; margin-bottom: 0; color: #0d6efd;">
+                        <h2 style="font-weight: 700; margin-bottom: 0; color: #0d6efd; font-size: 1.25rem;">
                           {companyData.name || 'PRINTOS'}
                         </h2>
-                        <p class="text-muted m-0 small" style="color: #6c757d; margin: 0; font-size: 0.8rem;">
+                        <p style="color: #6c757d; margin: 0; font-size: 0.8rem;">
                           {companyData.address || '-'}
                         </p>
-                        <p class="text-muted m-0 small" style="color: #6c757d; margin: 0; font-size: 0.8rem;">
+                        <p style="color: #6c757d; margin: 0; font-size: 0.8rem;">
                           Phone: {companyData.phone || '-'} | Email: {companyData.email || '-'}
                         </p>
-                        <p class="text-muted m-0 small fw-bold" style="color: #6c757d; margin: 0; font-size: 0.8rem; font-weight: 700;">
+                        <p style="color: #6c757d; margin: 0; font-size: 0.8rem; font-weight: 700;">
                           GSTIN: {companyData.gstin || '-'}
                         </p>
                       </div>
                     </div>
-                    <div class="text-end" style="text-align: right;">
-                      <h1 class="fw-bold text-primary" style="font-weight: 700; color: #0d6efd; font-size: 1.5rem; margin-bottom: 0;">
-                        {mode() === 'Credit' ? 'CREDIT INVOICE' : 'CASH INVOICE'}
+                    <div style="text-align: right;">
+                      <h1 style="font-weight: 700; color: #0d6efd; font-size: 1.5rem; margin-bottom: 0;">
+                        {values().mode === 'Credit' ? 'CREDIT INVOICE' : 'CASH INVOICE'}
                       </h1>
-                      <p class="m-0 text-muted small" style="margin: 0; color: #6c757d; font-size: 0.75rem;">
+                      <p style="margin: 0; color: #6c757d; font-size: 0.75rem;">
                         Original for Recipient
                       </p>
                     </div>
@@ -759,33 +847,33 @@ function NewSale() {
 
                 <div style="display: flex; margin-bottom: 1rem;">
                   <div style="flex: 1;">
-                    <p class="text-muted text-uppercase mb-1 small fw-bold" style="color: #6c757d; text-transform: uppercase; margin-bottom: 0.25rem; font-size: 0.75rem; font-weight: 700;">
+                    <p style="color: #6c757d; text-transform: uppercase; margin-bottom: 0.25rem; font-size: 0.75rem; font-weight: 700;">
                       Bill To:
                     </p>
-                    <h5 class="fw-bold mb-1" style="font-weight: 700; margin-bottom: 0.25rem;">
+                    <h5 style="font-weight: 700; margin-bottom: 0.25rem;">
                       {customer()?.name || 'Walk-in Customer'}
                     </h5>
-                    <p class="m-0 text-muted small" style="margin: 0; color: #6c757d; font-size: 0.75rem;">
-                      {address() || '-'}
+                    <p style="margin: 0; color: #6c757d; font-size: 0.75rem;">
+                      {values().address || '-'}
                     </p>
-                    <p class="m-0 text-muted small" style="margin: 0; color: #6c757d; font-size: 0.75rem;">
-                      Phone: {phone() || '-'}
+                    <p style="margin: 0; color: #6c757d; font-size: 0.75rem;">
+                      Phone: {values().phone || '-'}
                     </p>
-                    <p class="m-0 text-muted small" style="margin: 0; color: #6c757d; font-size: 0.75rem;">
-                      State: {custState() || '-'}
+                    <p style="margin: 0; color: #6c757d; font-size: 0.75rem;">
+                      State: {values().custState || '-'}
                     </p>
                   </div>
-                  <div class="text-end" style="text-align: right;">
-                    <p class="small" style="font-size: 0.8rem; margin-bottom: 0.25rem;">
-                      <strong>Invoice No:</strong> {invNo()}
+                  <div style="text-align: right;">
+                    <p style="font-size: 0.8rem; margin-bottom: 0.25rem;">
+                      <strong>Invoice No:</strong> {values().invNo}
                     </p>
-                    <p class="small" style="font-size: 0.8rem; margin-bottom: 0.25rem;">
-                      <strong>Date:</strong> {date()}
+                    <p style="font-size: 0.8rem; margin-bottom: 0.25rem;">
+                      <strong>Date:</strong> {values().date}
                     </p>
                   </div>
                 </div>
 
-                <table class="w-full text-sm" style="border-collapse: collapse; width: 100%; font-size: 0.75rem; margin-bottom: 1rem;">
+                <table style="border-collapse: collapse; width: 100%; font-size: 0.75rem; margin-bottom: 1rem;">
                   <thead>
                     <tr style="background-color: #f8f9fa;">
                       <th style="padding: 0.375rem; text-align: center; width: 5%;">#</th>
@@ -830,7 +918,7 @@ function NewSale() {
                   <div style="flex: 1; padding: 0.5rem; background-color: #f8f9fa; border-radius: 0.375rem; font-size: 0.65rem;">
                     <p style="font-weight: 700; margin-bottom: 0.25rem;">Terms & Conditions:</p>
                     <ul style="padding-left: 1rem; margin-bottom: 0;">
-                      <For each={terms().split('\n').filter((l) => l.trim())}>
+                      <For each={values().terms.split('\n').filter((l) => l.trim())}>
                         {(line) => <li>{line}</li>}
                       </For>
                     </ul>
@@ -848,7 +936,7 @@ function NewSale() {
                           <tr>
                             <td style="padding: 0.15rem 0.5rem; color: #6c757d;">Taxable</td>
                             <td style="padding: 0.15rem 0.5rem; text-align: right;">
-                              ₹{formatMoney(itemTotals().reduce((s, t) => s + t.taxable, 0))}
+                              ₹{formatMoney(itemTotals().reduce((s: number, t: { taxable: number }) => s + t.taxable, 0))}
                             </td>
                           </tr>
                           <Show
@@ -858,13 +946,13 @@ function NewSale() {
                                 <tr>
                                   <td style="padding: 0.15rem 0.5rem; color: #6c757d;">CGST</td>
                                   <td style="padding: 0.15rem 0.5rem; text-align: right;">
-                                    ₹{formatMoney(itemTotals().reduce((s, t) => s + t.taxAmt / 2, 0))}
+                                    ₹{formatMoney(itemTotals().reduce((s: number, t: { taxAmt: number }) => s + t.taxAmt / 2, 0))}
                                   </td>
                                 </tr>
                                 <tr>
                                   <td style="padding: 0.15rem 0.5rem; color: #6c757d;">SGST</td>
                                   <td style="padding: 0.15rem 0.5rem; text-align: right;">
-                                    ₹{formatMoney(itemTotals().reduce((s, t) => s + t.taxAmt / 2, 0))}
+                                    ₹{formatMoney(itemTotals().reduce((s: number, t: { taxAmt: number }) => s + t.taxAmt / 2, 0))}
                                   </td>
                                 </tr>
                               </>
@@ -873,7 +961,7 @@ function NewSale() {
                             <tr>
                               <td style="padding: 0.15rem 0.5rem; color: #6c757d;">IGST</td>
                               <td style="padding: 0.15rem 0.5rem; text-align: right;">
-                                ₹{formatMoney(itemTotals().reduce((s, t) => s + t.taxAmt, 0))}
+                                ₹{formatMoney(itemTotals().reduce((s: number, t: { taxAmt: number }) => s + t.taxAmt, 0))}
                               </td>
                             </tr>
                           </Show>
