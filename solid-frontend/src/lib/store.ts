@@ -88,7 +88,9 @@ function loadStateFromLocalStorage() {
   }
 }
 
-loadStateFromLocalStorage()
+if (typeof localStorage !== 'undefined') {
+  loadStateFromLocalStorage()
+}
 
 export function persistState() {
   localStorage.setItem(STORAGE_PREFIX + 'transactions', JSON.stringify(transactions))
