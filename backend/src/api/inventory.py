@@ -84,21 +84,10 @@ def update_product(
     service: InventoryService = Depends(get_inventory_service),
 ):
     try:
-        existing = service.get_product(product_id)
+        result = service.update_product(product_id, data)
     except ProductNotFoundError:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Product not found")
-
-    updated = Product(
-        product_id=product_id,
-        name=data.name if data.name is not None else existing.name,
-        selling_price=data.selling_price if data.selling_price is not None else existing.selling_price,
-        quantity=data.quantity if data.quantity is not None else existing.quantity,
-        gst_rate=data.gst_rate if data.gst_rate is not None else existing.gst_rate,
-        hsn_code=data.hsn_code if data.hsn_code is not None else existing.hsn_code,
-        archived=existing.archived,
-    )
-    service.update_product(updated)
-    return service.get_product(product_id)
+    return result
 
 
 @router.delete("/{product_id}", status_code=status.HTTP_204_NO_CONTENT)

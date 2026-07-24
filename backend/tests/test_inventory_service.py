@@ -77,9 +77,13 @@ def test_change_visibility_not_found(service, mock_repo):
         service.change_visibility(uuid4())
 
 def test_update_product(service, mock_repo):
-    product = ProductMock(product_id=uuid4(), name="P1", selling_price=Decimal("10"), quantity=5)
-    service.update_product(product)
-    mock_repo.update_product.assert_called_once_with(product)
+    p_id = uuid4()
+    existing = ProductMock(product_id=p_id, name="Old", selling_price=Decimal("5"), quantity=1)
+    mock_repo.get_product.return_value = existing
+    result = service.update_product(p_id, ProductMock(name="New", selling_price=Decimal("10"), quantity=5))
+    mock_repo.update_product.assert_called_once()
+    updated = mock_repo.update_product.call_args[0][0]
+    assert updated.name == "New"
 
 def test_search_products(service, mock_repo):
     p1 = ProductMock(product_id=uuid4(), name="Apple", selling_price=Decimal("10"), quantity=5)

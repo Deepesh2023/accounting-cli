@@ -43,8 +43,19 @@ class InventoryService:
             raise ProductNotFoundError("Product not found.")
         return product
 
-    def update_product(self, product: Product) -> None:
-        self.repository.update_product(product)
+    def update_product(self, product_id: uuid.UUID, data) -> Product:
+        existing = self.get_product(product_id)
+        updated = Product(
+            product_id=product_id,
+            name=data.name if data.name is not None else existing.name,
+            selling_price=data.selling_price if data.selling_price is not None else existing.selling_price,
+            quantity=data.quantity if data.quantity is not None else existing.quantity,
+            gst_rate=data.gst_rate if data.gst_rate is not None else existing.gst_rate,
+            hsn_code=data.hsn_code if data.hsn_code is not None else existing.hsn_code,
+            archived=existing.archived,
+        )
+        self.repository.update_product(updated)
+        return self.repository.get_product(product_id)
 
     def search_products(self, query: str) -> list[Product]:
         return self.repository.search_products(query)
