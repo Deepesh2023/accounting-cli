@@ -128,10 +128,7 @@ function Stock() {
             {errorMsg()}
           </div>
         </Show>
-        <Show when={stockQuery.isSuccess}>
-          <div class="px-4 py-2 text-sm text-blue-700 bg-blue-50 border border-blue-200 rounded mx-3 mb-2">
-            <strong>Tip:</strong> Click Edit to modify a stock item.
-          </div>
+          <Show when={stockQuery.isSuccess}>
           <div class="overflow-x-auto">
             <table class="w-full text-sm">
               <thead class="bg-gray-100 text-gray-600 uppercase text-xs">
@@ -160,19 +157,17 @@ function Stock() {
                       <td class="py-3 pr-4 text-center">
                         <button
                           onClick={() => openEdit(s.product_id)}
-                          class="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 text-xs mr-3"
-                          title="Edit"
+                          class="text-blue-600 hover:text-blue-800 mr-3"
+                          title="Edit item"
                         >
-                          <Icon path={mdiPencil} size={16} />
-                          Edit
+                          <Icon path={mdiPencil} size={18} />
                         </button>
                         <button
                           onClick={() => handleDelete(s.product_id)}
-                          class="inline-flex items-center gap-1 text-red-600 hover:text-red-800 text-xs"
-                          title="Delete"
+                          class="text-red-600 hover:text-red-800"
+                          title="Delete item"
                         >
-                          <Icon path={mdiDeleteOutline} size={16} />
-                          Delete
+                          <Icon path={mdiDeleteOutline} size={18} />
                         </button>
                       </td>
                     </tr>
